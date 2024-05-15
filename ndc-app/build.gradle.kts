@@ -39,6 +39,10 @@ dependencies {
     api("io.opentelemetry:opentelemetry-extension-trace-propagators")
     api("io.opentelemetry.instrumentation:opentelemetry-jdbc")
 
+    // Needed or else error:
+    // "Build step io.quarkus.narayana.jta.deployment.NarayanaJtaProcessor#build threw an exception: javax.xml.stream.FactoryConfigurationError: Provider com.ctc.wstx.stax.WstxInputFactory not found"
+    implementation("com.fasterxml.woodstox:woodstox-core:6.6.2")
+
     // //////////////////////
     // Test Dependencies
     // //////////////////////

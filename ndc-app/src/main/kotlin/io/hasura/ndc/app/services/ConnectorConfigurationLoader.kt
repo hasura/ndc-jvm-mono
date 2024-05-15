@@ -1,7 +1,7 @@
 package io.hasura.ndc.app.services
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.hasura.ndc.app.models.ConnectorConfiguration
+import io.hasura.ndc.common.ConnectorConfiguration
 import java.io.File
 import java.nio.file.Path
 

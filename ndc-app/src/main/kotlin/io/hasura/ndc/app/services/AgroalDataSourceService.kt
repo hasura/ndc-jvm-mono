@@ -6,7 +6,7 @@ import io.agroal.api.configuration.AgroalConnectionPoolConfiguration
 import io.agroal.api.configuration.supplier.AgroalDataSourceConfigurationSupplier
 import io.agroal.api.security.NamePrincipal
 import io.agroal.api.security.SimplePassword
-import io.hasura.ndc.app.models.ConnectorConfiguration
+import io.hasura.ndc.common.ConnectorConfiguration
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import io.opentelemetry.instrumentation.jdbc.datasource.OpenTelemetryDataSource
 import io.smallrye.config.ConfigMapping

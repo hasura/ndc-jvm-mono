@@ -1,9 +1,11 @@
 package io.hasura.ndc.app.services
 
 import io.hasura.ndc.app.interfaces.ISchemaGenerator
-import io.hasura.ndc.app.models.ConnectorConfiguration
+import io.hasura.ndc.common.ConnectorConfiguration
 import io.hasura.ndc.common.*
 import io.hasura.ndc.ir.*
+import jakarta.enterprise.context.ApplicationScoped
+import jakarta.enterprise.inject.Default
 
 abstract class JDBCSchemaGenerator(
     private val supportsMutations: Boolean = false

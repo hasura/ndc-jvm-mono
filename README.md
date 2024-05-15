@@ -59,6 +59,22 @@ There are two ways to run the connectors:
         ```bash
         java -jar ndc-connector-oracle/build/quarkus-app/quarkus-run.jar
         ```
+      
+## Running the CLI
+
+To run the CLI, either launch it via the Gradle task, or build a distribution and run the bundled executable.
+
+- To run it as a Gradle task:
+    ```bash
+    ./gradlew :ndc-cli:run --args="update jdbc:oracle:thin:@//localhost:1521/XE?user=chinook&password=Password123 --database ORACLE"
+    ```
+- To build a distribution and run the bundled executable:
+    ```bash
+    ./gradlew :ndc-cli:installDist
+    ./ndc-cli/build/install/ndc-cli/bin/ndc-cli update "jdbc:oracle:thin:@//localhost:1521/XE?user=chinook&password=Password123" --database ORACLE
+    ```
+  
+A bundled distribution `.zip` and `.tar` can be found in the `ndc-cli/build/distributions` directory.
 
 ## Docker
 

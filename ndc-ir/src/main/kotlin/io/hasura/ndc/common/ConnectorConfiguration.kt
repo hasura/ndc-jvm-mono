@@ -1,8 +1,4 @@
-package io.hasura.ndc.app.models
-
-import io.hasura.ndc.common.FunctionSchemaRow
-import io.hasura.ndc.common.NativeQueryInfo
-import io.hasura.ndc.common.TableSchemaRow
+package io.hasura.ndc.common
 
 data class ConnectorConfiguration(
     val jdbcUrl: String,

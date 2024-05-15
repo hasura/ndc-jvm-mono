@@ -1,6 +1,6 @@
 plugins {
     `kotlin-dsl`
-    `maven-publish`
+    application
 }
 
 group = "io.hasura"
@@ -30,4 +30,8 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 
 java {
     withSourcesJar()
+}
+
+application {
+    mainClass = "io.hasura.cli.CLI"
 }

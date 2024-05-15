@@ -35,10 +35,6 @@ dependencies {
     // JDBC driver
     implementation("io.quarkus:quarkus-jdbc-oracle")
 
-    // Needed or else error:
-    // "Build step io.quarkus.narayana.jta.deployment.NarayanaJtaProcessor#build threw an exception: javax.xml.stream.FactoryConfigurationError: Provider com.ctc.wstx.stax.WstxInputFactory not found"
-    implementation("com.fasterxml.woodstox:woodstox-core:6.6.2")
-
     implementation("org.jooq.pro:jooq:3.19.8")
     modules {
         module("org.jooq:jooq") {

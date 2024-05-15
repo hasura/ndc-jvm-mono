@@ -6,7 +6,7 @@ import io.hasura.ndc.sqlgen.BaseQueryGenerator
 import io.hasura.ndc.app.interfaces.IDataConnectorService
 import io.hasura.ndc.app.interfaces.IDataSourceProvider
 import io.hasura.ndc.app.interfaces.ISchemaGenerator
-import io.hasura.ndc.app.models.ConnectorConfiguration
+import io.hasura.ndc.common.ConnectorConfiguration
 import io.hasura.ndc.app.models.ExplainResponse
 import io.hasura.ndc.app.services.AgroalDataSourceService
 import io.hasura.ndc.app.services.ConnectorConfigurationLoader
@@ -17,6 +17,7 @@ import jakarta.inject.Inject
 import io.hasura.ndc.ir.*
 import io.hasura.ndc.sqlgen.BaseMutationTranslator
 import jakarta.enterprise.context.ApplicationScoped
+import jakarta.enterprise.inject.Default
 import org.jooq.DSLContext
 import org.jooq.Record
 import org.jooq.Result
@@ -75,8 +76,8 @@ abstract class BaseDataConnectorService(
     @WithSpan
     open fun processQueryDbRows(dbRows: Result<out Record>): List<RowSet> {
         val json = (dbRows.getValue(0, 0).toString())
-        val typeRef = object: TypeReference<List<RowSet>>(){}
-        return objectMapper.readValue(json,typeRef)
+        val typeRef = object : TypeReference<List<RowSet>>() {}
+        return objectMapper.readValue(json, typeRef)
     }
 
     @WithSpan
@@ -151,4 +152,34 @@ abstract class BaseDataConnectorService(
 
     @Produces
     fun createDataConnectorService(): IDataConnectorService = this
+}
+
+
+// A no-op implementation of the IDataConnectorService, used when no applicable data connector is found
+@Default
+@ApplicationScoped
+class NoOpDataConnectorService : IDataConnectorService {
+    override fun getCapabilities(): CapabilitiesResponse {
+        TODO()
+    }
+
+    override fun getSchema(): SchemaResponse {
+        TODO()
+    }
+
+    override fun explainQuery(request: QueryRequest): ExplainResponse {
+        TODO()
+    }
+
+    override fun handleQuery(request: QueryRequest): List<RowSet> {
+        TODO()
+    }
+
+    override fun handleMutation(request: MutationRequest): MutationResponse {
+        TODO()
+    }
+
+    override fun runHealthCheckQuery(): Boolean {
+        return false
+    }
 }

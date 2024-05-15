@@ -12,6 +12,8 @@ import jakarta.ws.rs.container.ContainerRequestContext
 import jakarta.ws.rs.core.UriInfo
 import io.hasura.ndc.ir.*
 import io.hasura.ndc.sqlgen.MutationTranslator
+import jakarta.annotation.Priority
+import jakarta.enterprise.inject.Alternative
 import org.jboss.resteasy.reactive.server.ServerRequestFilter
 import org.jooq.SQLDialect
 import org.jooq.conf.Settings
@@ -32,6 +34,8 @@ class Filters {
 }
 
 @Singleton
+@Alternative
+@Priority(1)
 class OracleDataConnectorService @Inject constructor(
     tracer: Tracer,
     datasourceProvider: IDataSourceProvider

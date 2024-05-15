@@ -2,7 +2,6 @@ package io.hasura.cli
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import picocli.CommandLine
-import picocli.CommandLine.Model.CommandSpec
 import picocli.CommandLine.*
 import kotlin.system.exitProcess
 
@@ -21,7 +20,7 @@ class CLI {
     private val mapper = jacksonObjectMapper()
 
     // Example:
-    // update jdbc:oracle:thin:@//localhost:1521/XE?user=chinook&password=foo --database ORACLE
+    // update jdbc:oracle:thin:@//localhost:1521/XE?user=chinook&password=Password123 --database ORACLE
     @Command(
         name = "update",
         description = ["Introspect the database and emit updated schema information"]
@@ -57,8 +56,16 @@ class CLI {
 
         mapper.writerWithDefaultPrettyPrinter().writeValue(System.out, config)
     }
-}
 
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val cli = CommandLine(CLI())
+            val exitCode = cli.execute(*args)
+            exitProcess(exitCode)
+        }
+    }
+}
 
 fun main(args: Array<String>) {
     val cli = CommandLine(CLI())
