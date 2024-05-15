@@ -1,0 +1,1 @@
+cargo run --bin ndc-test -- test --endpoint http://localhost:8100 --snapshots-dir snapshots

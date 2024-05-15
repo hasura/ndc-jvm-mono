@@ -1,0 +1,49 @@
+{
+  "collection": "authors",
+  "arguments": {},
+  "query": {
+    "fields": {
+      "id": {
+        "type": "column",
+        "column": "id"
+      }
+    },
+    "where": {
+      "type": "exists",
+      "in_collection": {
+        "type": "related",
+        "arguments": {
+          "author_id": {
+            "type": "column",
+            "name": "id"
+          }
+        },
+        "relationship": "author_articles"
+      },
+      "where": {
+        "type": "binary_comparison_operator",
+        "column": {
+          "type": "column",
+          "name": "title",
+          "path": []
+        },
+        "operator": {
+          "type": "other",
+          "name": "like"
+        },
+        "value": {
+          "type": "scalar",
+          "value": "Functional"
+        }
+      }
+    }
+  },
+  "collection_relationships": {
+    "author_articles": {
+      "arguments": {},
+      "column_mapping": {},
+      "relationship_type": "array",
+      "target_collection": "articles_by_author"
+    }
+  }
+}

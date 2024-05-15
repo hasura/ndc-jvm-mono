@@ -1,0 +1,46 @@
+{
+  "collection": "authors",
+  "arguments": {},
+  "query": {
+    "fields": {
+      "first_name": {
+        "type": "column",
+        "column": "first_name"
+      },
+      "last_name": {
+        "type": "column",
+        "column": "last_name"
+      },
+      "articles": {
+        "type": "relationship",
+        "arguments": {
+          "author_id": {
+            "type": "column",
+            "name": "id"
+          }
+        },
+        "relationship": "author_articles",
+        "query": {
+          "fields": {
+            "id": {
+              "type": "column",
+              "column": "id"
+            },
+            "title": {
+              "type": "column",
+              "column": "title"
+            }
+          }
+        }
+      }
+    }
+  },
+  "collection_relationships": {
+    "author_articles": {
+      "arguments": {},
+      "column_mapping": {},
+      "relationship_type": "array",
+      "target_collection": "articles_by_author"
+    }
+  }
+}

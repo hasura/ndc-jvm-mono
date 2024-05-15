@@ -1,0 +1,3 @@
+docker compose run ndc-spec \
+  sh -c "cd /app/ndc-spec && \
+  cargo run --bin ndc-test -- test --endpoint http://exec-service:8100 --snapshots-dir /app/ndc-spec/snapshots"

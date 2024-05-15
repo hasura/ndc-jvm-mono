@@ -1,0 +1,35 @@
+version: "3"
+
+services:
+  ndc-connector-oracle:
+    image: ndc-connector-oracle
+    build:
+      context: "./"
+      dockerfile: "ndc-connector-oracle.dockerfile"
+      args:
+        - JOOQ_PRO_EMAIL=${JOOQ_PRO_EMAIL}
+        - JOOQ_PRO_LICENSE=${JOOQ_PRO_LICENSE}
+    ports:
+      - 8100:8100
+    volumes:
+      - ./ndc-connector-oracle/connector.config.json:/etc/connector/connector.config.json
+
+  # JDBC url = jdbc:oracle:thin:@//host.docker.internal:1521/XE?user=chinook&password=Password123
+  oracle:
+      image: gvenzl/oracle-xe:21.3.0-slim
+      restart: always
+      environment:
+          ORACLE_PASSWORD: Password123
+      ports:
+          - "1521:1521"
+      volumes:
+          - ./docker/oracle/chinook.sql:/container-entrypoint-initdb.d/chinook.sql
+
+  ndc-spec:
+    image: ndc-spec
+    depends_on:
+      - oracle
+      - ndc-connector-oracle
+    build:
+      context: .
+      dockerfile: "ndc-spec.dockerfile"

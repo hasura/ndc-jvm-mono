@@ -1,0 +1,27 @@
+{
+  "ArtistById": {
+    "sql": "SELECT * FROM \"Artist\" WHERE \"ArtistId\" < {{id}}",
+    "columns": {
+      "ArtistId": {
+        "type": "named",
+        "name": "INT"
+      },
+      "Name": {
+        "type": "nullable",
+        "underlying_type": {
+          "type": "named",
+          "name": "STRING"
+        }
+      }
+    },
+    "arguments": {
+      "id": {
+        "type": {
+          "type": "named",
+          "name": "INT"
+        }
+      }
+    },
+    "description": null
+  }
+}

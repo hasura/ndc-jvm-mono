@@ -1,0 +1,19 @@
+{
+  "collection": "articles",
+  "arguments": {},
+  "query": {
+    "aggregates": {
+      "min_id": {
+        "type": "single_column",
+        "column": "id",
+        "function": "min"
+      },
+      "max_id": {
+        "type": "single_column",
+        "column": "id",
+        "function": "max"
+      }
+    }
+  },
+  "collection_relationships": {}
+}
