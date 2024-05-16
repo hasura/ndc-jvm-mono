@@ -53,7 +53,7 @@ data class Query(
     val limit: Int? = null,
     val offset: Int? = null,
     val order_by: OrderBy? = null,
-    val where: Expression? = null,
+    val predicate: Expression? = null,
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
@@ -161,25 +161,21 @@ data class PathElement (
 // /////////////////////////////////////////////////////////////////////////
 // OPERATORS
 // /////////////////////////////////////////////////////////////////////////
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-@JsonSubTypes(
-    JsonSubTypes.Type(ApplyBinaryComparisonOperator.Equal::class),
-    JsonSubTypes.Type(ApplyBinaryComparisonOperator.Other::class)
-)
-interface ApplyBinaryComparisonOperator {
-
-    fun getJsonName(): String
-
-    @JsonTypeName("equal")
-    object Equal: ApplyBinaryComparisonOperator {
-        override fun getJsonName() = "equal"
-    }
-
-
-    @JsonTypeName("other")
-    data class Other(val name: String) : ApplyBinaryComparisonOperator {
-        override fun getJsonName() = "other"
-    }
+enum class ApplyBinaryComparisonOperator {
+    @JsonProperty("_eq")
+    EQ,
+    @JsonProperty("_gt")
+    GT,
+    @JsonProperty("_lt")
+    LT,
+    @JsonProperty("_gte")
+    GTE,
+    @JsonProperty("_lte")
+    LTE,
+    @JsonProperty("_in")
+    IN,
+    @JsonProperty("_is_null")
+    IS_NULL
 }
 
 enum class ApplyUnaryComparisonOperator {
@@ -190,41 +186,6 @@ enum class ApplyUnaryComparisonOperator {
 enum class ApplyBinaryArrayComparisonOperator {
     @JsonProperty("in")
     IN
-}
-
-@JsonTypeName("greater_than")
-object GreaterThan : ApplyBinaryComparisonOperator {
-    override fun getJsonName() = "greater_than"
-}
-
-@JsonTypeName("greater_than_or_equal")
-object GreaterThanOrEqual : ApplyBinaryComparisonOperator {
-    override fun getJsonName() = "greater_than_or_equal"
-}
-
-@JsonTypeName("less_than")
-object LessThan : ApplyBinaryComparisonOperator {
-    override fun getJsonName() = "less_than"
-}
-
-@JsonTypeName("less_than_or_equal")
-object LessThanOrEqual : ApplyBinaryComparisonOperator {
-    override fun getJsonName() = "less_than_or_equal"
-}
-
-@JsonTypeName("contains")
-object Contains : ApplyBinaryComparisonOperator {
-    override fun getJsonName() = "contains"
-}
-
-@JsonTypeName("like")
-object Like : ApplyBinaryComparisonOperator {
-    override fun getJsonName() = "like"
-}
-
-@JsonTypeName("rlike")
-object Rlike : ApplyBinaryComparisonOperator {
-    override fun getJsonName() = "rlike"
 }
 
 // /////////////////////////////////////////////////////////////////////////

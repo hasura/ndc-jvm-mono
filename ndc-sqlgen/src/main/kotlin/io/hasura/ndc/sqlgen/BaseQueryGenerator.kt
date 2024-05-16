@@ -142,7 +142,7 @@ abstract class BaseQueryGenerator : BaseGenerator {
     protected fun addJoinsRequiredForPredicate(
         request: QueryRequest,
         select: SelectJoinStep<*>,
-        expression: Expression? = request.query.where,
+        expression: Expression? = request.query.predicate,
         seenRelations: MutableSet<String> = mutableSetOf()
     ) {
         fun addForColumn(column: ComparisonColumn) {
@@ -402,7 +402,7 @@ abstract class BaseQueryGenerator : BaseGenerator {
             if (collection == request.root_collection) {
                 arguments.map { argumentToCondition(request, it) }
             } else { listOf(DSL.noCondition()) } +
-            listOf(request.query.where?.let { where ->
+            listOf(request.query.predicate?.let { where ->
                 expressionToCondition(
                     e = where,
                     request

@@ -53,7 +53,7 @@ sealed interface BaseGenerator {
             is Argument.Column -> ComparisonValue.ColumnComp(ComparisonColumn.RootCollectionColumn(arg.name))
         }
         val e = Expression.ApplyBinaryComparison(
-            ApplyBinaryComparisonOperator.Equal,
+            ApplyBinaryComparisonOperator.EQ,
             ComparisonColumn.Column(argument.key, emptyList()),
             compVal
         )

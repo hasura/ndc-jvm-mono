@@ -16,18 +16,13 @@ object JsonQueryGenerator : BaseQueryGenerator() {
         value: Field<Any>
     ): Condition {
         return when (operator) {
-            is ApplyBinaryComparisonOperator.Equal -> col.eq(value)
-            is ApplyBinaryComparisonOperator.Other -> when (operator.name) {
-                LessThan.getJsonName() -> col.lt(value)
-                LessThanOrEqual.getJsonName() -> col.le(value)
-                GreaterThan.getJsonName() -> col.gt(value)
-                GreaterThanOrEqual.getJsonName() -> col.ge(value)
-                Contains.getJsonName() -> col.contains(value)
-                Like.getJsonName() -> col.like(value as Field<String>)
-                else -> throw Exception("Invalid comparison operator")
-            }
-
-            else -> throw Exception("Invalid comparison operator")
+            ApplyBinaryComparisonOperator.EQ -> col.eq(value)
+            ApplyBinaryComparisonOperator.GT -> col.gt(value)
+            ApplyBinaryComparisonOperator.GTE -> col.ge(value)
+            ApplyBinaryComparisonOperator.LT -> col.lt(value)
+            ApplyBinaryComparisonOperator.LTE -> col.le(value)
+            ApplyBinaryComparisonOperator.IN -> col.`in`(value)
+            ApplyBinaryComparisonOperator.IS_NULL -> col.isNull
         }
     }
 
@@ -91,7 +86,17 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                             }
                                         }
                                     ).returning(SQLDataType.CLOB)
-                                ).returning(SQLDataType.CLOB)
+                                ).apply {
+                                    if (request.query.order_by != null) {
+                                        orderBy(
+                                            translateIROrderByField(
+                                                orderBy = request.query.order_by,
+                                                currentCollection = request.collection,
+                                                relationships = request.collection_relationships
+                                            )
+                                        )
+                                    }
+                                }.returning(SQLDataType.CLOB)
                             )
                         )
                     }
@@ -121,7 +126,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
             DSL.selectFrom(
                 DSL.table(DSL.name(request.collection))
             ).apply {
-                if (request.query.where != null) {
+                if (request.query.predicate != null) {
                     where(getWhereConditions(request))
                 }
                 if (parentRelationship != null) {
