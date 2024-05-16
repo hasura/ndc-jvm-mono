@@ -1,6 +1,9 @@
 package io.hasura.oracle
 
+import io.hasura.ndc.app.services.ConnectorConfigurationLoader
+import io.hasura.ndc.common.NDCScalar
 import io.hasura.ndc.ir.*
+import io.hasura.ndc.ir.Field.ColumnField
 import io.hasura.ndc.ir.Field as IRField
 import io.hasura.ndc.sqlgen.BaseQueryGenerator
 import org.jooq.*
@@ -52,10 +55,14 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                     DSL.jsonObject(
                                         (request.query.fields ?: emptyMap()).map { (alias, field) ->
                                             when (field) {
-                                                is IRField.ColumnField -> {
+                                                is ColumnField -> {
+                                                    DSL.field("key $alias value ${field.column}")
                                                     DSL.jsonEntry(
                                                         alias,
-                                                        DSL.field(DSL.name(field.column))
+                                                        DSL.field(
+                                                            DSL.name(field.column),
+                                                            columnTypeTojOOQType(request.collection, field)
+                                                        )
                                                     )
                                                 }
 
@@ -147,6 +154,29 @@ object JsonQueryGenerator : BaseQueryGenerator() {
         ).groupBy(
             DSL.nullCondition()
         )
+    }
+
+    private fun columnTypeTojOOQType(collection: String, field: ColumnField): org.jooq.DataType<out Any> {
+        val connectorConfig = ConnectorConfigurationLoader.config
+
+        val table = connectorConfig.tables.find { it.tableName == collection }
+            ?: error("Table $collection not found in connector configuration")
+
+        val column = table.columns.find { it.name == field.column }
+            ?: error("Column ${field.column} not found in table $collection")
+
+        val scalarType = OracleJDBCSchemaGenerator.mapScalarType(column.type, column.numeric_scale)
+        return when (scalarType) {
+            NDCScalar.BOOLEAN -> SQLDataType.BOOLEAN
+            NDCScalar.INT -> SQLDataType.INTEGER
+            NDCScalar.FLOAT -> SQLDataType.FLOAT
+            NDCScalar.STRING -> SQLDataType.CLOB
+            NDCScalar.DATE -> SQLDataType.DATE
+            NDCScalar.DATETIME -> SQLDataType.TIMESTAMP
+            NDCScalar.DATETIME_WITH_TIMEZONE -> SQLDataType.TIMESTAMP
+            NDCScalar.TIME -> SQLDataType.TIME
+            NDCScalar.TIME_WITH_TIMEZONE -> SQLDataType.TIME
+        }
     }
 
     private fun getAggregatejOOQFunction(aggregate: Aggregate) = when (aggregate) {
