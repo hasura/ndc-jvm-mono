@@ -135,21 +135,29 @@ object JsonQueryGenerator : BaseQueryGenerator() {
             ).from(
                 run<Table<Record>> {
                     val table = DSL.table(DSL.name(request.collection))
-                    val requiredJoinTables = collectRequiredJoinTablesForWhereClause(
-                        where = request.query.predicate!!,
-                        collectionRelationships = request.collection_relationships
-                    )
-
-                    requiredJoinTables.foldIndexed(table) { index, acc, relationship ->
-                        val parentTable = if (index == 0) request.collection else requiredJoinTables.elementAt(index - 1).target_collection
-                        val joinTable = DSL.table(DSL.name(relationship.target_collection))
-
-                        acc.join(joinTable).on(
-                            mkJoinWhereClause(
-                                sourceTable = parentTable,
-                                parentRelationship = relationship
-                            )
+                    if (request.query.predicate == null) {
+                        table
+                    } else {
+                        val requiredJoinTables = collectRequiredJoinTablesForWhereClause(
+                            where = request.query.predicate!!,
+                            collectionRelationships = request.collection_relationships
                         )
+
+                        requiredJoinTables.foldIndexed(table) { index, acc, relationship ->
+                            val parentTable = if (index == 0) {
+                                request.collection
+                            } else {
+                                requiredJoinTables.elementAt(index - 1).target_collection
+                            }
+
+                            val joinTable = DSL.table(DSL.name(relationship.target_collection))
+                            acc.join(joinTable).on(
+                                mkJoinWhereClause(
+                                    sourceTable = parentTable,
+                                    parentRelationship = relationship
+                                )
+                            )
+                        }
                     }
                 }
             ).apply {
