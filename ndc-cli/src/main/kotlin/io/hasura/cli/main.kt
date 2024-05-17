@@ -63,8 +63,7 @@ class CLI {
             schemas = schemas?.split(",") ?: emptyList()
         )
 
-        val file = outfile ?: "configuration.json"
-        mapper.writerWithDefaultPrettyPrinter().writeValue(File(file),config)
+        mapper.writerWithDefaultPrettyPrinter().writeValue(File(outfile),config)
     }
 
     companion object {
