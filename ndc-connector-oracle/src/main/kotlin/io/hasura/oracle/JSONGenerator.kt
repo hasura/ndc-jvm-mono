@@ -56,7 +56,6 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                         (request.query.fields ?: emptyMap()).map { (alias, field) ->
                                             when (field) {
                                                 is ColumnField -> {
-                                                    DSL.field("key $alias value ${field.column}")
                                                     DSL.jsonEntry(
                                                         alias,
                                                         DSL.field(
@@ -130,8 +129,29 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                 }
             }
         ).from(
-            DSL.selectFrom(
+            DSL.select(
                 DSL.table(DSL.name(request.collection))
+                    .asterisk()
+            ).from(
+                run<Table<Record>> {
+                    val table = DSL.table(DSL.name(request.collection))
+                    val requiredJoinTables = collectRequiredJoinTablesForWhereClause(
+                        where = request.query.predicate!!,
+                        collectionRelationships = request.collection_relationships
+                    )
+
+                    requiredJoinTables.foldIndexed(table) { index, acc, relationship ->
+                        val parentTable = if (index == 0) request.collection else requiredJoinTables.elementAt(index - 1).target_collection
+                        val joinTable = DSL.table(DSL.name(relationship.target_collection))
+
+                        acc.join(joinTable).on(
+                            mkJoinWhereClause(
+                                sourceTable = parentTable,
+                                parentRelationship = relationship
+                            )
+                        )
+                    }
+                }
             ).apply {
                 if (request.query.predicate != null) {
                     where(getWhereConditions(request))
@@ -150,10 +170,45 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                 if (request.query.offset != null) {
                     offset(request.query.offset)
                 }
-            }.asTable(DSL.name(request.collection))
+            }.asTable(
+                DSL.name(request.collection)
+            )
         ).groupBy(
             DSL.nullCondition()
         )
+    }
+
+    fun collectRequiredJoinTablesForWhereClause(
+        where: Expression,
+        collectionRelationships: Map<String, Relationship>,
+        previousTableName: String? = null
+    ): Set<Relationship> {
+        return when (where) {
+            is ExpressionOnColumn -> when (val column = where.column) {
+                is ComparisonColumn.Column -> {
+                    column.path.fold(emptySet()) { acc, path ->
+                        val relationship = collectionRelationships[path.relationship]
+                            ?: error("Relationship ${path.relationship} not found")
+
+                        acc + relationship
+                    }
+                }
+
+                else -> emptySet()
+            }
+
+            is Expression.And -> where.expressions.fold(emptySet()) { acc, expr ->
+                acc + collectRequiredJoinTablesForWhereClause(expr, collectionRelationships)
+            }
+
+            is Expression.Or -> where.expressions.fold(emptySet()) { acc, expr ->
+                acc + collectRequiredJoinTablesForWhereClause(expr, collectionRelationships)
+            }
+
+            is Expression.Not -> collectRequiredJoinTablesForWhereClause(where.expression, collectionRelationships)
+
+            else -> emptySet()
+        }
     }
 
     private fun columnTypeTojOOQType(collection: String, field: ColumnField): org.jooq.DataType<out Any> {

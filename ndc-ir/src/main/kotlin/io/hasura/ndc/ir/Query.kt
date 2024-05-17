@@ -192,6 +192,10 @@ enum class ApplyBinaryArrayComparisonOperator {
 // EXPRESSIONS
 // /////////////////////////////////////////////////////////////////////////
 
+interface ExpressionOnColumn {
+    val column: ComparisonColumn
+}
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed interface Expression {
 
@@ -207,16 +211,16 @@ sealed interface Expression {
     @JsonTypeName("binary_comparison_operator")
     data class ApplyBinaryComparison(
         val operator: ApplyBinaryComparisonOperator,
-        val column: ComparisonColumn,
+        override val column: ComparisonColumn,
         val value: ComparisonValue
-    ) : Expression
+    ) : Expression, ExpressionOnColumn
 
     @JsonTypeName("binary_array_comparison_operator")
     data class ApplyBinaryArrayComparison(
         val operator: ApplyBinaryArrayComparisonOperator,
-        val column: ComparisonColumn,
+        override val column: ComparisonColumn,
         val values: List<ComparisonValue>
-    ) : Expression
+    ) : Expression, ExpressionOnColumn
 
     @JsonTypeName("unary_op")
     data class ApplyUnaryComparison(

@@ -31,15 +31,20 @@ sealed interface BaseGenerator {
         col: ComparisonColumn,
         request: QueryRequest
     ): String {
+        // Make sure to handle the case when the path references a related table
         return when (col) {
-            // this is wrong, consider passing in root collection?
             is ComparisonColumn.RootCollectionColumn -> request.root_collection
             is ComparisonColumn.Column -> {
                 if (col.path.isNotEmpty()) {
-                    // TODO: is there a chance that there would be more than one rel in this context?
-                    val relName = col.path.map { it.relationship }.first()
-                    request.collection_relationships[relName]!!.target_collection
-                } else request.collection
+                    // Traverse the relationship path to get to the current collection name
+                    val targetCollection = col.path.fold("") { acc, pathElement ->
+                        val rel = request.collection_relationships[pathElement.relationship] ?: throw Exception("Relationship not found")
+                        rel.target_collection
+                    }
+                    targetCollection
+                } else {
+                    request.collection
+                }
             }
         }
     }
@@ -94,7 +99,6 @@ sealed interface BaseGenerator {
 
             // Test the specified column against a single value using a particular binary comparison operator
             is Expression.ApplyBinaryComparison -> {
-
                 val column = DSL.field(
                     DSL.name(
                         listOf(
