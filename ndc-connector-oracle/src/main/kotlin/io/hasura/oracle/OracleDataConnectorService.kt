@@ -16,6 +16,7 @@ import jakarta.annotation.Priority
 import jakarta.enterprise.inject.Alternative
 import org.jboss.resteasy.reactive.server.ServerRequestFilter
 import org.jooq.SQLDialect
+import org.jooq.conf.RenderQuotedNames
 import org.jooq.conf.Settings
 import org.jooq.impl.DefaultDSLContext
 
@@ -79,7 +80,7 @@ class OracleDataConnectorService @Inject constructor(
     }
 
     override val jooqDialect = SQLDialect.ORACLE21C
-    override val jooqSettings = commonDSLContextSettings
+    override val jooqSettings = commonDSLContextSettings.withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_UNQUOTED)
     override val sqlGenerator = JsonQueryGenerator
     override val mutationTranslator = MutationTranslator
 }
