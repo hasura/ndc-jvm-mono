@@ -36,6 +36,7 @@ object OracleConfigGenerator {
             //language=Oracle
             """
             SELECT
+                tables.OWNER as Owner,
                 tables.TABLE_NAME AS TableName,
                 tables.TABLE_TYPE AS TableType,
                 table_comments.COMMENTS AS Description,
@@ -119,7 +120,7 @@ object OracleConfigGenerator {
                             fk_constraints.TABLE_NAME,
                             fk_constraints.CONSTRAINT_NAME AS FK_CONSTRAINT_NAME,
                             json_object(
-                                'foreign_collection' VALUE fk_pk_constraints.TABLE_NAME,
+                                'foreign_collection' VALUE fk_pk_constraints.OWNER || '.' || fk_pk_constraints.TABLE_NAME,
                                 'column_mapping' VALUE (
                                     json_objectagg (
                                         fk_columns.COLUMN_NAME VALUE fk_pk_columns.COLUMN_NAME
@@ -153,7 +154,7 @@ object OracleConfigGenerator {
 
         val tables = ctx.fetch(sql).map { row ->
             TableSchemaRow(
-                tableName = row.get("TABLENAME", String::class.java),
+                tableName = "${row.get("OWNER", String::class.java)}.${row.get("TABLENAME", String::class.java)}",
                 tableType = when (val tableType = row.get("TABLETYPE", String::class.java)) {
                     "TABLE" -> TableType.TABLE
                     "VIEW" -> TableType.VIEW

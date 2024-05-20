@@ -97,7 +97,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                         orderBy(
                                             translateIROrderByField(
                                                 orderBy = request.query.order_by,
-                                                currentCollection = request.collection,
+                                                currentCollection = getTableName(request.collection),
                                                 relationships = request.collection_relationships
                                             )
                                         )
@@ -179,7 +179,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                     offset(request.query.offset)
                 }
             }.asTable(
-                DSL.name(request.collection)
+                DSL.name(getTableName(request.collection))
             )
         ).groupBy(
             DSL.nullCondition()
@@ -269,10 +269,14 @@ object JsonQueryGenerator : BaseQueryGenerator() {
         parentRelationship: Relationship
     ) = DSL.and(
         parentRelationship.column_mapping.map { (from, to) ->
-            val childField = DSL.field(DSL.name(sourceTable, from))
+            val childField = DSL.field(DSL.name(getTableName(sourceTable), from))
             val parentField = DSL.field(DSL.name(parentRelationship.target_collection, to))
             childField.eq(parentField)
         }
     )
+
+    private fun getTableName(collection: String): String {
+       return collection.split('.').last()
+    }
 
 }
