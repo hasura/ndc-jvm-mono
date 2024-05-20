@@ -276,8 +276,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
     )
 
     private fun getTableName(collection: String): String {
-       val parts = collection.split('.')
-        return if (parts.size < 2)  collection else parts[1]
+       return collection.split('.').last()
     }
 
 }
