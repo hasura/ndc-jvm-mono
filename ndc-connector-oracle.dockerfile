@@ -17,5 +17,5 @@ RUN ./gradlew build --no-daemon --console=plain -x test
 ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 ENV JAVA_APP_JAR="/app/ndc-connector-oracle/build/quarkus-app/quarkus-run.jar"
 
-EXPOSE 8100 5005
+EXPOSE 8080 5005
 ENTRYPOINT [ "/opt/jboss/container/java/run/run-java.sh" ]

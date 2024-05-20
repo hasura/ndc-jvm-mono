@@ -10,7 +10,7 @@ object ConnectorConfigurationLoader {
 
     private val DEFAULT_CONFIG_DIRECTORY = "/etc/connector"
     private val ENV_SUPPLIED_CONFIG_DIRECTORY = System.getenv("HASURA_CONFIGURATION_DIRECTORY")
-    private val CONFIG_FILE_NAME = "connector.config.json"
+    private val CONFIG_FILE_NAME = "configuration.json"
 
     val config: ConnectorConfiguration
 

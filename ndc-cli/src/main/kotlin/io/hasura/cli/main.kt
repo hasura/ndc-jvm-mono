@@ -3,6 +3,7 @@ package io.hasura.cli
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import picocli.CommandLine
 import picocli.CommandLine.*
+import java.io.File
 import kotlin.system.exitProcess
 
 enum class DatabaseType {
@@ -23,7 +24,9 @@ class CLI {
     // update jdbc:oracle:thin:@//localhost:1521/XE?user=chinook&password=Password123 --database ORACLE
     @Command(
         name = "update",
-        description = ["Introspect the database and emit updated schema information"]
+        description = ["Introspect the database and emit updated schema information"],
+        sortSynopsis = false,
+        sortOptions = false
     )
     fun update(
         @Parameters(
@@ -33,10 +36,16 @@ class CLI {
         )
         jdbcUrl: String,
         @Option(
+            names = ["-o", "--outfile"],
+            defaultValue = "configuration.json",
+            description = ["The name of the output file to write the schema information to, defaults to configuration.json"]
+        )
+        outfile: String,
+        @Option(
             names = ["-d", "--database"],
             description = ["Type of the database to introspect"]
         )
-        database: DatabaseType,
+        database: DatabaseType?,
         @Option(
             names = ["-s", "--schemas"],
             description = ["Comma-separated list of schemas to introspect"]
@@ -44,7 +53,7 @@ class CLI {
         schemas: String?,
     ) {
 
-        val configGenerator = when (database) {
+        val configGenerator = when (database ?: DatabaseType.ORACLE) {
             DatabaseType.ORACLE -> OracleConfigGenerator
             DatabaseType.MYSQL -> throw NotImplementedError("MySQL is not supported yet")
         }
@@ -54,7 +63,7 @@ class CLI {
             schemas = schemas?.split(",") ?: emptyList()
         )
 
-        mapper.writerWithDefaultPrettyPrinter().writeValue(System.out, config)
+        mapper.writerWithDefaultPrettyPrinter().writeValue(File(outfile),config)
     }
 
     companion object {
