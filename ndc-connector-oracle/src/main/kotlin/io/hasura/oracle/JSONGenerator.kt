@@ -172,6 +172,15 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                         )
                     )
                 }
+                if (request.query.order_by != null) {
+                    orderBy(
+                        translateIROrderByField(
+                            orderBy = request.query.order_by,
+                            currentCollection = getTableName(request.collection),
+                            relationships = request.collection_relationships
+                        )
+                    )
+                }
                 if (request.query.limit != null) {
                     limit(request.query.limit)
                 }
