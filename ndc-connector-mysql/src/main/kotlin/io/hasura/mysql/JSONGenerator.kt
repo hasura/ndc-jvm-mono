@@ -6,10 +6,12 @@ import io.hasura.ndc.ir.*
 import io.hasura.ndc.ir.Field.ColumnField
 import io.hasura.ndc.ir.Field as IRField
 import io.hasura.ndc.sqlgen.BaseQueryGenerator
+import org.gradle.internal.impldep.org.junit.platform.commons.util.FunctionUtils.where
 import org.jooq.*
 import org.jooq.Field
 import org.jooq.impl.CustomField
 import org.jooq.impl.DSL
+import org.jooq.impl.DSL.orderBy
 import org.jooq.impl.SQLDataType
 
 
@@ -89,7 +91,12 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                         )
                     ).from(
                         DSL.select(
-                            DSL.table(DSL.name(request.collection)).asterisk()
+                            (request.query.fields ?: emptyMap())
+                                .filter { (_, field) -> field is ColumnField }
+                                .map { (alias, field) ->
+                                    field as ColumnField
+                                    DSL.field(DSL.name(request.collection, field.column)).`as`(alias)
+                                }
                         ).from(
                             run<Table<Record>> {
                                 val table = DSL.table(DSL.name(request.collection))
@@ -130,6 +137,13 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                     )
                                 )
                             }
+                            if (request.query.fields != null) {
+                                groupBy(
+                                    request.query.fields!!.values.filterIsInstance<ColumnField>().map {
+                                        DSL.field(DSL.name(request.collection, it.column))
+                                    }
+                                )
+                            }
                             if (request.query.order_by != null) {
                                 orderBy(
                                     translateIROrderByField(
@@ -139,12 +153,11 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                     )
                                 )
                             }
-                            if (request.query.fields != null) {
-                                groupBy(
-                                    request.query.fields!!.values.filterIsInstance<ColumnField>().map {
-                                        DSL.field(DSL.name(it.column))
-                                    }
-                                )
+                            if (request.query.limit != null) {
+                                limit(request.query.limit)
+                            }
+                            if (request.query.offset != null) {
+                                offset(request.query.offset)
                             }
                         }.asTable(
                             DSL.name(getTableName(request.collection))
