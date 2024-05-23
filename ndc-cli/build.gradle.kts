@@ -20,7 +20,9 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
 
     implementation("info.picocli:picocli:4.7.5")
+
     implementation("com.oracle.database.jdbc:ojdbc8:19.18.0.0")
+    implementation("com.mysql:mysql-connector-j:8.4.0")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {

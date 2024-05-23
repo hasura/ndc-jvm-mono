@@ -7,12 +7,13 @@ import io.hasura.ndc.common.TableSchemaRow
 import io.hasura.ndc.common.TableType
 import org.jooq.impl.DSL
 
-object OracleConfigGenerator {
+
+object OracleConfigGenerator : IConfigGenerator {
     private val mapper = jacksonObjectMapper()
 
-    fun getConfig(
+    override fun getConfig(
         jdbcUrl: String,
-        schemas: List<String> = emptyList()
+        schemas: List<String>
     ): ConnectorConfiguration {
         val ctx = DSL.using(jdbcUrl)
 
@@ -174,3 +175,4 @@ object OracleConfigGenerator {
         )
     }
 }
+

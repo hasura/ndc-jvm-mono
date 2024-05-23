@@ -55,7 +55,7 @@ class CLI {
 
         val configGenerator = when (database ?: DatabaseType.ORACLE) {
             DatabaseType.ORACLE -> OracleConfigGenerator
-            DatabaseType.MYSQL -> throw NotImplementedError("MySQL is not supported yet")
+            DatabaseType.MYSQL -> MySQLConfigGenerator
         }
 
         val config = configGenerator.getConfig(
