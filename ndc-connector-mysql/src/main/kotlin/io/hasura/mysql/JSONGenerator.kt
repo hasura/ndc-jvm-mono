@@ -6,12 +6,10 @@ import io.hasura.ndc.ir.*
 import io.hasura.ndc.ir.Field.ColumnField
 import io.hasura.ndc.ir.Field as IRField
 import io.hasura.ndc.sqlgen.BaseQueryGenerator
-import org.gradle.internal.impldep.org.junit.platform.commons.util.FunctionUtils.where
 import org.jooq.*
 import org.jooq.Field
 import org.jooq.impl.CustomField
 import org.jooq.impl.DSL
-import org.jooq.impl.DSL.orderBy
 import org.jooq.impl.SQLDataType
 
 
@@ -96,6 +94,12 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                 .map { (alias, field) ->
                                     field as ColumnField
                                     DSL.field(DSL.name(request.collection, field.column)).`as`(alias)
+                                } +
+                                collectColumnsReferencedByRelationships(
+                                    fields = request.query.fields ?: emptyMap(),
+                                    collectionRelationships = request.collection_relationships
+                                ).map {
+                                    DSL.field(DSL.name(request.collection, it))
                                 }
                         ).from(
                             run<Table<Record>> {
@@ -138,11 +142,16 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                 )
                             }
                             if (request.query.fields != null) {
-                                groupBy(
-                                    request.query.fields!!.values.filterIsInstance<ColumnField>().map {
-                                        DSL.field(DSL.name(request.collection, it.column))
-                                    }
-                                )
+                                val selectedColumns = request.query.fields!!.values.filterIsInstance<ColumnField>().map {
+                                    DSL.field(DSL.name(request.collection, it.column))
+                                }
+                                val relFieldColumns = collectColumnsReferencedByRelationships(
+                                    fields = request.query.fields ?: emptyMap(),
+                                    collectionRelationships = request.collection_relationships
+                                ).map {
+                                    DSL.field(DSL.name(request.collection, it))
+                                }
+                                groupBy(selectedColumns + relFieldColumns)
                             }
                             if (request.query.order_by != null) {
                                 orderBy(
@@ -203,6 +212,30 @@ object JsonQueryGenerator : BaseQueryGenerator() {
 
             else -> emptySet()
         }
+    }
+
+    // Returns all the columns in a parent table which are referenced
+    // by fields of type "relationship" and needed to join the two tables
+    //
+    // If a join column is already present in the requested fields, we skip it to avoid duplication
+    fun collectColumnsReferencedByRelationships(
+        fields: Map<String, IRField>,
+        collectionRelationships: Map<String, Relationship>
+    ): Set<String> {
+        val columnFields = fields.values
+            .filterIsInstance<ColumnField>()
+            .map { it.column }.toSet()
+
+        return fields.values
+            .filterIsInstance<IRField.RelationshipField>()
+            .mapNotNull { field ->
+                collectionRelationships[field.relationship]
+                    ?.column_mapping
+                    ?.values
+                    ?.filterNot(columnFields::contains)
+            }
+            .flatten()
+            .toSet()
     }
 
     private fun columnTypeTojOOQType(collection: String, field: ColumnField): org.jooq.DataType<out Any> {
