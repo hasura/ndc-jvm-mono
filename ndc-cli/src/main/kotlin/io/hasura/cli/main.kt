@@ -8,7 +8,8 @@ import kotlin.system.exitProcess
 
 enum class DatabaseType {
     ORACLE,
-    MYSQL
+    MYSQL,
+    SNOWFLAKE
 }
 
 
@@ -56,6 +57,7 @@ class CLI {
         val configGenerator = when (database ?: DatabaseType.ORACLE) {
             DatabaseType.ORACLE -> OracleConfigGenerator
             DatabaseType.MYSQL -> MySQLConfigGenerator
+            DatabaseType.SNOWFLAKE -> SnowflakeConfigGenerator
         }
 
         val config = configGenerator.getConfig(
