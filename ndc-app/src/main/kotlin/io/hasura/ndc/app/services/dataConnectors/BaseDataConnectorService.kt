@@ -8,7 +8,6 @@ import io.hasura.ndc.app.interfaces.IDataSourceProvider
 import io.hasura.ndc.app.interfaces.ISchemaGenerator
 import io.hasura.ndc.common.ConnectorConfiguration
 import io.hasura.ndc.app.models.ExplainResponse
-import io.hasura.ndc.app.services.AgroalDataSourceService
 import io.hasura.ndc.app.services.ConnectorConfigurationLoader
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -16,6 +15,7 @@ import jakarta.enterprise.inject.Produces
 import jakarta.inject.Inject
 import io.hasura.ndc.ir.*
 import io.hasura.ndc.sqlgen.BaseMutationTranslator
+import io.hasura.services.dataSourceService.AgroalDataSourceService
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.inject.Default
 import org.jooq.DSLContext

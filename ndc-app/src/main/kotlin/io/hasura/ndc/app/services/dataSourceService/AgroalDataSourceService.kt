@@ -1,12 +1,13 @@
-package io.hasura.ndc.app.services
+package io.hasura.services.dataSourceService
 
 import io.agroal.api.AgroalDataSource
 import io.agroal.api.AgroalPoolInterceptor
 import io.agroal.api.configuration.AgroalConnectionPoolConfiguration
 import io.agroal.api.configuration.supplier.AgroalDataSourceConfigurationSupplier
-import io.agroal.api.security.NamePrincipal
-import io.agroal.api.security.SimplePassword
 import io.hasura.ndc.common.ConnectorConfiguration
+import io.hasura.services.dataSourceService.authHandlers.DefaultAuthHandler
+import io.hasura.services.dataSourceService.authHandlers.IAMHandler
+import io.hasura.services.dataSourceService.authHandlers.SecretsManagerHandler
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import io.opentelemetry.instrumentation.jdbc.datasource.OpenTelemetryDataSource
 import io.smallrye.config.ConfigMapping
@@ -168,6 +169,7 @@ class AgroalDataSourceService {
         }
     }
 
+
     private object PoolInterceptor : AgroalPoolInterceptor {
         private val logger = Logger.getLogger(PoolInterceptor::class.java.name)
 
@@ -201,38 +203,19 @@ class AgroalDataSourceService {
                 .maxLifetime(config.connectionPoolConfiguration().maxLifetime())
                 .multipleAcquisition(config.connectionPoolConfiguration().multipleAcquisition())
                 .enhancedLeakReport(config.connectionPoolConfiguration().enhancedLeakReport())
+                .validateOnBorrow(true)
+                .connectionValidator { connection ->
+                    logger.debug("Validating connection: ${connection.metaData.driverName}")
+                    val TIMEOUT_SECONDS = 5
+                    connection.isValid(TIMEOUT_SECONDS)
+                }
                 .connectionFactoryConfiguration { connFactory ->
                     connFactory.jdbcUrl(jdbcUrl)
                     connFactory.loginTimeout(config.connectionFactoryConfiguration().loginTimeout())
-                    // To explain what is going on here:
-                    //
-                    // Agroal won't let "user" and "password" be passed in as properties, it requires that you
-                    // set credentials using special "Principal" and "Credential" methods.
-                    //
-                    // So we need to filter the properties to remove "user" and "password" and then set them
-                    // using the special methods.
-                    //
-                    // See: Note at the bottom of this page, under "jdbcProperty(String, String)"
-                    //      https://agroal.github.io/docs.html
-                    //
-                    //      "NOTE: username and password properties are not allowed, these have to be set using the principal / credentials mechanism.
-                    fun setProps(props: Map<String, Any>) {
-                        props.forEach {
-                            val valueAsString = when (it.value) {
-                                is String -> it.value as String
-                                is Number -> it.value.toString()
-                                is Boolean -> it.value.toString()
-                                else -> throw IllegalArgumentException("Unsupported type for property ${it.key}: ${it.value::class}")
-                            }
-                            connFactory.jdbcProperty(it.key, valueAsString)
-                        }
-                    }
-                    if (properties.containsKey("user") || properties.containsKey("password")) {
-                        connFactory.principal(NamePrincipal(properties["user"]!! as String))
-                        connFactory.credential(SimplePassword(properties["password"]!! as String))
-                        setProps(properties.filterKeys { it != "user" && it != "password" && it != "include_schemas" })
-                    } else {
-                        setProps(properties.filterKeys { it != "include_schemas" })
+                    when {
+                        jdbcUrl.contains("jdbc-secretsmanager") -> SecretsManagerHandler(jdbcUrl, properties, connFactory).configFactory()
+                        jdbcUrl.contains("aws-wrapper") -> IAMHandler(jdbcUrl, properties, connFactory).configFactory()
+                        else -> DefaultAuthHandler(jdbcUrl, properties, connFactory).configFactory()
                     }
                     connFactory
                 }

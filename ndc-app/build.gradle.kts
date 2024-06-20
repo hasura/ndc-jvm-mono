@@ -39,6 +39,12 @@ dependencies {
     api("io.opentelemetry:opentelemetry-extension-trace-propagators")
     api("io.opentelemetry.instrumentation:opentelemetry-jdbc")
 
+    // AWS alternate auth mechanisms
+    implementation("software.amazon.awssdk:sts:2.23.15")
+    implementation("com.amazonaws.secretsmanager:aws-secretsmanager-jdbc:2.0.0")
+    implementation("software.amazon.jdbc:aws-advanced-jdbc-wrapper:2.3.2")
+    implementation("software.amazon.awssdk:rds:2.23.8")
+
     // Needed or else error:
     // "Build step io.quarkus.narayana.jta.deployment.NarayanaJtaProcessor#build threw an exception: javax.xml.stream.FactoryConfigurationError: Provider com.ctc.wstx.stax.WstxInputFactory not found"
     implementation("com.fasterxml.woodstox:woodstox-core:6.6.2")
