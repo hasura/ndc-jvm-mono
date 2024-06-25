@@ -1,4 +1,4 @@
-# Hasura NDC V3 JVM Repository
+e# Hasura NDC V3 JVM Repository
 
 This repository contains the source code for the Hasura NDC V3 Connectors deployed on the JVM.
 
@@ -13,10 +13,10 @@ It consists of the following components:
 ## Prerequisites
 
 - Docker
-- Java 17
+- Java 21
     - The easiest way to install Java is via [SDKMAN](https://sdkman.io/)
         - `curl -s "https://get.sdkman.io" | bash`
-        - `sdk install java 17`
+        - `sdk install java 21`
 - A `.env` file containing jOOQ Enterprise license keys
    - ```env
      JOOQ_PRO_EMAIL=
@@ -87,11 +87,11 @@ docker compose build ndc-connector-oracle
 To run the Docker images, run the following commands:
 
 ```bash
-config_file_location=$(pwd)/ndc-connector-oracle/connector.config.json
+config_file_location=$(pwd)/ndc-connector-oracle/configuration.json
 docker run \
   --rm \
   -p 8100:8100 \
-  -v $config_file_location:/etc/connector/connector.config.json \
+  -v $config_file_location:/etc/connector/configuration.json \
   ndc-connector-oracle:latest
 ```
 

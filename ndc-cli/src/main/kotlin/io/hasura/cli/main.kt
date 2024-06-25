@@ -49,9 +49,12 @@ class CLI {
         database: DatabaseType?,
         @Option(
             names = ["-s", "--schemas"],
+            arity = "0..*",
+            split = ",",
+            defaultValue = "",
             description = ["Comma-separated list of schemas to introspect"]
         )
-        schemas: String?,
+        schemas: List<String> = emptyList()
     ) {
 
         val configGenerator = when (database ?: DatabaseType.ORACLE) {
@@ -62,7 +65,7 @@ class CLI {
 
         val config = configGenerator.getConfig(
             jdbcUrl = jdbcUrl,
-            schemas = schemas?.split(",") ?: emptyList()
+            schemas = schemas
         )
 
         mapper.writerWithDefaultPrettyPrinter().writeValue(File(outfile),config)
