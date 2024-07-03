@@ -67,11 +67,11 @@ documentation [here](https://hasura.io/docs/3.0/getting-started/connect-to-data/
 Add your credentials to `my_subgraph/connector/my_sql/.env.local`
 
 ```env title="my_subgraph/connector/my_snowflake/.env.local"
-HASURA_JDBC_URL="jdbc:snowflake://ak1234.us-east-2.aws.snowflakecomputing.com/?user=<user>&password=<password>&db=CHINOOK&schema=PUBLIC&warehouse=COMPUTE_WH&role=ACCOUNTADMIN"
-HASURA_JDBC_SCHEMAS=PUBLIC
+JDBC_URL="jdbc:snowflake://ak1234.us-east-2.aws.snowflakecomputing.com/?user=<user>&password=<password>&db=CHINOOK&schema=PUBLIC&warehouse=COMPUTE_WH&role=ACCOUNTADMIN"
+JDBC_SCHEMAS=PUBLIC
 ```
 
-### 3. Intropsect your indices
+### 3. Introspect your indices
 
 ```bash title="From the root of your project run:"
 ddn connector introspect --connector my_subgraph/connector/my_snowflake/connector.yaml

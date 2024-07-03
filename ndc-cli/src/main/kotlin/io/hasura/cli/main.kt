@@ -4,6 +4,8 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import picocli.CommandLine
 import picocli.CommandLine.*
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.attribute.PosixFilePermissions
 import kotlin.system.exitProcess
 
 enum class DatabaseType {
@@ -46,7 +48,7 @@ class CLI {
             names = ["-d", "--database"],
             description = ["Type of the database to introspect"]
         )
-        database: DatabaseType?,
+        database: DatabaseType,
         @Option(
             names = ["-s", "--schemas"],
             arity = "0..*",
@@ -57,7 +59,7 @@ class CLI {
         schemas: List<String> = emptyList()
     ) {
 
-        val configGenerator = when (database ?: DatabaseType.ORACLE) {
+        val configGenerator = when (database) {
             DatabaseType.ORACLE -> OracleConfigGenerator
             DatabaseType.MYSQL -> MySQLConfigGenerator
             DatabaseType.SNOWFLAKE -> SnowflakeConfigGenerator
@@ -68,7 +70,22 @@ class CLI {
             schemas = schemas
         )
 
-        mapper.writerWithDefaultPrettyPrinter().writeValue(File(outfile),config)
+        val file = File(outfile)
+        try {
+            mapper.writerWithDefaultPrettyPrinter().writeValue(file, config)
+        } catch (e: Exception) {
+            println("Error writing configuration to file: ${e.message}")
+
+            val parentDir = file.parentFile
+            val permissions =  Files.getPosixFilePermissions(parentDir.toPath())
+            val posixPermissions = PosixFilePermissions.toString(permissions)
+
+            println("Parent directory: ${parentDir.absolutePath}")
+            println("Readable: ${parentDir.canRead()}, Writable: ${parentDir.canWrite()}")
+            println("Permissions: $posixPermissions")
+
+            exitProcess(1)
+        }
     }
 
     companion object {

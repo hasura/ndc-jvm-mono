@@ -67,10 +67,10 @@ documentation [here](https://hasura.io/docs/3.0/getting-started/connect-to-data/
 Add your credentials to `my_subgraph/connector/my_sql/.env.local`
 
 ```env title="my_subgraph/connector/my_oracle/.env.local"
-HASURA_JDBC_URL="jdbc:oracle:thin:@//host.docker.internal:1521/XE?user=<user>&password=<password>"
+JDBC_URL="jdbc:oracle:thin:@//host.docker.internal:1521/XE?user=<user>&password=<password>"
 ```
 
-### 3. Intropsect your indices
+### 3. Introspect your indices
 
 ```bash title="From the root of your project run:"
 ddn connector introspect --connector my_subgraph/connector/my_oracle/connector.yaml

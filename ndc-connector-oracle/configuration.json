@@ -1,779 +1,670 @@
 {
-  "jdbcUrl": "jdbc:oracle:thin:@//localhost:1521/XE?user=chinook&password=Password123",
-  "schemas": [],
-  "tables": [
-    {
-      "tableName": "ALBUM",
-      "tableType": "TABLE",
-      "description": null,
-      "columns": [
-        {
-          "name": "ALBUMID",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
+  "jdbcUrl" : "jdbc:oracle:thin:@//host.docker.internal:1521/XE?user=chinook&password=Password123",
+  "jdbcProperties" : { },
+  "schemas" : [ ],
+  "tables" : [ {
+    "tableName" : "CHINOOK.ALBUM",
+    "tableType" : "TABLE",
+    "description" : null,
+    "columns" : [ {
+      "name" : "ALBUMID",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "TITLE",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "ARTISTID",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    } ],
+    "pks" : [ "ALBUMID" ],
+    "fks" : {
+      "FK_ALBUMARTISTID" : {
+        "column_mapping" : {
+          "ARTISTID" : "ARTISTID"
         },
-        {
-          "name": "TITLE",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "ARTISTID",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        }
-      ],
-      "pks": [
-        "ALBUMID"
-      ],
-      "fks": {
-        "FK_ALBUMARTISTID": {
-          "column_mapping": {
-            "ARTISTID": "ARTISTID"
-          },
-          "foreign_collection": "ARTIST"
-        }
-      }
-    },
-    {
-      "tableName": "GENRE",
-      "tableType": "TABLE",
-      "description": null,
-      "columns": [
-        {
-          "name": "GENREID",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "NAME",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        }
-      ],
-      "pks": [
-        "GENREID"
-      ],
-      "fks": null
-    },
-    {
-      "tableName": "TRACK",
-      "tableType": "TABLE",
-      "description": null,
-      "columns": [
-        {
-          "name": "TRACKID",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "NAME",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "ALBUMID",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "MEDIATYPEID",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "GENREID",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "COMPOSER",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "MILLISECONDS",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "BYTES",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "UNITPRICE",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": 2,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        }
-      ],
-      "pks": [
-        "TRACKID"
-      ],
-      "fks": {
-        "FK_TRACKALBUMID": {
-          "column_mapping": {
-            "ALBUMID": "ALBUMID"
-          },
-          "foreign_collection": "ALBUM"
-        },
-        "FK_TRACKMEDIATYPEID": {
-          "column_mapping": {
-            "MEDIATYPEID": "MEDIATYPEID"
-          },
-          "foreign_collection": "MEDIATYPE"
-        },
-        "FK_TRACKGENREID": {
-          "column_mapping": {
-            "GENREID": "GENREID"
-          },
-          "foreign_collection": "GENRE"
-        }
-      }
-    },
-    {
-      "tableName": "ARTIST",
-      "tableType": "TABLE",
-      "description": null,
-      "columns": [
-        {
-          "name": "ARTISTID",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "NAME",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        }
-      ],
-      "pks": [
-        "ARTISTID"
-      ],
-      "fks": null
-    },
-    {
-      "tableName": "INVOICE",
-      "tableType": "TABLE",
-      "description": null,
-      "columns": [
-        {
-          "name": "INVOICEID",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "CUSTOMERID",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "INVOICEDATE",
-          "description": null,
-          "type": "DATE",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "BILLINGADDRESS",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "BILLINGCITY",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "BILLINGSTATE",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "BILLINGCOUNTRY",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "BILLINGPOSTALCODE",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "TOTAL",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": 2,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        }
-      ],
-      "pks": [
-        "INVOICEID"
-      ],
-      "fks": {
-        "FK_INVOICECUSTOMERID": {
-          "column_mapping": {
-            "CUSTOMERID": "CUSTOMERID"
-          },
-          "foreign_collection": "CUSTOMER"
-        }
-      }
-    },
-    {
-      "tableName": "CUSTOMER",
-      "tableType": "TABLE",
-      "description": null,
-      "columns": [
-        {
-          "name": "CUSTOMERID",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "FIRSTNAME",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "LASTNAME",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "COMPANY",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "ADDRESS",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "CITY",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "STATE",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "COUNTRY",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "POSTALCODE",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "PHONE",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "FAX",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "EMAIL",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "SUPPORTREPID",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        }
-      ],
-      "pks": [
-        "CUSTOMERID"
-      ],
-      "fks": {
-        "FK_CUSTOMERSUPPORTREPID": {
-          "column_mapping": {
-            "SUPPORTREPID": "EMPLOYEEID"
-          },
-          "foreign_collection": "EMPLOYEE"
-        }
-      }
-    },
-    {
-      "tableName": "EMPLOYEE",
-      "tableType": "TABLE",
-      "description": null,
-      "columns": [
-        {
-          "name": "EMPLOYEEID",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "LASTNAME",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "FIRSTNAME",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "TITLE",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "REPORTSTO",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "BIRTHDATE",
-          "description": null,
-          "type": "DATE",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "HIREDATE",
-          "description": null,
-          "type": "DATE",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "ADDRESS",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "CITY",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "STATE",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "COUNTRY",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "POSTALCODE",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "PHONE",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "FAX",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "EMAIL",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        }
-      ],
-      "pks": [
-        "EMPLOYEEID"
-      ],
-      "fks": {
-        "FK_EMPLOYEEREPORTSTO": {
-          "column_mapping": {
-            "REPORTSTO": "EMPLOYEEID"
-          },
-          "foreign_collection": "EMPLOYEE"
-        }
-      }
-    },
-    {
-      "tableName": "PLAYLIST",
-      "tableType": "TABLE",
-      "description": null,
-      "columns": [
-        {
-          "name": "PLAYLISTID",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "NAME",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        }
-      ],
-      "pks": [
-        "PLAYLISTID"
-      ],
-      "fks": null
-    },
-    {
-      "tableName": "MEDIATYPE",
-      "tableType": "TABLE",
-      "description": null,
-      "columns": [
-        {
-          "name": "MEDIATYPEID",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "NAME",
-          "description": null,
-          "type": "VARCHAR2",
-          "numeric_scale": null,
-          "nullable": true,
-          "auto_increment": false,
-          "is_primarykey": null
-        }
-      ],
-      "pks": [
-        "MEDIATYPEID"
-      ],
-      "fks": null
-    },
-    {
-      "tableName": "INVOICELINE",
-      "tableType": "TABLE",
-      "description": null,
-      "columns": [
-        {
-          "name": "INVOICELINEID",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "INVOICEID",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "TRACKID",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "UNITPRICE",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": 2,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "QUANTITY",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        }
-      ],
-      "pks": [
-        "INVOICELINEID"
-      ],
-      "fks": {
-        "FK_INVOICELINETRACKID": {
-          "column_mapping": {
-            "TRACKID": "TRACKID"
-          },
-          "foreign_collection": "TRACK"
-        },
-        "FK_INVOICELINEINVOICEID": {
-          "column_mapping": {
-            "INVOICEID": "INVOICEID"
-          },
-          "foreign_collection": "INVOICE"
-        }
-      }
-    },
-    {
-      "tableName": "PLAYLISTTRACK",
-      "tableType": "TABLE",
-      "description": null,
-      "columns": [
-        {
-          "name": "PLAYLISTID",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        },
-        {
-          "name": "TRACKID",
-          "description": null,
-          "type": "NUMBER",
-          "numeric_scale": null,
-          "nullable": false,
-          "auto_increment": false,
-          "is_primarykey": null
-        }
-      ],
-      "pks": [
-        "PLAYLISTID",
-        "TRACKID"
-      ],
-      "fks": {
-        "FK_PLAYLISTTRACKTRACKID": {
-          "column_mapping": {
-            "TRACKID": "TRACKID"
-          },
-          "foreign_collection": "TRACK"
-        },
-        "FK_PLAYLISTTRACKPLAYLISTID": {
-          "column_mapping": {
-            "PLAYLISTID": "PLAYLISTID"
-          },
-          "foreign_collection": "PLAYLIST"
-        }
+        "foreign_collection" : "CHINOOK.ARTIST"
       }
     }
-  ],
-  "functions": [],
-  "nativeQueries": {}
+  }, {
+    "tableName" : "CHINOOK.GENRE",
+    "tableType" : "TABLE",
+    "description" : null,
+    "columns" : [ {
+      "name" : "GENREID",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "NAME",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    } ],
+    "pks" : [ "GENREID" ],
+    "fks" : null
+  }, {
+    "tableName" : "CHINOOK.TRACK",
+    "tableType" : "TABLE",
+    "description" : null,
+    "columns" : [ {
+      "name" : "TRACKID",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "NAME",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "ALBUMID",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "MEDIATYPEID",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "GENREID",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "COMPOSER",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "MILLISECONDS",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "BYTES",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "UNITPRICE",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : 2,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    } ],
+    "pks" : [ "TRACKID" ],
+    "fks" : {
+      "FK_TRACKALBUMID" : {
+        "column_mapping" : {
+          "ALBUMID" : "ALBUMID"
+        },
+        "foreign_collection" : "CHINOOK.ALBUM"
+      },
+      "FK_TRACKMEDIATYPEID" : {
+        "column_mapping" : {
+          "MEDIATYPEID" : "MEDIATYPEID"
+        },
+        "foreign_collection" : "CHINOOK.MEDIATYPE"
+      },
+      "FK_TRACKGENREID" : {
+        "column_mapping" : {
+          "GENREID" : "GENREID"
+        },
+        "foreign_collection" : "CHINOOK.GENRE"
+      }
+    }
+  }, {
+    "tableName" : "CHINOOK.ARTIST",
+    "tableType" : "TABLE",
+    "description" : null,
+    "columns" : [ {
+      "name" : "ARTISTID",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "NAME",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    } ],
+    "pks" : [ "ARTISTID" ],
+    "fks" : null
+  }, {
+    "tableName" : "CHINOOK.INVOICE",
+    "tableType" : "TABLE",
+    "description" : null,
+    "columns" : [ {
+      "name" : "INVOICEID",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "CUSTOMERID",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "INVOICEDATE",
+      "description" : null,
+      "type" : "DATE",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "BILLINGADDRESS",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "BILLINGCITY",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "BILLINGSTATE",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "BILLINGCOUNTRY",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "BILLINGPOSTALCODE",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "TOTAL",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : 2,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    } ],
+    "pks" : [ "INVOICEID" ],
+    "fks" : {
+      "FK_INVOICECUSTOMERID" : {
+        "column_mapping" : {
+          "CUSTOMERID" : "CUSTOMERID"
+        },
+        "foreign_collection" : "CHINOOK.CUSTOMER"
+      }
+    }
+  }, {
+    "tableName" : "CHINOOK.CUSTOMER",
+    "tableType" : "TABLE",
+    "description" : null,
+    "columns" : [ {
+      "name" : "CUSTOMERID",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "FIRSTNAME",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "LASTNAME",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "COMPANY",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "ADDRESS",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "CITY",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "STATE",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "COUNTRY",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "POSTALCODE",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "PHONE",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "FAX",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "EMAIL",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "SUPPORTREPID",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    } ],
+    "pks" : [ "CUSTOMERID" ],
+    "fks" : {
+      "FK_CUSTOMERSUPPORTREPID" : {
+        "column_mapping" : {
+          "SUPPORTREPID" : "EMPLOYEEID"
+        },
+        "foreign_collection" : "CHINOOK.EMPLOYEE"
+      }
+    }
+  }, {
+    "tableName" : "CHINOOK.EMPLOYEE",
+    "tableType" : "TABLE",
+    "description" : null,
+    "columns" : [ {
+      "name" : "EMPLOYEEID",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "LASTNAME",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "FIRSTNAME",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "TITLE",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "REPORTSTO",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "BIRTHDATE",
+      "description" : null,
+      "type" : "DATE",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "HIREDATE",
+      "description" : null,
+      "type" : "DATE",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "ADDRESS",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "CITY",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "STATE",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "COUNTRY",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "POSTALCODE",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "PHONE",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "FAX",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "EMAIL",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    } ],
+    "pks" : [ "EMPLOYEEID" ],
+    "fks" : {
+      "FK_EMPLOYEEREPORTSTO" : {
+        "column_mapping" : {
+          "REPORTSTO" : "EMPLOYEEID"
+        },
+        "foreign_collection" : "CHINOOK.EMPLOYEE"
+      }
+    }
+  }, {
+    "tableName" : "CHINOOK.PLAYLIST",
+    "tableType" : "TABLE",
+    "description" : null,
+    "columns" : [ {
+      "name" : "PLAYLISTID",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "NAME",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    } ],
+    "pks" : [ "PLAYLISTID" ],
+    "fks" : null
+  }, {
+    "tableName" : "CHINOOK.MEDIATYPE",
+    "tableType" : "TABLE",
+    "description" : null,
+    "columns" : [ {
+      "name" : "MEDIATYPEID",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "NAME",
+      "description" : null,
+      "type" : "VARCHAR2",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    } ],
+    "pks" : [ "MEDIATYPEID" ],
+    "fks" : null
+  }, {
+    "tableName" : "CHINOOK.INVOICELINE",
+    "tableType" : "TABLE",
+    "description" : null,
+    "columns" : [ {
+      "name" : "INVOICELINEID",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "INVOICEID",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "TRACKID",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "UNITPRICE",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : 2,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "QUANTITY",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    } ],
+    "pks" : [ "INVOICELINEID" ],
+    "fks" : {
+      "FK_INVOICELINETRACKID" : {
+        "column_mapping" : {
+          "TRACKID" : "TRACKID"
+        },
+        "foreign_collection" : "CHINOOK.TRACK"
+      },
+      "FK_INVOICELINEINVOICEID" : {
+        "column_mapping" : {
+          "INVOICEID" : "INVOICEID"
+        },
+        "foreign_collection" : "CHINOOK.INVOICE"
+      }
+    }
+  }, {
+    "tableName" : "CHINOOK.PLAYLISTTRACK",
+    "tableType" : "TABLE",
+    "description" : null,
+    "columns" : [ {
+      "name" : "PLAYLISTID",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    }, {
+      "name" : "TRACKID",
+      "description" : null,
+      "type" : "NUMBER",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : null
+    } ],
+    "pks" : [ "PLAYLISTID", "TRACKID" ],
+    "fks" : {
+      "FK_PLAYLISTTRACKTRACKID" : {
+        "column_mapping" : {
+          "TRACKID" : "TRACKID"
+        },
+        "foreign_collection" : "CHINOOK.TRACK"
+      },
+      "FK_PLAYLISTTRACKPLAYLISTID" : {
+        "column_mapping" : {
+          "PLAYLISTID" : "PLAYLISTID"
+        },
+        "foreign_collection" : "CHINOOK.PLAYLIST"
+      }
+    }
+  } ],
+  "functions" : [ ],
+  "nativeQueries" : { }
 }

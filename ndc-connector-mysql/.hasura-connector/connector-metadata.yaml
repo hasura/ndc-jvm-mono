@@ -1,16 +1,15 @@
 packagingDefinition:
   type: PrebuiltDockerImage
-  dockerImage: "ndc-jvm-cli:v1"
+  dockerImage: "ghcr.io/hasura/ndc-jvm-mysql:v0.1.0-test.2"
 supportedEnvironmentVariables:
-  - name: HASURA_JDBC_URL
+  - name: JDBC_URL
     description: "The JDBC URL to connect to the database"
 commands:
   update: |
     docker run \
       -e HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH \
       -v ${HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH}:/app/output \
-      ndc-jvm-cli:v1 update $HASURA_JDBC_URL \
+      ghcr.io/hasura/ndc-jvm-cli:v0.1.0-test.2 update $JDBC_URL \
         --database MYSQL \
-        --schemas $HASURA_JDBC_SCHEMAS \
+        --schemas $JDBC_SCHEMAS \
         --outfile /app/output/configuration.json
-  
