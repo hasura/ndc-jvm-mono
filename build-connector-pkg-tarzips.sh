@@ -5,7 +5,7 @@ set -e -u
 # It is intended to be run from the root of the repository
 for connector in "ndc-connector-mysql" "ndc-connector-oracle" "ndc-connector-snowflake"; do
   pushd ${connector}
-  tar -czf ../${connector}-package.tar.gz ./.hasura-connector
+  tar -czf package.tar.gz ./.hasura-connector
   echo "Created ${connector}-package.tar.gz"
   popd
 done
