@@ -53,10 +53,9 @@ class CLI {
             names = ["-s", "--schemas"],
             arity = "0..*",
             split = ",",
-            defaultValue = "",
             description = ["Comma-separated list of schemas to introspect"]
         )
-        schemas: List<String> = emptyList()
+        schemas: List<String>?
     ) {
 
         val configGenerator = when (database) {
@@ -67,7 +66,7 @@ class CLI {
 
         val config = configGenerator.getConfig(
             jdbcUrl = jdbcUrl,
-            schemas = schemas
+            schemas = schemas ?: emptyList()
         )
 
         val file = File(outfile)
