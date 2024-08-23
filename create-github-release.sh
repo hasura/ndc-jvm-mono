@@ -1,18 +1,30 @@
 #!/bin/bash
+set -euo pipefail
+set -x
 
 # Variables
 OWNER="hasura"
 REPO="ndc-jvm-mono"
-VERSION="v0.1.0"
+VERSION="v1.0.1"
 
-SUBDIRS=("ndc-connector-oracle" "ndc-connector-mysql" "ndc-connector-snowflake")
+CONNECTORS=("ndc-connector-oracle" "ndc-connector-mysql" "ndc-connector-snowflake")
 
-# Loop through each subdirectory and create a release
-for SUBDIR in "${SUBDIRS[@]}"; do
-  TAG="${SUBDIR#ndc-connector-}/${VERSION}"  # Create tag like oracle/v1.0.0
-  RELEASE_NAME="${SUBDIR#ndc-connector-} Release ${VERSION}"
-  RELEASE_DESCRIPTION="Release for ${SUBDIR#ndc-connector-} version ${VERSION}"
-  FILE_PATH="${SUBDIR}/package.tar.gz"
+# Loop through each connector and create a release
+for CONNECTOR in "${CONNECTORS[@]}"; do
+
+  # First, build and push the Docker images
+  export IMAGE_TAG="${VERSION}"
+  docker compose build "${CONNECTOR}"
+  docker compose push "${CONNECTOR}"
+
+  # Create the .tar.gz with the connector's ".hasura-connector" directory
+  tar -czvf "${CONNECTOR}/package.tar.gz" -C "${CONNECTOR}" .hasura-connector
+
+  # Now, create a GitHub release
+  TAG="${CONNECTOR#ndc-connector-}/${VERSION}"  # Create tag like oracle/v1.0.0
+  RELEASE_NAME="${CONNECTOR#ndc-connector-} Release ${VERSION}"
+  RELEASE_DESCRIPTION="Release for ${CONNECTOR#ndc-connector-} version ${VERSION}"
+  FILE_PATH="${CONNECTOR}/package.tar.gz"
 
   # Create a new release
   gh release create "$TAG" \
@@ -23,8 +35,8 @@ for SUBDIR in "${SUBDIRS[@]}"; do
 
   # Verify the release
   if [ $? -eq 0 ]; then
-    echo "Release ${RELEASE_NAME} created and file uploaded successfully for ${SUBDIR}."
+    echo "Release ${RELEASE_NAME} created and file uploaded successfully for ${CONNECTOR}."
   else
-    echo "Failed to create release ${RELEASE_NAME} or upload file for ${SUBDIR}."
+    echo "Failed to create release ${RELEASE_NAME} or upload file for ${CONNECTOR}."
   fi
 done
