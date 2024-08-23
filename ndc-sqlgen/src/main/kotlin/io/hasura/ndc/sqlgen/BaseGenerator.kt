@@ -209,7 +209,7 @@ sealed interface BaseGenerator {
                                     DSL.and(
                                         listOf(
                                             expressionToCondition(
-                                                e.where,
+                                                e.predicate,
                                                 request,
                                                 rel.target_collection
                                             )
@@ -244,7 +244,7 @@ sealed interface BaseGenerator {
                                 .where(
                                     listOf(
                                         expressionToCondition(
-                                            e.where,
+                                            e.predicate,
                                             request,
                                             inTable.collection
                                         ), condition

@@ -38,7 +38,7 @@ class JDBCDataSourceProvider : IDataSourceProvider {
 
     override fun getDataSource(config: ConnectorConfiguration): DataSource {
         if (dataSource == null) {
-            dataSource = agroalDataSourceService.createDataSource(config)
+            dataSource = agroalDataSourceService.createTracingDataSource(config)
         }
         return dataSource!!
     }

@@ -53,7 +53,7 @@ allOpen {
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions.jvmTarget = JavaVersion.VERSION_17.toString()
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_21.toString()
     kotlinOptions.javaParameters = true
 }
 
@@ -66,4 +66,10 @@ tasks.quarkusDev.configure {
         "--add-opens", "java.base/java.lang.invoke=ALL-UNNAMED",
         "--add-opens", "java.base/java.nio=ALL-UNNAMED"
     )
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
 }

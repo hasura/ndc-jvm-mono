@@ -186,7 +186,7 @@ abstract class BaseQueryGenerator : BaseGenerator {
                 }
 
                 is Expression.ApplyUnaryComparison -> {} // no-op
-                is Expression.Exists -> addJoinsRequiredForPredicate(request, select, where.where, seenRelations)
+                is Expression.Exists -> addJoinsRequiredForPredicate(request, select, where.predicate, seenRelations)
             }
         }
 

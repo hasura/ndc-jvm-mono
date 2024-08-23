@@ -33,7 +33,7 @@ dependencies {
     implementation(project(":ndc-app"))
 
     // JDBC driver
-    implementation("io.quarkus:quarkus-jdbc-mysql")
+    implementation("net.snowflake:snowflake-jdbc:3.16.1")
 
     implementation("org.jooq.pro:jooq:3.19.8")
     modules {
@@ -73,5 +73,3 @@ java {
         languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
-
-

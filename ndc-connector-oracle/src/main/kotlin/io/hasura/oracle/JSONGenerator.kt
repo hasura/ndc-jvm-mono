@@ -26,6 +26,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
             ApplyBinaryComparisonOperator.LTE -> col.le(value)
             ApplyBinaryComparisonOperator.IN -> col.`in`(value)
             ApplyBinaryComparisonOperator.IS_NULL -> col.isNull
+            ApplyBinaryComparisonOperator.LIKE -> col.like(value as Field<String>)
         }
     }
 

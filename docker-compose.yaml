@@ -1,8 +1,11 @@
 version: "3"
 
 services:
+  ##################
+  ### NDC Connectors
+  ##################
   ndc-connector-oracle:
-    image: ndc-connector-oracle
+    image: ghcr.io/hasura/ndc-jvm-oracle:${IMAGE_TAG}
     build:
       context: "./"
       dockerfile: "ndc-connector-oracle.dockerfile"
@@ -10,10 +13,36 @@ services:
         - JOOQ_PRO_EMAIL=${JOOQ_PRO_EMAIL}
         - JOOQ_PRO_LICENSE=${JOOQ_PRO_LICENSE}
     ports:
-      - 8100:8100
+      - 8081:8080
     volumes:
-      - ./ndc-connector-oracle/connector.config.json:/etc/connector/connector.config.json
+      - ./ndc-connector-oracle/configuration.json:/etc/connector/configuration.json
 
+  ndc-connector-mysql:
+    image: ghcr.io/hasura/ndc-jvm-mysql:${IMAGE_TAG}
+    build:
+        context: "./"
+        dockerfile: "ndc-connector-mysql.dockerfile"
+    ports:
+        - 8082:8080
+    volumes:
+      - ./ndc-connector-mysql/configuration.json:/etc/connector/configuration.json
+
+  ndc-connector-snowflake:
+    image: ghcr.io/hasura/ndc-jvm-snowflake:${IMAGE_TAG}
+    build:
+        context: "./"
+        dockerfile: "ndc-connector-snowflake.dockerfile"
+        args:
+          - JOOQ_PRO_EMAIL=${JOOQ_PRO_EMAIL}
+          - JOOQ_PRO_LICENSE=${JOOQ_PRO_LICENSE}
+    ports:
+        - 8083:8080
+    volumes:
+      - ./ndc-connector-snowflake/configuration.json:/etc/connector/configuration.json
+
+  ##################
+  ### Databases
+  ##################
   # JDBC url = jdbc:oracle:thin:@//host.docker.internal:1521/XE?user=chinook&password=Password123
   oracle:
       image: gvenzl/oracle-xe:21.3.0-slim
@@ -35,12 +64,3 @@ services:
           - "3306:3306"
       volumes:
           - ./docker/mysql/chinook.sql:/docker-entrypoint-initdb.d/chinook.sql
-
-  ndc-spec:
-    image: ndc-spec
-    depends_on:
-      - oracle
-      - ndc-connector-oracle
-    build:
-      context: .
-      dockerfile: "ndc-spec.dockerfile"

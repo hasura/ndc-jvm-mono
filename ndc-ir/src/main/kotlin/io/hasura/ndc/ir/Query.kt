@@ -175,7 +175,9 @@ enum class ApplyBinaryComparisonOperator {
     @JsonProperty("_in")
     IN,
     @JsonProperty("_is_null")
-    IS_NULL
+    IS_NULL,
+    @JsonProperty("_like")
+    LIKE,
 }
 
 enum class ApplyUnaryComparisonOperator {
@@ -232,7 +234,7 @@ sealed interface Expression {
     @JsonTypeName("exists")
     data class Exists(
         val in_collection: ExistsInCollection,
-        val where: Expression
+        val predicate: Expression
     ) : Expression
 }
 
