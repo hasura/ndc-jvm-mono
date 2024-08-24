@@ -7,6 +7,7 @@ import io.agroal.api.configuration.supplier.AgroalDataSourceConfigurationSupplie
 import io.hasura.ndc.common.ConnectorConfiguration
 import io.hasura.services.dataSourceService.authHandlers.DefaultAuthHandler
 import io.hasura.services.dataSourceService.authHandlers.IAMHandler
+import io.hasura.services.dataSourceService.authHandlers.PrivateKeyHandler
 import io.hasura.services.dataSourceService.authHandlers.SecretsManagerHandler
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import io.opentelemetry.instrumentation.jdbc.datasource.OpenTelemetryDataSource
@@ -206,6 +207,8 @@ class AgroalDataSourceService {
                     when {
                         jdbcUrl.contains("jdbc-secretsmanager") -> SecretsManagerHandler(jdbcUrl, properties, connFactory).configFactory()
                         jdbcUrl.contains("aws-wrapper") -> IAMHandler(jdbcUrl, properties, connFactory).configFactory()
+                        properties.containsKey("private_key_file") ||
+                                jdbcUrl.contains("private_key_file") -> PrivateKeyHandler(jdbcUrl, properties, connFactory).configFactory()
                         else -> DefaultAuthHandler(jdbcUrl, properties, connFactory).configFactory()
                     }
                     connFactory

@@ -44,6 +44,11 @@ dependencies {
     implementation("com.amazonaws.secretsmanager:aws-secretsmanager-jdbc:2.0.0")
     implementation("software.amazon.jdbc:aws-advanced-jdbc-wrapper:2.3.2")
     implementation("software.amazon.awssdk:rds:2.23.8")
+    api("net.snowflake:snowflake-jdbc:3.13.29")
+    // https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on
+//    implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
+
+
 
     // Needed or else error:
     // "Build step io.quarkus.narayana.jta.deployment.NarayanaJtaProcessor#build threw an exception: javax.xml.stream.FactoryConfigurationError: Provider com.ctc.wstx.stax.WstxInputFactory not found"
