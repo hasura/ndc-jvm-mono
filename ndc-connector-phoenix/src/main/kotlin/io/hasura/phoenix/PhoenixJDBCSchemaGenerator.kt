@@ -1,13 +1,15 @@
-package io.hasura.mysql
+package io.hasura.phoenix
 
 import io.hasura.ndc.app.services.JDBCSchemaGenerator
 import io.hasura.ndc.common.NDCScalar
+import io.hasura.ndc.common.javaSqlTypeToNDCScalar
 import io.hasura.ndc.ir.AggregateFunctionDefinition
 import io.hasura.ndc.ir.ComparisonOperatorDefinition
 import io.hasura.ndc.ir.ScalarType
 import io.hasura.ndc.ir.Type
+import java.sql.JDBCType
 
-object MySQLJDBCSchemaGenerator : JDBCSchemaGenerator() {
+object PhoenixJDBCSchemaGenerator : JDBCSchemaGenerator() {
 
     override fun getScalars(): Map<String, ScalarType> {
         return mapOf(
@@ -90,26 +92,6 @@ object MySQLJDBCSchemaGenerator : JDBCSchemaGenerator() {
                 ),
                 aggregate_functions = emptyMap()
             ),
-            NDCScalar.DATETIME.name to ScalarType(
-                comparison_operators = mapOf(
-                    "_gt" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.DATETIME.name)),
-                    "_lt" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.DATETIME.name)),
-                    "_gte" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.DATETIME.name)),
-                    "_lte" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.DATETIME.name)),
-                    "_eq" to ComparisonOperatorDefinition.Equal
-                ),
-                aggregate_functions = emptyMap()
-            ),
-            NDCScalar.DATETIME_WITH_TIMEZONE.name to ScalarType(
-                comparison_operators = mapOf(
-                    "_gt" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.DATETIME_WITH_TIMEZONE.name)),
-                    "_lt" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.DATETIME_WITH_TIMEZONE.name)),
-                    "_gte" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.DATETIME_WITH_TIMEZONE.name)),
-                    "_lte" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.DATETIME_WITH_TIMEZONE.name)),
-                    "_eq" to ComparisonOperatorDefinition.Equal
-                ),
-                aggregate_functions = emptyMap()
-            ),
             NDCScalar.TIME.name to ScalarType(
                 comparison_operators = mapOf(
                     "_gt" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.TIME.name)),
@@ -124,14 +106,8 @@ object MySQLJDBCSchemaGenerator : JDBCSchemaGenerator() {
     }
 
     override fun mapScalarType(columnTypeStr: String, numericScale: Int?): NDCScalar {
-        return when (columnTypeStr.uppercase()) {
-            "INTEGER", "INT", "SMALLINT", "TINYINT", "MEDIUMINT", "BIGINT" -> NDCScalar.INT
-            "DECIMAL", "NUMERIC", "FLOAT", "DOUBLE" -> NDCScalar.FLOAT
-            "DATE" -> NDCScalar.DATE
-            "DATETIME" -> NDCScalar.DATETIME
-            "TIME" -> NDCScalar.TIME
-            "TIMESTAMP" -> NDCScalar.DATETIME_WITH_TIMEZONE
-            else -> NDCScalar.STRING
-        }
+        // Map string of JDBCType to NDCScalar
+        val jdbcType = JDBCType.entries.find { it.name == columnTypeStr } ?: return NDCScalar.STRING
+        return javaSqlTypeToNDCScalar(jdbcType.vendorTypeNumber)
     }
 }

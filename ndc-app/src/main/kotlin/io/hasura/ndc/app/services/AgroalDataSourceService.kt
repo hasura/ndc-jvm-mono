@@ -9,6 +9,7 @@ import io.agroal.api.security.SimplePassword
 import io.hasura.ndc.common.ConnectorConfiguration
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import io.opentelemetry.instrumentation.jdbc.datasource.OpenTelemetryDataSource
+import io.quarkus.agroal.runtime.OpenTelemetryAgroalDataSource
 import io.smallrye.config.ConfigMapping
 import io.smallrye.config.WithDefault
 import io.smallrye.config.WithName
@@ -140,7 +141,7 @@ class AgroalDataSourceService {
 
     fun createDataSource(
         connConfig: ConnectorConfiguration
-    ): DataSource {
+    ): AgroalDataSource {
         val configSupplier = mkAgroalDataSourceConfigurationSupplier(connConfig.jdbcUrl, connConfig.jdbcProperties)
         val ds = AgroalDataSource.from(configSupplier).apply {
             loginTimeout = config.connectionFactoryConfiguration().loginTimeout().toSeconds().toInt()
@@ -154,18 +155,7 @@ class AgroalDataSourceService {
         connConfig: ConnectorConfiguration
     ): DataSource {
         val agroalDs = createDataSource(connConfig)
-        return OpenTelemetryDataSource(agroalDs)
-    }
-
-    @WithSpan
-    fun createDataSourceFromConnInfo(
-        connConfig: ConnectorConfiguration,
-        tracing: Boolean = true
-    ): DataSource {
-        return when (tracing) {
-            true -> createTracingDataSource(connConfig)
-            false -> createDataSource(connConfig)
-        }
+        return OpenTelemetryAgroalDataSource(agroalDs)
     }
 
     private object PoolInterceptor : AgroalPoolInterceptor {

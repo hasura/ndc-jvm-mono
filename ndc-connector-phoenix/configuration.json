@@ -1,0 +1,39 @@
+{
+  "jdbcUrl" : "jdbc:phoenix:localhost:2181:/hbase",
+  "jdbcProperties" : { },
+  "schemas" : [ ],
+  "tables" : [ {
+    "tableName" : "US_POPULATION",
+    "tableType" : "TABLE",
+    "description" : null,
+    "columns" : [ {
+      "name" : "CITY",
+      "description" : null,
+      "type" : "VARCHAR",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : true
+    }, {
+      "name" : "POPULATION",
+      "description" : null,
+      "type" : "BIGINT",
+      "numeric_scale" : null,
+      "nullable" : true,
+      "auto_increment" : false,
+      "is_primarykey" : false
+    }, {
+      "name" : "STATE",
+      "description" : null,
+      "type" : "CHAR",
+      "numeric_scale" : null,
+      "nullable" : false,
+      "auto_increment" : false,
+      "is_primarykey" : true
+    } ],
+    "pks" : [ "CITY", "STATE" ],
+    "fks" : null
+  } ],
+  "functions" : [ ],
+  "nativeQueries" : { }
+}

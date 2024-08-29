@@ -11,7 +11,8 @@ import kotlin.system.exitProcess
 enum class DatabaseType {
     ORACLE,
     MYSQL,
-    SNOWFLAKE
+    SNOWFLAKE,
+    PHOENIX
 }
 
 
@@ -63,6 +64,7 @@ class CLI {
             DatabaseType.ORACLE -> OracleConfigGenerator
             DatabaseType.MYSQL -> MySQLConfigGenerator
             DatabaseType.SNOWFLAKE -> SnowflakeConfigGenerator
+            DatabaseType.PHOENIX -> PhoenixConfigGenerator
         }
 
         val config = configGenerator.getConfig(
@@ -72,6 +74,7 @@ class CLI {
 
         val file = File(outfile)
         try {
+            file.createNewFile()
             mapper.writerWithDefaultPrettyPrinter().writeValue(file, config)
         } catch (e: Exception) {
             println("Error writing configuration to file: ${e.message}")
@@ -100,6 +103,12 @@ class CLI {
 
 fun main(args: Array<String>) {
     val cli = CommandLine(CLI())
-    val exitCode = cli.execute(*args)
+    val exitCode = cli.execute(
+        "update",
+        "jdbc:phoenix:localhost:2181:/hbase",
+        "--database",
+        "PHOENIX"
+    )
     exitProcess(exitCode)
 }
+
