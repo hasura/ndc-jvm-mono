@@ -27,7 +27,7 @@ dependencies {
     implementation(project(":ndc-app"))
 
     // Phoenix JDBC driver
-    implementation(files("./lib/phoenix-client-embedded-hbase-2.5-5.2.0.jar"))
+    implementation("org.apache.phoenix:phoenix-client-embedded-hbase-2.5:5.2.0")
     implementation("org.jooq:jooq:3.19.8")
 }
 

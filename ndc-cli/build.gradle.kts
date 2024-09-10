@@ -24,7 +24,7 @@ dependencies {
     implementation("com.oracle.database.jdbc:ojdbc8:19.18.0.0")
     implementation("com.mysql:mysql-connector-j:8.4.0")
     implementation("net.snowflake:snowflake-jdbc:3.16.1")
-    implementation(files("./lib/phoenix-client-embedded-hbase-2.5-5.2.0.jar"))
+    implementation("org.apache.phoenix:phoenix-client-embedded-hbase-2.5:5.2.0")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {

@@ -68,45 +68,16 @@ object NoRelationshipsQueryGenerator : BaseQueryGenerator() {
         when {
             request.variables.isNullOrEmpty() -> stmt
             else -> {
-                // select "x"."CITY", "x"."STATE", "x"."POPULATION"
-                //from (
-                //  select
-                //    "US_POPULATION"."CITY" as "CITY",
-                //    "US_POPULATION"."STATE" as "STATE",
-                //    "US_POPULATION"."POPULATION" as "POPULATION"
-                //  from "US_POPULATION"
-                //  join (
-                //    select 'NY' as "STATE"
-                //    union all
-                //    select 'CA' as "STATE"
-                //  ) as "$variables"
-                //  on "US_POPULATION"."STATE" = "$variables"."STATE"
-                //) as "x"
-                val vars = request.variables!!
-
-                val variableNames = vars.flatMap { it.keys }.distinct()
-                val variablesSubquery = vars
-                    .mapIndexed { idx, variable ->
-                        DSL.select(
-                            variableNames
-                                .map { DSL.value(variable[it]).`as`(DSL.name(it)) }
-                                .plus(DSL.value(idx).`as`(DSL.name("idx")))
-                        )
-                    }
-                    .reduce { acc, table ->
-                        acc.unionAll(table) as SelectSelectStep<Record>
-                    }
-                    .asTable("vars")
-
-
                 stmt.join(
-                    variablesSubquery
+                    DSL
+                        .table(DSL.name(PhoenixDataConnectorService.getTempTableName(request)))
+                        .`as`("vars")
                 ).on(
                     mkJoinWhereClause(
                         request.collection,
                         Relationship(
                             target_collection = "vars",
-                            column_mapping = variableNames.associateWith { it },
+                            column_mapping = PhoenixDataConnectorService.buildQueryVariableColumnMapping(request.query.predicate!!),
                             relationship_type = RelationshipType.Object,
                             arguments = emptyMap()
                         )
@@ -116,7 +87,7 @@ object NoRelationshipsQueryGenerator : BaseQueryGenerator() {
         }
     }
 
-    private fun columnTypeTojOOQType(collection: String, field: ColumnField): DataType<out Any> {
+    fun columnTypeTojOOQType(collection: String, field: ColumnField): DataType<out Any> {
         val connectorConfig = ConnectorConfigurationLoader.config
 
         val table = connectorConfig.tables.find { it.tableName == collection }
@@ -130,7 +101,7 @@ object NoRelationshipsQueryGenerator : BaseQueryGenerator() {
             NDCScalar.BOOLEAN -> SQLDataType.BOOLEAN
             NDCScalar.INT -> SQLDataType.INTEGER
             NDCScalar.FLOAT -> SQLDataType.FLOAT
-            NDCScalar.STRING -> SQLDataType.CLOB
+            NDCScalar.STRING -> SQLDataType.VARCHAR
             NDCScalar.DATE -> SQLDataType.DATE
             NDCScalar.DATETIME -> SQLDataType.TIMESTAMP
             NDCScalar.DATETIME_WITH_TIMEZONE -> SQLDataType.TIMESTAMP
