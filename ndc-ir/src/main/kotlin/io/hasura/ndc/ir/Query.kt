@@ -92,13 +92,17 @@ enum class SingleColumnAggregateFunction {
 sealed interface Field {
 
     @JsonTypeName("column")
-    data class ColumnField(val column: String) : Field
+    data class ColumnField(
+        val column: String,
+        val fields: NestedField? = null,
+        val arguments: Map<String, Argument> = emptyMap()
+    ) : Field
 
     @JsonTypeName("relationship")
     data class RelationshipField(
         val query: Query,
         val relationship: String,
-        val arguments: Map<String, Argument>
+        val arguments: Map<String, Argument> = emptyMap()
     ) : Field
 }
 

@@ -83,6 +83,12 @@ class SnowflakeDataConnectorService @Inject constructor(
         }
     }
 
+    override fun handleMutation(request: MutationRequest): MutationResponse {
+        val result = super.handleMutation(request)
+        println("Mutation result: $result")
+        return result
+    }
+
     override val jooqDialect = SQLDialect.SNOWFLAKE
     override val jooqSettings =
         commonDSLContextSettings.withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_UNQUOTED)

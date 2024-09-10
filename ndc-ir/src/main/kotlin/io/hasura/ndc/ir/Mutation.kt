@@ -23,7 +23,6 @@ sealed interface RowUpdate {
 }
 
 data class MutationRequest(
-    val insert_schema: List<CollectionInsertSchema>,
     val operations: List<MutationOperation>,
     val collection_relationships: Map<String, Relationship> = emptyMap(),
 )
@@ -34,10 +33,14 @@ data class MutationResponse(
 
 typealias FieldName = String
 
-data class MutationOperationResult(
-    val affected_rows: Int,
-    val returning: List<Map<FieldName, Any?>>? = null,
-)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+sealed interface MutationOperationResult {
+
+    @JsonTypeName("procedure")
+    data class ProcedureMutationOperationResult(
+        val result: Map<String, Any> = emptyMap(),
+    ) : MutationOperationResult
+}
 
 data class CollectionInsertSchema(
     val fields: Map<String, InsertFieldSchema>,
@@ -76,39 +79,29 @@ enum class ObjectRelationInsertionOrder {
 }
 
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 sealed interface MutationOperation {
-
-    @JsonTypeName("insert")
-    data class InsertMutationOperation(
-        val collection: String,
-        val rows: List<Map<String, Any>>,
-        val post_insert_check: Expression? = null,
-        val returning_fields: Map<String, Field>? = null,
-    ) : MutationOperation
-
-    @JsonTypeName("update")
-    data class UpdateMutationOperation(
-        val collection: String,
-        val updates: List<RowUpdate>,
-        val where: Expression? = null,
-        val post_update_check: Expression? = null,
-        val returning_fields: Map<String, Field>? = null,
-    ) : MutationOperation
-
-    @JsonTypeName("delete")
-    data class DeleteMutationOperation(
-        val collection: String,
-        val where: Expression? = null,
-        val returning_fields: Map<String, Field>? = null,
-    ) : MutationOperation
 
     @JsonTypeName("procedure")
     data class ProcedureMutationOperation(
         val name: String,
         val arguments: Map<String, Any>,
-        val fields: Map<String, Field>? = null,
+        val fields: NestedField? = null,
     ) : MutationOperation
+}
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+sealed interface NestedField {
+
+    @JsonTypeName("object")
+    data class NestedObject(
+        val fields: Map<String, Field>
+    ) : NestedField
+
+    @JsonTypeName("array")
+    data class NestedArray(
+        val fields: NestedField
+    ) : NestedField
 }
 
 

@@ -4,8 +4,6 @@ import io.hasura.ndc.app.interfaces.ISchemaGenerator
 import io.hasura.ndc.common.ConnectorConfiguration
 import io.hasura.ndc.common.*
 import io.hasura.ndc.ir.*
-import jakarta.enterprise.context.ApplicationScoped
-import jakarta.enterprise.inject.Default
 
 abstract class JDBCSchemaGenerator(
     private val supportsMutations: Boolean = false
@@ -91,6 +89,25 @@ abstract class JDBCSchemaGenerator(
         )
     }
 
+    private fun mapTableSchemaRowToInsertMutationProcedureInfo(
+        table: TableSchemaRow
+    ): ProcedureInfo {
+        // Generate ProcedureInfo objects for each table
+        // These are the "insert_<table", "update_<table>", and "delete_<table>" procedures
+        val procedure = ProcedureInfo(
+            name = "insert_${table.tableName}",
+            description = "Insert a new row into the ${table.tableName} table",
+            arguments = mapOf(
+                "object" to ArgumentInfo(
+                    argument_type = Type.Array(Type.Named(table.tableName))
+                )
+            ),
+            result_type = Type.Array(Type.Named(table.tableName))
+        )
+
+        return procedure
+    }
+
 
     private fun buildSchema(
         tables: List<TableSchemaRow>,
@@ -100,11 +117,11 @@ abstract class JDBCSchemaGenerator(
         return SchemaResponse(
             scalar_types = getScalars(),
             object_types = tables.associate { mapTableSchemaRowToObjectType(it) }
-                + nativeQueries.map { mapNativeQueryToObjectType(it.key, it.value) }.toMap(),
+                    + nativeQueries.map { mapNativeQueryToObjectType(it.key, it.value) }.toMap(),
             collections = tables.map { mapTableSchemaRowToCollectionInfo(it) }
-                + nativeQueries.map { mapNativeQueryToCollectionInfo(it.key, it.value) },
+                    + nativeQueries.map { mapNativeQueryToCollectionInfo(it.key, it.value) },
             functions = functions.map { mapFunctionSchemaRowToFunctionInfo(it) },
-            procedures = emptyList()
+            procedures = tables.map { mapTableSchemaRowToInsertMutationProcedureInfo(it) }
         )
     }
 
