@@ -61,24 +61,34 @@ class PhoenixDataConnectorService @Inject constructor(
         )
     )
 
+
+    override val jooqDialect = SQLDialect.POSTGRES
+    override val jooqSettings =
+        commonDSLContextSettings
+            .withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_QUOTED)
+            .withRenderOptionalAsKeywordForFieldAliases(RenderOptionalKeyword.ON)
+
+
+    override val sqlGenerator = NoRelationshipsQueryGenerator
+    override val mutationTranslator = MutationTranslator
+
     override fun handleQuery(request: QueryRequest): List<RowSet> {
         val dslCtx = mkDSLCtx()
 
         val query = NoRelationshipsQueryGenerator.queryRequestToSQL(request)
-        println(query)
+        println(dslCtx.renderInlined(query))
 
         if (request.variables != null) {
             val tempTableName = getTempTableName(request)
-            dslCtx.execute("""DROP TABLE IF EXISTS "$tempTableName" """)
 
+            val dropTableSQL = """DROP TABLE IF EXISTS "$tempTableName" """
             val (createTableSQL, upsertValuesSQL) = generateTempTableSQLForQueryVariables(tempTableName, request)
-            println(createTableSQL)
-            println(upsertValuesSQL)
 
-            dslCtx.execute(createTableSQL)
-            upsertValuesSQL.forEach {
-                dslCtx.execute(it)
-            }
+            dslCtx.batch(
+                dropTableSQL,
+                createTableSQL,
+                *upsertValuesSQL.toTypedArray()
+            ).execute()
         }
 
         val rowset = RowSet(
@@ -93,47 +103,38 @@ class PhoenixDataConnectorService @Inject constructor(
         return listOf(rowset)
     }
 
-    fun generateTempTableSQLForQueryVariables(name: String, request: QueryRequest): Pair<String, List<String>> {
-        val columnMap = buildQueryVariableColumnMapping(request.query.predicate!!)
-
-        val variableTypes = columnMap.entries.associate { (column, variable) ->
-            variable to columnTypeTojOOQType(request.collection, ColumnField(column))
-        }
-
-        val createTable = DSL.createTable(DSL.name(name))
-            .column(DSL.field(DSL.name("idx")), SQLDataType.BIGINT.identity(true))
-            .columns(variableTypes.map { (name, type) -> DSL.field(DSL.name(name), type) })
-            .constraint(DSL.constraint("pk_temp_vars_${request.collection}").primaryKey("idx"))
-
-        val createTableSQL = DSL.using(SQLDialect.DEFAULT).render(createTable)
-
-        val insertValuesSQL = request.variables!!
-            .mapIndexed { idx, row ->
-                val individualUpsert = DSL.insertInto(DSL.table(DSL.name(name)))
-                    .columns(variableTypes.map { DSL.field(DSL.name(it.key)) } + DSL.field(DSL.name("idx")))
-                    .values(variableTypes.map { row[it.key] } + idx)
-
-                DSL
-                    .using(SQLDialect.DEFAULT)
-                    .renderInlined(individualUpsert)
-                    .replace("insert", "upsert")
-            }
-
-        return Pair(createTableSQL, insertValuesSQL)
-    }
-
-    override val jooqDialect = SQLDialect.POSTGRES
-    override val jooqSettings =
-        commonDSLContextSettings
-            .withRenderQuotedNames(RenderQuotedNames.ALWAYS)
-            .withRenderOptionalAsKeywordForFieldAliases(RenderOptionalKeyword.ON)
-
-    override val sqlGenerator = NoRelationshipsQueryGenerator
-    override val mutationTranslator = MutationTranslator
-
     companion object {
         fun getTempTableName(request: QueryRequest): String {
             return "temp_vars_${request.collection}_${request.variables.hashCode()}"
+        }
+
+        fun generateTempTableSQLForQueryVariables(name: String, request: QueryRequest): Pair<String, List<String>> {
+            val columnMap = buildQueryVariableColumnMapping(request.query.predicate!!)
+
+            val variableTypes = columnMap.entries.associate { (column, variable) ->
+                variable to columnTypeTojOOQType(request.collection, ColumnField(column))
+            }
+
+            val createTable = DSL.createTable(DSL.name(name))
+                .column(DSL.field(DSL.name("idx")), SQLDataType.BIGINT.identity(true))
+                .columns(variableTypes.map { (name, type) -> DSL.field(DSL.name(name), type) })
+                .constraint(DSL.constraint("pk_temp_vars_${request.collection}").primaryKey("idx"))
+
+            val createTableSQL = DSL.using(SQLDialect.DEFAULT).render(createTable)
+
+            val insertValuesSQL = request.variables!!
+                .mapIndexed { idx, row ->
+                    val individualUpsert = DSL.insertInto(DSL.table(DSL.name(name)))
+                        .columns(variableTypes.map { DSL.field(DSL.name(it.key)) } + DSL.field(DSL.name("idx")))
+                        .values(variableTypes.map { row[it.key] } + idx)
+
+                    DSL
+                        .using(SQLDialect.DEFAULT)
+                        .renderInlined(individualUpsert)
+                        .replace("insert", "upsert")
+                }
+
+            return Pair(createTableSQL, insertValuesSQL)
         }
 
         fun buildQueryVariableColumnMapping(predicate: Expression): Map<String, String> {
