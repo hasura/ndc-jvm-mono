@@ -1,7 +1,5 @@
 package io.hasura.cli
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.hasura.ndc.common.ColumnSchemaRow
 import io.hasura.ndc.common.ConnectorConfiguration
 import io.hasura.ndc.common.TableSchemaRow
@@ -16,21 +14,6 @@ object PhoenixConfigGenerator : IConfigGenerator {
     ): ConnectorConfiguration {
         val ctx = DSL.using(jdbcUrl)
 
-        // +-----------+-------------+-------------------------------------+-------------+---------------+---------------+------------+----------------------------+
-        // | TENANT_ID | TABLE_SCHEM |             TABLE_NAME              | COLUMN_NAME | COLUMN_FAMILY | TABLE_SEQ_NUM | TABLE_TYPE |          PK_NAME           |
-        // +-----------+-------------+-------------------------------------+-------------+---------------+---------------+------------+----------------------------+
-        // |           |             | US_POPULATION                       |             |               | 0             | u          | MY_PK                      |
-        // |           |             | US_POPULATION                       |             | 0             | null          |            |                            |
-        // |           |             | US_POPULATION                       | CITY        |               | null          |            | MY_PK                      |
-        // |           |             | US_POPULATION                       | POPULATION  | 0             | null          |            | MY_PK                      |
-        // |           |             | US_POPULATION                       | STATE       |               | null          |            | MY_PK                      |
-        // |           | DATAHUB     | CUSTOMER_PORTOFOLIO                 |             |               | 0             | u          | PK                         |
-        // |           | DATAHUB     | CUSTOMER_PORTOFOLIO                 |             | 0             | null          |            |                            |
-        // |           | DATAHUB     | CUSTOMER_PORTOFOLIO                 | AGE         | SAVING        | null          |            | PK                         |
-        // |           | DATAHUB     | CUSTOMER_PORTOFOLIO                 | BALANCE     | LOAN          | null          |            | PK                         |
-        // |           | DATAHUB     | CUSTOMER_PORTOFOLIO                 | CIFNO       |               | null          |            | PK                         |
-        // |           | DATAHUB     | CUSTOMER_PORTOFOLIO                 | ID_NUMBER   | CREDIT_CARD   | null          |            | PK                         |
-        // +-----------+-------------+-------------------------------------+-------------+---------------+---------------+------------+----------------------------+
         val result = ctx.fetch("""
             SELECT * FROM SYSTEM.CATALOG
             WHERE TABLE_SCHEM != 'SYSTEM' OR TABLE_SCHEM IS NULL

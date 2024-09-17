@@ -62,7 +62,7 @@ class PhoenixDataConnectorService @Inject constructor(
     )
 
 
-    override val jooqDialect = SQLDialect.POSTGRES
+    override val jooqDialect = SQLDialect.DEFAULT
     override val jooqSettings =
         commonDSLContextSettings
             .withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_QUOTED)
@@ -74,9 +74,7 @@ class PhoenixDataConnectorService @Inject constructor(
 
     override fun handleQuery(request: QueryRequest): List<RowSet> {
         val dslCtx = mkDSLCtx()
-
         val query = NoRelationshipsQueryGenerator.queryRequestToSQL(request)
-        println(dslCtx.renderInlined(query))
 
         if (request.variables != null) {
             val tempTableName = getTempTableName(request)
@@ -105,7 +103,8 @@ class PhoenixDataConnectorService @Inject constructor(
 
     companion object {
         fun getTempTableName(request: QueryRequest): String {
-            return "temp_vars_${request.collection}_${request.variables.hashCode()}"
+            val unixTime = System.currentTimeMillis() / 1000L
+            return "temp_vars_${request.collection}_${unixTime}"
         }
 
         fun generateTempTableSQLForQueryVariables(name: String, request: QueryRequest): Pair<String, List<String>> {

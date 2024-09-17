@@ -101,14 +101,3 @@ class CLI {
     }
 }
 
-fun main(args: Array<String>) {
-    val cli = CommandLine(CLI())
-    val exitCode = cli.execute(
-        "update",
-        "jdbc:phoenix:localhost:2181:/hbase",
-        "--database",
-        "PHOENIX"
-    )
-    exitProcess(exitCode)
-}
-

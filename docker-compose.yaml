@@ -1,11 +1,30 @@
 version: "3"
 
 services:
+  jaeger:
+    image: jaegertracing/all-in-one:1.37
+    restart: always
+    ports:
+      - 5775:5775/udp
+      - 6831:6831/udp
+      - 6832:6832/udp
+      - 5778:5778
+      - 16686:16686
+      - 14250:14250
+      - 14268:14268
+      - 14269:14269
+      - 4317:4317 # OTLP gRPC
+      - 4318:4318 # OTLP HTTP
+      - 9411:9411
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+      COLLECTOR_ZIPKIN_HOST_PORT: 9411
+
   ##################
   ### NDC Connectors
   ##################
   ndc-connector-oracle:
-    image: ghcr.io/hasura/ndc-jvm-oracle:${IMAGE_TAG}
+    image: ghcr.io/hasura/ndc-jvm-oracle:${IMAGE_TAG_ORACLE}
     build:
       context: "./"
       dockerfile: "ndc-connector-oracle.dockerfile"
@@ -18,7 +37,7 @@ services:
       - ./ndc-connector-oracle/configuration.json:/etc/connector/configuration.json
 
   ndc-connector-mysql:
-    image: ghcr.io/hasura/ndc-jvm-mysql:${IMAGE_TAG}
+    image: ghcr.io/hasura/ndc-jvm-mysql:${IMAGE_TAG_MYSQL}
     build:
         context: "./"
         dockerfile: "ndc-connector-mysql.dockerfile"
@@ -28,7 +47,7 @@ services:
       - ./ndc-connector-mysql/configuration.json:/etc/connector/configuration.json
 
   ndc-connector-snowflake:
-    image: ghcr.io/hasura/ndc-jvm-snowflake:${IMAGE_TAG}
+    image: ghcr.io/hasura/ndc-jvm-snowflake:${IMAGE_TAG_SNOWFLAKE}
     build:
         context: "./"
         dockerfile: "ndc-connector-snowflake.dockerfile"
@@ -39,6 +58,16 @@ services:
         - 8083:8080
     volumes:
       - ./ndc-connector-snowflake/configuration.json:/etc/connector/configuration.json
+
+  ndc-connector-phoenix:
+    image: ghcr.io/hasura/ndc-jvm-phoenix:${IMAGE_TAG_PHOENIX}
+    build:
+        context: "./"
+        dockerfile: "ndc-connector-phoenix.dockerfile"
+    ports:
+        - 8084:8080
+    volumes:
+      - ./ndc-connector-phoenix/configuration.json:/etc/connector/configuration.json
 
   ##################
   ### Databases
