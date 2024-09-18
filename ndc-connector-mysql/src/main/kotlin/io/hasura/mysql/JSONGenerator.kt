@@ -56,7 +56,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                         is ColumnField -> {
                                             DSL.jsonEntry(
                                                 alias,
-                                                DSL.field(DSL.name(field.column))
+                                                DSL.field(DSL.name(alias))
                                             )
                                         }
 
