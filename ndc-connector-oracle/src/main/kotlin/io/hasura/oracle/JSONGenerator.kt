@@ -85,8 +85,15 @@ object JsonQueryGenerator : BaseQueryGenerator() {
 
                                                     DSL.jsonEntry(
                                                         alias,
-                                                        DSL.select(
-                                                            subQuery.asField<Any>(alias)
+                                                        DSL.coalesce(
+                                                            DSL.select(
+                                                                subQuery.asField<Any>(alias)
+                                                            ), DSL.jsonObject(
+                                                                DSL.jsonEntry(
+                                                                    "rows",
+                                                                    DSL.jsonArray().returning(SQLDataType.CLOB)
+                                                                )
+                                                            ).returning(SQLDataType.CLOB)
                                                         )
                                                     )
                                                 }
@@ -286,7 +293,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
     )
 
     private fun getTableName(collection: String): String {
-       return collection.split('.').last()
+        return collection.split('.').last()
     }
 
 }
