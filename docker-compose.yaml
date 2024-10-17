@@ -45,6 +45,7 @@ services:
         - 8082:8080
     volumes:
       - ./ndc-connector-mysql/configuration.json:/etc/connector/configuration.json
+      - ./ndc-cli/mysql-connector-j-9.0.0.jar:/app/lib/main/mysql-connector-j-9.0.0.jar
 
   ndc-connector-snowflake:
     image: ghcr.io/hasura/ndc-jvm-snowflake:${IMAGE_TAG_SNOWFLAKE}
@@ -93,3 +94,19 @@ services:
           - "3306:3306"
       volumes:
           - ./docker/mysql/chinook.sql:/docker-entrypoint-initdb.d/chinook.sql
+
+  ##################
+  ### CLI
+  ##################
+  ndc-cli:
+    image: ghcr.io/hasura/ndc-jvm-cli:${IMAGE_TAG_CLI}
+    profiles: [ "tools" ]
+    build:
+        context: "./"
+        dockerfile: "ndc-cli.dockerfile"
+    volumes:
+      - ./ndc-cli/configuration.json:/app/output/configuration.json
+    command: >
+      update "jdbc:phoenix:165.227.201.250:2181:/hbase"
+      --database=PHOENIX
+      --outfile /app/output/configuration.json

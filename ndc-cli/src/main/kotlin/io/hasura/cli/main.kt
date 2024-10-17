@@ -83,9 +83,13 @@ class CLI {
             val permissions =  Files.getPosixFilePermissions(parentDir.toPath())
             val posixPermissions = PosixFilePermissions.toString(permissions)
 
+            println("Current user: ${System.getProperty("user.name")}")
             println("Parent directory: ${parentDir.absolutePath}")
-            println("Readable: ${parentDir.canRead()}, Writable: ${parentDir.canWrite()}")
-            println("Permissions: $posixPermissions")
+            println("   Readable: ${parentDir.canRead()}, Writable: ${parentDir.canWrite()}")
+            println("   Permissions: $posixPermissions")
+
+            println("If running inside of Docker, please ensure that the parent directory is writable by the Docker user")
+            println("Alternatively, create an empty config file and set all permissions: 'touch configuration.json && chmod 777 configuration.json'")
 
             exitProcess(1)
         }
