@@ -28,7 +28,7 @@ abstract class BaseQueryGenerator : BaseGenerator {
             .mapValues { it.value as IRField.ColumnField }
     }
 
-    fun getQueryRelationFields(fields: Map<String, IRField>?): Map<String, IRField.RelationshipField> {
+    protected fun getQueryRelationFields(fields: Map<String, IRField>?): Map<String, IRField.RelationshipField> {
         return fields
             ?.filterValues { it is IRField.RelationshipField }
             ?.mapValues { it.value as IRField.RelationshipField }
@@ -373,7 +373,7 @@ abstract class BaseQueryGenerator : BaseGenerator {
         val fields = request.variables!!.flatMap { it.keys }.toSet()
         return DSL
             .name(VARS + suffix)
-            .fields(*fields.toTypedArray().plus(INDEX))
+            .fields(*fields.plus(INDEX).map { DSL.quotedName(it) }.toTypedArray())
             .`as`(
                 request.variables!!.mapIndexed { idx, variable ->
                     val f = variable.values.map { value ->
@@ -407,7 +407,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
                     e = where,
                     request
                 )
-            } ?: DSL.noCondition()))
+            } ?: DSL.noCondition())).also {
+                println("Where conditions: $it")
+        }
     }
 
     protected fun getDefaultAggregateJsonEntries(aggregates: Map<String, Aggregate>?): Field<*> {
@@ -429,7 +431,7 @@ abstract class BaseQueryGenerator : BaseGenerator {
         const val MAX_QUERY_ROWS = 2147483647
         const val FOREACH_ROWS = "foreach_rows"
         const val VARS = "vars"
-        const val INDEX = "index"
+        const val INDEX = "idx"
         const val ROWS_AND_AGGREGATES = "rows_and_aggregates"
     }
 }

@@ -5,7 +5,7 @@ services:
   ### NDC Connectors
   ##################
   ndc-connector-oracle:
-    image: ghcr.io/hasura/ndc-jvm-oracle:${IMAGE_TAG}
+    image: ghcr.io/hasura/ndc-jvm-oracle:${IMAGE_TAG_ORACLE}
     build:
       context: "./"
       dockerfile: "ndc-connector-oracle.dockerfile"
@@ -18,7 +18,7 @@ services:
       - ./ndc-connector-oracle/configuration.json:/etc/connector/configuration.json
 
   ndc-connector-mysql:
-    image: ghcr.io/hasura/ndc-jvm-mysql:${IMAGE_TAG}
+    image: ghcr.io/hasura/ndc-jvm-mysql:${IMAGE_TAG_MYSQL}
     build:
         context: "./"
         dockerfile: "ndc-connector-mysql.dockerfile"
@@ -28,7 +28,7 @@ services:
       - ./ndc-connector-mysql/configuration.json:/etc/connector/configuration.json
 
   ndc-connector-snowflake:
-    image: ghcr.io/hasura/ndc-jvm-snowflake:${IMAGE_TAG}
+    image: ghcr.io/hasura/ndc-jvm-snowflake:${IMAGE_TAG_SNOWFLAKE}
     build:
         context: "./"
         dockerfile: "ndc-connector-snowflake.dockerfile"

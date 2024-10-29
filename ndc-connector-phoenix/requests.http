@@ -1,0 +1,50 @@
+POST http://localhost:8080/query
+Content-Type: application/json
+
+{
+  "collection": "US_POPULATION",
+  "query": {
+    "aggregates": null,
+    "fields": {
+      "CITY": {
+        "type": "column",
+        "column": "CITY"
+      },
+      "STATE": {
+        "type": "column",
+        "column": "STATE"
+      },
+      "POPULATION": {
+        "type": "column",
+        "column": "POPULATION"
+      }
+    },
+    "limit": null,
+    "offset": null,
+    "order_by": null,
+    "predicate": {
+      "type": "binary_comparison_operator",
+      "operator": "_eq",
+      "column": {
+        "type": "column",
+        "name": "STATE",
+        "path": []
+      },
+      "value": {
+        "type": "variable",
+        "name": "STATE"
+      }
+    }
+  },
+  "arguments": {},
+  "collection_relationships": {},
+  "variables": [
+    {
+      "STATE": "NY"
+    },
+    {
+      "STATE": "CA"
+    }
+  ],
+  "root_collection": "US_POPULATION"
+}

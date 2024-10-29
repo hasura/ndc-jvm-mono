@@ -1,0 +1,126 @@
+POST http://0.0.0.0:8080/query
+Content-Type: application/json
+
+{
+  "collection": "CHINOOK.PUBLIC.ARTIST",
+  "query": {
+    "fields": {
+      "artistid": {
+        "type": "column",
+        "column": "ARTISTID",
+        "fields": null
+      },
+      "name": {
+        "type": "column",
+        "column": "NAME",
+        "fields": null
+      },
+      "chinookAlbums": {
+        "type": "relationship",
+        "query": {
+          "fields": {
+            "albumid": {
+              "type": "column",
+              "column": "ALBUMID",
+              "fields": null
+            },
+            "artistid": {
+              "type": "column",
+              "column": "ARTISTID",
+              "fields": null
+            },
+            "title": {
+              "type": "column",
+              "column": "TITLE",
+              "fields": null
+            }
+          },
+          "limit": 1,
+          "order_by": {
+            "elements": [
+              {
+                "order_direction": "asc",
+                "target": {
+                  "type": "column",
+                  "name": "ALBUMID",
+                  "path": []
+                }
+              }
+            ]
+          }
+        },
+        "relationship": "app___ChinookArtist__chinookAlbums",
+        "arguments": {}
+      }
+    },
+    "limit": 25,
+    "order_by": {
+      "elements": [
+        {
+          "order_direction": "asc",
+          "target": {
+            "type": "column",
+            "name": "ARTISTID",
+            "path": []
+          }
+        }
+      ]
+    }
+  },
+  "arguments": {},
+  "collection_relationships": {
+    "app___ChinookArtist__chinookAlbums": {
+      "column_mapping": {
+        "ARTISTID": "ARTISTID"
+      },
+      "relationship_type": "array",
+      "target_collection": "CHINOOK.PUBLIC.ALBUM",
+      "arguments": {}
+    }
+  }
+}
+
+###
+POST http://0.0.0.0:8080/query
+Content-Type: application/json
+
+{
+  "collection": "CHINOOK.PUBLIC.ARTIST",
+  "query": {
+    "fields": {
+      "artistid": {
+        "type": "column",
+        "column": "ARTISTID",
+        "fields": null
+      },
+      "name": {
+        "type": "column",
+        "column": "NAME",
+        "fields": null
+      }
+    },
+    "predicate": {
+      "type": "binary_comparison_operator",
+      "operator": "_eq",
+      "column": {
+        "type": "column",
+        "name": "ARTISTID",
+        "path": []
+      },
+      "value": {
+        "type": "variable",
+        "name": "$ARTISTID"
+      }
+    }
+  },
+  "arguments": {},
+  "variables": [
+    {
+      "$ARTISTID": 1
+    },
+    {
+      "$ARTISTID": 2
+    }
+  ],
+  "root_collection": "CHINOOK.PUBLIC.ARTIST"
+}

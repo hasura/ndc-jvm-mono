@@ -2,6 +2,7 @@ package io.hasura.snowflake
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.hasura.CTEQueryGenerator
 import io.hasura.ndc.app.interfaces.IDataSourceProvider
 import io.hasura.ndc.app.services.ConnectorConfigurationLoader
 import io.hasura.ndc.app.services.dataConnectors.BaseDataConnectorService
@@ -65,7 +66,12 @@ class SnowflakeDataConnectorService @Inject constructor(
         println(ConnectorConfigurationLoader.config)
 
         val dslCtx = mkDSLCtx()
-        val query = JsonQueryGenerator.queryRequestToSQL(request)
+
+        val query = if (!request.variables.isNullOrEmpty()) {
+            CTEQueryGenerator.forEachQueryRequestToSQL(request)
+        } else {
+            CTEQueryGenerator.queryRequestToSQL(request)
+        }
 
         println(
             dslCtx
@@ -74,18 +80,14 @@ class SnowflakeDataConnectorService @Inject constructor(
 
         val rows = executeDbQuery(query, dslCtx)
         val json = rows.getValue(0, 0).toString()
-        val rowset = objectMapper.readValue<RowSet?>(json)
 
-        return if (rowset == null) {
-            listOf(RowSet(rows = emptyList(), aggregates = emptyMap()))
-        } else {
-            listOf(rowset)
-        }
+        val rowsets = objectMapper.readValue<List<RowSet>>(json)
+        return rowsets
     }
 
     override val jooqDialect = SQLDialect.SNOWFLAKE
     override val jooqSettings =
-        commonDSLContextSettings.withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_UNQUOTED)
+        commonDSLContextSettings.withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_QUOTED)
     override val sqlGenerator = JsonQueryGenerator
     override val mutationTranslator = MutationTranslator
 }
