@@ -63,8 +63,6 @@ class SnowflakeDataConnectorService @Inject constructor(
     )
 
     override fun handleQuery(request: QueryRequest): List<RowSet> {
-        println(ConnectorConfigurationLoader.config)
-
         val dslCtx = mkDSLCtx()
 
         val query = if (!request.variables.isNullOrEmpty()) {
@@ -72,11 +70,6 @@ class SnowflakeDataConnectorService @Inject constructor(
         } else {
             CTEQueryGenerator.queryRequestToSQL(request)
         }
-
-        println(
-            dslCtx
-                .renderInlined(query)
-        )
 
         val rows = executeDbQuery(query, dslCtx)
         val json = rows.getValue(0, 0).toString()
@@ -88,6 +81,6 @@ class SnowflakeDataConnectorService @Inject constructor(
     override val jooqDialect = SQLDialect.SNOWFLAKE
     override val jooqSettings =
         commonDSLContextSettings.withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_QUOTED)
-    override val sqlGenerator = JsonQueryGenerator
+    override val sqlGenerator = CTEQueryGenerator
     override val mutationTranslator = MutationTranslator
 }
