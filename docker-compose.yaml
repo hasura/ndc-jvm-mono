@@ -5,7 +5,7 @@ services:
   ### NDC Connectors
   ##################
   ndc-connector-oracle:
-    image: hasuraci/ndc-oracle-connector:${IMAGE_TAG_ORACLE}
+    image: ghcr.io/hasura/ndc-jvm-oracle:${IMAGE_TAG_ORACLE}
     build:
       context: "./"
       dockerfile: "ndc-connector-oracle.dockerfile"
