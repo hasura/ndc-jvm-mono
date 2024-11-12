@@ -41,7 +41,7 @@ jobs:
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -61,8 +61,6 @@ jobs:
           build-args: |
             JOOQ_PRO_EMAIL=${{ secrets.JOOQ_PRO_EMAIL }}
             JOOQ_PRO_LICENSE=${{ secrets.JOOQ_PRO_LICENSE }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   create-release:
     needs: docker-build
