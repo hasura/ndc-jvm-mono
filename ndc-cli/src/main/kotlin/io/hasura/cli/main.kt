@@ -4,8 +4,8 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.hasura.ndc.common.ConnectorConfiguration
 import picocli.CommandLine
 import picocli.CommandLine.*
+import java.io.File
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermissions
 import kotlin.system.exitProcess
 
@@ -58,14 +58,17 @@ class CLI {
         )
         schemas: List<String>?
     ) {
-        val configFilePath = ConnectorConfiguration.Loader.getConfigFilePath()
-        val existingConfig = ConnectorConfiguration.Loader.config
+        val file = File(outfile)
 
-        println("Checking for configuration file at $configFilePath")
-        if (existingConfig == ConnectorConfiguration()) {
-            println("Non-existent or empty configuration file detected")
-        } else {
-            println("Existing configuration file detected")
+        println("Checking for configuration file at ${file.absolutePath}")
+        val existingConfig = file.let {
+            if (it.exists()) {
+                println("Existing configuration file detected")
+                mapper.readValue(it, ConnectorConfiguration::class.java)
+            } else {
+                println("Non-existent or empty configuration file detected")
+                ConnectorConfiguration()
+            }
         }
 
         val configGenerator = when (database) {
@@ -83,17 +86,14 @@ class CLI {
             nativeQueries = existingConfig.nativeQueries
         )
 
-        val outfilePath = Path.of(ConnectorConfiguration.Loader.CONFIG_DIRECTORY, outfile)
-        println("Writing configuration to file: $configFilePath")
-
-        val file = configFilePath.toFile()
         try {
+            println("Writing configuration to ${file.absolutePath}")
             mapper.writerWithDefaultPrettyPrinter().writeValue(file, mergedConfigWithNativeQueries)
         } catch (e: Exception) {
             println("Error writing configuration to file: ${e.message}")
 
             val parentDir = file.parentFile
-            val permissions =  Files.getPosixFilePermissions(parentDir.toPath())
+            val permissions = Files.getPosixFilePermissions(parentDir.toPath())
             val posixPermissions = PosixFilePermissions.toString(permissions)
 
             println("Parent directory: ${parentDir.absolutePath}")
