@@ -1,0 +1,84 @@
+name: Build and Release Database Connector
+
+on:
+  push:
+    branches:
+      - "snowflake/*"
+      - "mysql/*"
+      - "oracle/*"
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        database: [snowflake, mysql, oracle]
+
+    outputs:
+      release_tag: ${{ steps.extract_tag.outputs.tag }}
+
+    steps:
+      - name: Checkout repository
+        if: contains(github.ref, matrix.database)
+        uses: actions/checkout@v3
+
+      - name: Extract version from branch name
+        if: contains(github.ref, matrix.database)
+        id: extract_tag
+        run: |
+          DB_TYPE=${{ matrix.database }}
+          VERSION=${GITHUB_REF#refs/heads/${DB_TYPE}/}
+          echo "tag=${DB_TYPE}/${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        if: contains(github.ref, matrix.database)
+        uses: docker/setup-buildx-action@v2
+
+      - name: Cross-platform Docker build and push
+        if: contains(github.ref, matrix.database)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/hasura/ndc-jvm-${{ matrix.database }}:${{ steps.extract_tag.outputs.tag }}
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            JOOQ_PRO_EMAIL=${{ secrets.JOOQ_PRO_EMAIL }}
+            JOOQ_PRO_LICENSE=${{ secrets.JOOQ_PRO_LICENSE }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  create-release:
+    needs: docker-build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        database: [snowflake, mysql, oracle]
+
+    steps:
+      - name: Checkout repository
+        if: contains(github.ref, matrix.database)
+        uses: actions/checkout@v3
+
+      - name: Update dockerImage in connector-metadata.yaml
+        if: contains(github.ref, matrix.database)
+        run: |
+          sed -i "s|^  dockerImage:.*|  dockerImage: \"ghcr.io/hasura/ndc-jvm-${{ matrix.database }}:${{ needs.docker-build.outputs.release_tag }}\"|" ndc-connector-${{ matrix.database }}/.hasura-connector/connector-metadata.yaml
+
+      - name: Compress Hasura Connector Metadata
+        if: contains(github.ref, matrix.database)
+        run: |
+          cd ndc-connector-${{ matrix.database }}
+          tar -czf package.tar.gz ./.hasura-connector
+
+      - name: Upload package.tar.gz to GitHub Release
+        if: contains(github.ref, matrix.database)
+        uses: actions/upload-release-asset@v1
+        with:
+          tag_name: ${{ needs.docker-build.outputs.release_tag }}
+          upload_url: ${{ steps.release.outputs.upload_url }}
+          asset_path: ndc-connector-${{ matrix.database }}/package.tar.gz
+          asset_name: package-${{ matrix.database }}.tar.gz
+          asset_content_type: application/gzip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
