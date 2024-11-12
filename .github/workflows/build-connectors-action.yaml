@@ -26,9 +26,13 @@ jobs:
         if: contains(github.ref, matrix.database)
         id: extract_tag
         run: |
+          # Get the database type from the matrix
           DB_TYPE=${{ matrix.database }}
+          # Extract only the version part from the branch name, omitting the database type
           VERSION=${GITHUB_REF#refs/heads/${DB_TYPE}/}
-          echo "tag=${DB_TYPE}/${VERSION}" >> $GITHUB_OUTPUT
+          # Set the tag output as "v1.0.3" and the full Docker tag as "ghcr.io/hasura/ndc-jvm-mysql:v1.0.3"
+          echo "tag=${VERSION}" >> $GITHUB_OUTPUT
+          echo "docker_tag=ghcr.io/hasura/ndc-jvm-${DB_TYPE}:${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
         if: contains(github.ref, matrix.database)
@@ -39,8 +43,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: ndc-connector-${{ matrix.database }}.dockerfile
           push: true
-          tags: ghcr.io/hasura/ndc-jvm-${{ matrix.database }}:${{ steps.extract_tag.outputs.tag }}
+          tags: ${{ steps.extract_tag.outputs.docker_tag }}
           platforms: linux/amd64,linux/arm64
           build-args: |
             JOOQ_PRO_EMAIL=${{ secrets.JOOQ_PRO_EMAIL }}
@@ -63,7 +68,8 @@ jobs:
       - name: Update dockerImage in connector-metadata.yaml
         if: contains(github.ref, matrix.database)
         run: |
-          sed -i "s|^  dockerImage:.*|  dockerImage: \"ghcr.io/hasura/ndc-jvm-${{ matrix.database }}:${{ needs.docker-build.outputs.release_tag }}\"|" ndc-connector-${{ matrix.database }}/.hasura-connector/connector-metadata.yaml
+          # Use the full Docker tag from the docker-build job output
+          sed -i "s|^  dockerImage:.*|  dockerImage: \"${{ needs.docker-build.outputs.docker_tag }}\"|" ndc-connector-${{ matrix.database }}/.hasura-connector/connector-metadata.yaml
 
       - name: Compress Hasura Connector Metadata
         if: contains(github.ref, matrix.database)
@@ -75,7 +81,7 @@ jobs:
         if: contains(github.ref, matrix.database)
         uses: actions/upload-release-asset@v1
         with:
-          tag_name: ${{ needs.docker-build.outputs.release_tag }}
+          tag_name: ${{ needs.docker-build.outputs.tag }} # Use the correct tag output
           upload_url: ${{ steps.release.outputs.upload_url }}
           asset_path: ndc-connector-${{ matrix.database }}/package.tar.gz
           asset_name: package-${{ matrix.database }}.tar.gz
