@@ -28,10 +28,9 @@ jobs:
         run: |
           # Get the database type from the matrix
           DB_TYPE=${{ matrix.database }}
-          # Extract only the version part from the branch name, omitting the database type
-          VERSION=${GITHUB_REF#refs/heads/${DB_TYPE}/}
-          # Set the tag output as "v1.0.3" and the full Docker tag as "ghcr.io/hasura/ndc-jvm-mysql:v1.0.3"
-          echo "tag=${VERSION}" >> $GITHUB_OUTPUT
+          # Use sed to remove the database prefix and get only the version part
+          VERSION=$(echo "${GITHUB_REF#refs/heads/}" | sed "s|^${DB_TYPE}/||")
+          # Construct the Docker tag
           echo "docker_tag=ghcr.io/hasura/ndc-jvm-${DB_TYPE}:${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
