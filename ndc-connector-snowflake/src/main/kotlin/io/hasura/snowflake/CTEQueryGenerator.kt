@@ -23,23 +23,6 @@ object CTEQueryGenerator : BaseQueryGenerator() {
             .from(buildSelections(request).asTable("data"))
     }
 
-    override fun buildComparison(
-        col: Field<Any>,
-        operator: ApplyBinaryComparisonOperator,
-        value: Field<Any>
-    ): Condition {
-        return when (operator) {
-            ApplyBinaryComparisonOperator.EQ -> col.eq(value)
-            ApplyBinaryComparisonOperator.GT -> col.gt(value)
-            ApplyBinaryComparisonOperator.GTE -> col.ge(value)
-            ApplyBinaryComparisonOperator.LT -> col.lt(value)
-            ApplyBinaryComparisonOperator.LTE -> col.le(value)
-            ApplyBinaryComparisonOperator.IN -> col.`in`(value)
-            ApplyBinaryComparisonOperator.IS_NULL -> col.isNull
-            ApplyBinaryComparisonOperator.LIKE -> col.like(value as Field<String>)
-        }
-    }
-
 
     override fun forEachQueryRequestToSQL(request: QueryRequest): Select<*> {
         return buildCTEs(request, listOf(buildVarsCTE(request)))

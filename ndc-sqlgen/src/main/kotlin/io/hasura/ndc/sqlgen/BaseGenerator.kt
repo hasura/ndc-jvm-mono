@@ -25,7 +25,23 @@ sealed interface BaseGenerator {
         )
     }
 
-    abstract fun buildComparison(col: Field<Any>, operator: ApplyBinaryComparisonOperator, value: Field<Any>): Condition
+    fun buildComparison(
+        col: Field<Any>,
+        operator: ApplyBinaryComparisonOperator,
+        value: Field<Any>
+    ): Condition {
+        return when (operator) {
+            ApplyBinaryComparisonOperator.EQ -> col.eq(value)
+            ApplyBinaryComparisonOperator.GT -> col.gt(value)
+            ApplyBinaryComparisonOperator.GTE -> col.ge(value)
+            ApplyBinaryComparisonOperator.LT -> col.lt(value)
+            ApplyBinaryComparisonOperator.LTE -> col.le(value)
+            ApplyBinaryComparisonOperator.IN -> col.`in`(value)
+            ApplyBinaryComparisonOperator.IS_NULL -> col.isNull
+            ApplyBinaryComparisonOperator.LIKE -> col.like(value as Field<String>)
+            ApplyBinaryComparisonOperator.CONTAINS -> col.contains(value as Field<String>)
+        }
+    }
 
     private fun getCollectionForCompCol(
         col: ComparisonColumn,
@@ -38,7 +54,8 @@ sealed interface BaseGenerator {
                 if (col.path.isNotEmpty()) {
                     // Traverse the relationship path to get to the current collection name
                     val targetCollection = col.path.fold("") { acc, pathElement ->
-                        val rel = request.collection_relationships[pathElement.relationship] ?: throw Exception("Relationship not found")
+                        val rel = request.collection_relationships[pathElement.relationship]
+                            ?: throw Exception("Relationship not found")
                         rel.target_collection
                     }
                     targetCollection
@@ -49,9 +66,13 @@ sealed interface BaseGenerator {
         }
     }
 
-    fun argumentToCondition(request: QueryRequest, argument: Map.Entry<String, Argument>, overrideCollection: String)
-        = argumentToCondition(request.copy(collection = overrideCollection), argument)
-    fun argumentToCondition(request: QueryRequest, argument: Map.Entry<String, Argument>) : Condition {
+    fun argumentToCondition(
+        request: QueryRequest,
+        argument: Map.Entry<String, Argument>,
+        overrideCollection: String
+    ) = argumentToCondition(request.copy(collection = overrideCollection), argument)
+
+    fun argumentToCondition(request: QueryRequest, argument: Map.Entry<String, Argument>): Condition {
         val compVal = when (val arg = argument.value) {
             is Argument.Variable -> ComparisonValue.VariableComp(arg.name)
             is Argument.Literal -> ComparisonValue.ScalarComp(arg.value)
@@ -66,8 +87,8 @@ sealed interface BaseGenerator {
     }
 
     // override request collection for expressionToCondition evaluation
-    fun expressionToCondition( e: Expression, request: QueryRequest, overrideCollection: String)
-        = expressionToCondition(e, request.copy(collection = overrideCollection))
+    fun expressionToCondition(e: Expression, request: QueryRequest, overrideCollection: String) =
+        expressionToCondition(e, request.copy(collection = overrideCollection))
 
 
     // Convert a WHERE-like expression IR into a JOOQ Condition
@@ -176,7 +197,13 @@ sealed interface BaseGenerator {
                                                 rel.column_mapping.map { (sourceCol, targetCol) ->
                                                     DSL.field(DSL.name(splitCollectionName(request.collection) + sourceCol))
                                                         .eq(DSL.field(DSL.name(splitCollectionName(rel.target_collection) + targetCol)))
-                                                } + rel.arguments.map { argumentToCondition(request, it, rel.target_collection) }
+                                                } + rel.arguments.map {
+                                            argumentToCondition(
+                                                request,
+                                                it,
+                                                rel.target_collection
+                                            )
+                                        }
                                     )
                                 )
                         )

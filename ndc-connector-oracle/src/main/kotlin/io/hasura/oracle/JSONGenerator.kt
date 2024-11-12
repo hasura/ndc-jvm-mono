@@ -1,6 +1,6 @@
 package io.hasura.oracle
 
-import io.hasura.ndc.app.services.ConnectorConfigurationLoader
+import io.hasura.ndc.common.ConnectorConfiguration
 import io.hasura.ndc.common.NDCScalar
 import io.hasura.ndc.ir.*
 import io.hasura.ndc.ir.Field.ColumnField
@@ -13,22 +13,6 @@ import org.jooq.impl.SQLDataType
 
 
 object JsonQueryGenerator : BaseQueryGenerator() {
-    override fun buildComparison(
-        col: Field<Any>,
-        operator: ApplyBinaryComparisonOperator,
-        value: Field<Any>
-    ): Condition {
-        return when (operator) {
-            ApplyBinaryComparisonOperator.EQ -> col.eq(value)
-            ApplyBinaryComparisonOperator.GT -> col.gt(value)
-            ApplyBinaryComparisonOperator.GTE -> col.ge(value)
-            ApplyBinaryComparisonOperator.LT -> col.lt(value)
-            ApplyBinaryComparisonOperator.LTE -> col.le(value)
-            ApplyBinaryComparisonOperator.IN -> col.`in`(value)
-            ApplyBinaryComparisonOperator.IS_NULL -> col.isNull
-            ApplyBinaryComparisonOperator.LIKE -> col.like(value as Field<String>)
-        }
-    }
 
     override fun forEachQueryRequestToSQL(request: QueryRequest): Select<*> {
         TODO("Not yet implemented")
@@ -237,7 +221,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
     }
 
     private fun columnTypeTojOOQType(collection: String, field: ColumnField): org.jooq.DataType<out Any> {
-        val connectorConfig = ConnectorConfigurationLoader.config
+        val connectorConfig = ConnectorConfiguration.Loader.config
 
         val table = connectorConfig.tables.find { it.tableName == collection }
             ?: error("Table $collection not found in connector configuration")

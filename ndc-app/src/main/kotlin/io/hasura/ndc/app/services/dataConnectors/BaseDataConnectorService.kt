@@ -9,7 +9,6 @@ import io.hasura.ndc.app.interfaces.ISchemaGenerator
 import io.hasura.ndc.common.ConnectorConfiguration
 import io.hasura.ndc.app.models.ExplainResponse
 import io.hasura.ndc.app.services.AgroalDataSourceService
-import io.hasura.ndc.app.services.ConnectorConfigurationLoader
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import jakarta.enterprise.inject.Produces
@@ -106,14 +105,14 @@ abstract class BaseDataConnectorService(
 
     @WithSpan
     open fun mkDSLCtx(): DSLContext {
-        val config = ConnectorConfigurationLoader.config
+        val config = ConnectorConfiguration.Loader.config
         val ds = dataSourceProvider.getDataSource(config)
         return DSL.using(ds, jooqDialect, jooqSettings)
     }
 
     @WithSpan
     override fun getSchema(): SchemaResponse {
-        return schemaGenerator.getSchema(ConnectorConfigurationLoader.config)
+        return schemaGenerator.getSchema(ConnectorConfiguration.Loader.config)
     }
 
 

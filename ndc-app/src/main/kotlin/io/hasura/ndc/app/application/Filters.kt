@@ -15,7 +15,8 @@ class Filters {
     @ServerRequestFilter(priority = 0)
     fun logBodyFilter(info: UriInfo, request: HttpServerRequest, ctx: ContainerRequestContext) {
         request.body { b ->
-            logger.debug("INCOMING IR: ${b.result()}")
+            logger.debug("INCOMING IR:")
+            logger.debug(b.result())
         }
     }
 }

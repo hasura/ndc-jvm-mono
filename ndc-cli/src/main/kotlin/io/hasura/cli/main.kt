@@ -1,10 +1,11 @@
 package io.hasura.cli
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.hasura.ndc.common.ConnectorConfiguration
 import picocli.CommandLine
 import picocli.CommandLine.*
-import java.io.File
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermissions
 import kotlin.system.exitProcess
 
@@ -57,6 +58,15 @@ class CLI {
         )
         schemas: List<String>?
     ) {
+        val configFilePath = ConnectorConfiguration.Loader.getConfigFilePath()
+        val existingConfig = ConnectorConfiguration.Loader.config
+
+        println("Checking for configuration file at $configFilePath")
+        if (existingConfig == ConnectorConfiguration()) {
+            println("Non-existent or empty configuration file detected")
+        } else {
+            println("Existing configuration file detected")
+        }
 
         val configGenerator = when (database) {
             DatabaseType.ORACLE -> OracleConfigGenerator
@@ -64,14 +74,21 @@ class CLI {
             DatabaseType.SNOWFLAKE -> SnowflakeConfigGenerator
         }
 
-        val config = configGenerator.getConfig(
+        println("Generating configuration for $database database...")
+        val introspectedConfig = configGenerator.getConfig(
             jdbcUrl = jdbcUrl,
             schemas = schemas ?: emptyList()
         )
+        val mergedConfigWithNativeQueries = introspectedConfig.copy(
+            nativeQueries = existingConfig.nativeQueries
+        )
 
-        val file = File(outfile)
+        val outfilePath = Path.of(ConnectorConfiguration.Loader.CONFIG_DIRECTORY, outfile)
+        println("Writing configuration to file: $configFilePath")
+
+        val file = configFilePath.toFile()
         try {
-            mapper.writerWithDefaultPrettyPrinter().writeValue(file, config)
+            mapper.writerWithDefaultPrettyPrinter().writeValue(file, mergedConfigWithNativeQueries)
         } catch (e: Exception) {
             println("Error writing configuration to file: ${e.message}")
 
@@ -95,10 +112,4 @@ class CLI {
             exitProcess(exitCode)
         }
     }
-}
-
-fun main(args: Array<String>) {
-    val cli = CommandLine(CLI())
-    val exitCode = cli.execute(*args)
-    exitProcess(exitCode)
 }

@@ -1,5 +1,8 @@
 package io.hasura.ndc.sqlgen
 
+import io.hasura.ndc.common.ConnectorConfiguration
+import io.hasura.ndc.common.NativeQueryInfo
+import io.hasura.ndc.common.NativeQueryPart
 import io.hasura.ndc.ir.*
 import io.hasura.ndc.ir.extensions.isVariablesRequest
 import io.hasura.ndc.ir.Field as IRField
@@ -20,6 +23,42 @@ abstract class BaseQueryGenerator : BaseGenerator {
 
     open fun mutationQueryRequestToSQL(request: QueryRequest): Select<*> {
         throw NotImplementedError("Mutation not supported for this data source")
+    }
+
+    fun mkNativeQueryCTE(
+        request: QueryRequest
+    ): org.jooq.WithStep {
+        val config = ConnectorConfiguration.Loader.config
+
+        fun renderNativeQuerySQL(
+            nativeQuery: NativeQueryInfo,
+            arguments: Map<String, Argument>
+        ): String {
+            val sql = nativeQuery.sql
+            val parts = sql.parts
+
+            return parts.joinToString("") { part ->
+                when (part) {
+                    is NativeQueryPart.Text -> part.value
+                    is NativeQueryPart.Parameter -> {
+                        val argument = arguments[part.value] ?: error("Argument ${part.value} not found")
+                        when (argument) {
+                            is Argument.Literal -> argument.value.toString()
+                            else -> error("Only literals are supported in Native Queries in this version")
+                        }
+                    }
+                }
+            }
+        }
+
+        val nativeQuery = config.nativeQueries[request.collection]!!
+        val nativeQuerySQL = renderNativeQuerySQL(nativeQuery, request.arguments)
+
+        return DSL.with(
+            DSL.name(request.collection)
+        ).`as`(
+            DSL.resultQuery(nativeQuerySQL)
+        )
     }
 
     fun getQueryColumnFields(fields: Map<String, IRField>): Map<String, IRField.ColumnField> {
