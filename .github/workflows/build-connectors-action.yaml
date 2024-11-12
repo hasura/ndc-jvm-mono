@@ -7,6 +7,11 @@ on:
       - "mysql/*"
       - "oracle/*"
 
+permissions:
+  contents: read
+  packages: write # Allows pushing to GHCR
+  id-token: write # Required for authenticating with GHCR
+
 jobs:
   docker-build:
     runs-on: ubuntu-latest
