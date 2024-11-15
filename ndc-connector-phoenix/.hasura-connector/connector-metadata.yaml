@@ -1,6 +1,6 @@
 packagingDefinition:
   type: PrebuiltDockerImage
-  dockerImage: "ghcr.io/hasura/ndc-jvm-phoenix:v1.0.0"
+  dockerImage: "ghcr.io/hasura/ndc-jvm-phoenix:v1.0.2"
 supportedEnvironmentVariables:
   - name: JDBC_URL
     description: "The JDBC URL to connect to the database"
@@ -9,7 +9,7 @@ commands:
     docker run \
       -e HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH \
       -v ${HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH}:/app/output \
-      ghcr.io/hasura/ndc-jvm-cli:v0.1.1 update $JDBC_URL \
+      ghcr.io/hasura/ndc-jvm-cli:v0.1.1-phoenix.1 update $JDBC_URL \
         --database PHOENIX \
         --schemas $JDBC_SCHEMAS \
         --outfile /app/output/configuration.json

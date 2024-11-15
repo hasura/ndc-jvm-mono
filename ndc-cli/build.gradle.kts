@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.support.kotlinCompilerOptions
+
 plugins {
     `kotlin-dsl`
     application
@@ -24,7 +26,8 @@ dependencies {
     implementation("com.oracle.database.jdbc:ojdbc8:19.18.0.0")
     implementation("com.mysql:mysql-connector-j:8.4.0")
     implementation("net.snowflake:snowflake-jdbc:3.16.1")
-    implementation("org.apache.phoenix:phoenix-client-embedded-hbase-2.5:5.2.0")
+
+    implementation("org.apache.phoenix:phoenix-client-hbase-2.4:5.1.1")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
