@@ -28,6 +28,7 @@ dependencies {
     implementation("net.snowflake:snowflake-jdbc:3.16.1")
 
     implementation("org.apache.phoenix:phoenix-client-hbase-2.4:5.1.1")
+    implementation("org.apache.phoenix:phoenix-queryserver-client:5.0.0-HBase-2.0")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
