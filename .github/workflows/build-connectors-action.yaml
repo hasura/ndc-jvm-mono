@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        database: [snowflake, mysql, oracle]
+        database: [snowflake, mysql, oracle, phoenix]
 
     outputs:
       release_tag: ${{ steps.extract_tag.outputs.tag }}
@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        database: [snowflake, mysql, oracle]
+        database: [snowflake, mysql, oracle, phoenix]
 
     steps:
       - name: Checkout repository
