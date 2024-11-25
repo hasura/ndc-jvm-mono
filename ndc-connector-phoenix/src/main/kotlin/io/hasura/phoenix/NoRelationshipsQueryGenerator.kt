@@ -1,6 +1,6 @@
 package io.hasura.phoenix
 
-import io.hasura.ndc.app.services.ConnectorConfigurationLoader
+import io.hasura.ndc.common.ConnectorConfiguration
 import io.hasura.ndc.common.NDCScalar
 import io.hasura.ndc.ir.*
 import io.hasura.ndc.ir.Field.ColumnField
@@ -26,6 +26,7 @@ object NoRelationshipsQueryGenerator : BaseQueryGenerator() {
             ApplyBinaryComparisonOperator.IN -> col.`in`(value)
             ApplyBinaryComparisonOperator.IS_NULL -> col.isNull
             ApplyBinaryComparisonOperator.LIKE -> col.like(value as Field<String>)
+            else -> throw Exception("Unsupported operator: $operator")
         }
     }
 
@@ -130,7 +131,7 @@ object NoRelationshipsQueryGenerator : BaseQueryGenerator() {
     }
 
     fun columnTypeTojOOQType(collection: String, field: ColumnField): DataType<out Any> {
-        val connectorConfig = ConnectorConfigurationLoader.config
+        val connectorConfig = ConnectorConfiguration.Loader.config
 
         val table = connectorConfig.tables.find { it.tableName == collection }
             ?: error("Table $collection not found in connector configuration")
