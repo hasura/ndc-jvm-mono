@@ -61,6 +61,44 @@ abstract class BaseQueryGenerator : BaseGenerator {
         )
     }
 
+    // TODO: Fix this being duplicated due to "buildCTEs" in Snowflake CTE Strategy wanting CommonTableExpression<*> instead of WithStep
+    // Probably easiest to make them both return CommonTableExpression<*> and wrap with DSL.with() in the specific implementations
+    fun mkNativeQueryCTESnowflake(
+        request: QueryRequest
+    ): org.jooq.CommonTableExpression<*> {
+        val config = ConnectorConfiguration.Loader.config
+
+        fun renderNativeQuerySQL(
+            nativeQuery: NativeQueryInfo,
+            arguments: Map<String, Argument>
+        ): String {
+            val sql = nativeQuery.sql
+            val parts = sql.parts
+
+            return parts.joinToString("") { part ->
+                when (part) {
+                    is NativeQueryPart.Text -> part.value
+                    is NativeQueryPart.Parameter -> {
+                        val argument = arguments[part.value] ?: error("Argument ${part.value} not found")
+                        when (argument) {
+                            is Argument.Literal -> argument.value.toString()
+                            else -> error("Only literals are supported in Native Queries in this version")
+                        }
+                    }
+                }
+            }
+        }
+
+        val nativeQuery = config.nativeQueries[request.collection]!!
+        val nativeQuerySQL = renderNativeQuerySQL(nativeQuery, request.arguments)
+
+        return DSL.name(
+            request.collection
+        ).`as`(
+            DSL.resultQuery(nativeQuerySQL)
+        )
+    }
+
     fun getQueryColumnFields(fields: Map<String, IRField>): Map<String, IRField.ColumnField> {
         return fields
             .filterValues { it is IRField.ColumnField }
@@ -446,9 +484,7 @@ abstract class BaseQueryGenerator : BaseGenerator {
                     e = where,
                     request
                 )
-            } ?: DSL.noCondition())).also {
-                println("Where conditions: $it")
-        }
+            } ?: DSL.noCondition()))
     }
 
     protected fun getDefaultAggregateJsonEntries(aggregates: Map<String, Aggregate>?): Field<*> {

@@ -1,5 +1,6 @@
 package io.hasura
 
+import io.hasura.ndc.common.ConnectorConfiguration
 import io.hasura.ndc.ir.*
 import io.hasura.ndc.ir.extensions.isVariablesRequest
 import io.hasura.ndc.sqlgen.BaseQueryGenerator
@@ -18,9 +19,9 @@ object CTEQueryGenerator : BaseQueryGenerator() {
     override fun queryRequestToSQL(
         request: QueryRequest
     ): Select<*> {
-        return buildCTEs(request)
-            .select(DSL.jsonArrayAgg(DSL.field(DSL.name(listOf("data", ROWS_AND_AGGREGATES)))))
-            .from(buildSelections(request).asTable("data"))
+           return buildCTEs(request)
+                .select(DSL.jsonArrayAgg(DSL.field(DSL.name(listOf("data", ROWS_AND_AGGREGATES)))))
+                .from(buildSelections(request).asTable("data"))
     }
 
 
@@ -44,9 +45,14 @@ object CTEQueryGenerator : BaseQueryGenerator() {
     }
 
     private fun buildCTEs(request: QueryRequest, varCTE: List<CommonTableExpression<*>> = emptyList()): WithStep {
+        val isNativeQuery = ConnectorConfiguration.Loader.config.nativeQueries.containsKey(request.collection)
+
         return DSL.with(
-            varCTE +
-                    forEachQueryLevelRecursively(request, CTEQueryGenerator::buildCTE).distinct()
+            buildList {
+                if (isNativeQuery) add(mkNativeQueryCTESnowflake(request))
+                addAll(varCTE)
+                addAll(forEachQueryLevelRecursively(request, CTEQueryGenerator::buildCTE).distinct())
+            }
         )
     }
 
