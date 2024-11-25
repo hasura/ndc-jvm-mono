@@ -2,6 +2,8 @@
 FROM registry.access.redhat.com/ubi9/openjdk-21:1.20-2 AS build
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en'
+ENV JOOQ_PRO_EMAIL=${JOOQ_PRO_EMAIL}
+ENV JOOQ_PRO_LICENSE=${JOOQ_PRO_LICENSE}
 
 WORKDIR /build
 COPY . /build
