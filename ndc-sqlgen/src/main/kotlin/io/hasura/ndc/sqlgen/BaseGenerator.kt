@@ -25,7 +25,23 @@ sealed interface BaseGenerator {
         )
     }
 
-    abstract fun buildComparison(col: Field<Any>, operator: ApplyBinaryComparisonOperator, value: Field<Any>): Condition
+    fun buildComparison(
+        col: Field<Any>,
+        operator: ApplyBinaryComparisonOperator,
+        value: Field<Any>
+    ): Condition {
+        return when (operator) {
+            ApplyBinaryComparisonOperator.EQ -> col.eq(value)
+            ApplyBinaryComparisonOperator.GT -> col.gt(value)
+            ApplyBinaryComparisonOperator.GTE -> col.ge(value)
+            ApplyBinaryComparisonOperator.LT -> col.lt(value)
+            ApplyBinaryComparisonOperator.LTE -> col.le(value)
+            ApplyBinaryComparisonOperator.IN -> col.`in`(value)
+            ApplyBinaryComparisonOperator.IS_NULL -> col.isNull
+            ApplyBinaryComparisonOperator.LIKE -> col.like(value as Field<String>)
+            ApplyBinaryComparisonOperator.CONTAINS -> col.contains(value as Field<String>)
+        }
+    }
 
     private fun getCollectionForCompCol(
         col: ComparisonColumn,
@@ -38,7 +54,8 @@ sealed interface BaseGenerator {
                 if (col.path.isNotEmpty()) {
                     // Traverse the relationship path to get to the current collection name
                     val targetCollection = col.path.fold("") { acc, pathElement ->
-                        val rel = request.collection_relationships[pathElement.relationship] ?: throw Exception("Relationship not found")
+                        val rel = request.collection_relationships[pathElement.relationship]
+                            ?: throw Exception("Relationship not found")
                         rel.target_collection
                     }
                     targetCollection
@@ -49,9 +66,13 @@ sealed interface BaseGenerator {
         }
     }
 
-    fun argumentToCondition(request: QueryRequest, argument: Map.Entry<String, Argument>, overrideCollection: String)
-        = argumentToCondition(request.copy(collection = overrideCollection), argument)
-    fun argumentToCondition(request: QueryRequest, argument: Map.Entry<String, Argument>) : Condition {
+    fun argumentToCondition(
+        request: QueryRequest,
+        argument: Map.Entry<String, Argument>,
+        overrideCollection: String
+    ) = argumentToCondition(request.copy(collection = overrideCollection), argument)
+
+    fun argumentToCondition(request: QueryRequest, argument: Map.Entry<String, Argument>): Condition {
         val compVal = when (val arg = argument.value) {
             is Argument.Variable -> ComparisonValue.VariableComp(arg.name)
             is Argument.Literal -> ComparisonValue.ScalarComp(arg.value)
@@ -66,8 +87,8 @@ sealed interface BaseGenerator {
     }
 
     // override request collection for expressionToCondition evaluation
-    fun expressionToCondition( e: Expression, request: QueryRequest, overrideCollection: String)
-        = expressionToCondition(e, request.copy(collection = overrideCollection))
+    fun expressionToCondition(e: Expression, request: QueryRequest, overrideCollection: String) =
+        expressionToCondition(e, request.copy(collection = overrideCollection))
 
 
     // Convert a WHERE-like expression IR into a JOOQ Condition
@@ -81,36 +102,33 @@ sealed interface BaseGenerator {
         request: QueryRequest
     ): Condition {
 
-        return when (e) {
-            // The negation of a single subexpression
-            is Expression.Not -> DSL.not(expressionToCondition(e.expression,request))
+        fun splitCollectionName(collectionName: String): List<String> {
+            return collectionName.split(".")
+        }
 
-            // A conjunction of several subexpressions
+        return when (e) {
+            is Expression.Not -> DSL.not(expressionToCondition(e.expression, request))
+
             is Expression.And -> when (e.expressions.size) {
                 0 -> DSL.trueCondition()
-                else -> DSL.and(e.expressions.map { expressionToCondition(it,request) })
+                else -> DSL.and(e.expressions.map { expressionToCondition(it, request) })
             }
 
-            // A disjunction of several subexpressions
             is Expression.Or -> when (e.expressions.size) {
                 0 -> DSL.falseCondition()
-                else -> DSL.or(e.expressions.map { expressionToCondition(it,request) })
+                else -> DSL.or(e.expressions.map { expressionToCondition(it, request) })
             }
 
-            // Test the specified column against a single value using a particular binary comparison operator
             is Expression.ApplyBinaryComparison -> {
                 val column = DSL.field(
                     DSL.name(
-                        listOf(
-                            getCollectionForCompCol(e.column, request),
-                            e.column.name
-                        )
+                        splitCollectionName(getCollectionForCompCol(e.column, request)) + e.column.name
                     )
                 )
                 val comparisonValue = when (val v = e.value) {
                     is ComparisonValue.ColumnComp -> {
-                        val col = getCollectionForCompCol(v.column, request)
-                        DSL.field(DSL.name(listOf(col, v.column.name)))
+                        val col = splitCollectionName(getCollectionForCompCol(v.column, request))
+                        DSL.field(DSL.name(col + v.column.name))
                     }
 
                     is ComparisonValue.ScalarComp -> DSL.inline(v.value)
@@ -119,91 +137,53 @@ sealed interface BaseGenerator {
                 return buildComparison(column, e.operator, comparisonValue)
             }
 
-            // Test the specified column against a particular unary comparison operator
             is Expression.ApplyUnaryComparison -> {
-                val baseCond = run {
-                    val column = DSL.field(DSL.name(listOf(request.collection, e.column)))
-                    when (e.operator) {
-                        ApplyUnaryComparisonOperator.IS_NULL -> column.isNull
-                    }
+                val column = DSL.field(DSL.name(splitCollectionName(request.collection) + e.column))
+                when (e.operator) {
+                    ApplyUnaryComparisonOperator.IS_NULL -> column.isNull
                 }
-                baseCond
             }
 
-            // Test the specified column against an array of values using a particular binary comparison operator
             is Expression.ApplyBinaryArrayComparison -> {
-                val baseCond = run {
-                    val column = DSL.field(
-                        DSL.name(
-                            listOf(
-                                getCollectionForCompCol(e.column, request),
-                                e.column.name
-                            )
-                        )
+                val column = DSL.field(
+                    DSL.name(
+                        splitCollectionName(getCollectionForCompCol(e.column, request)) + e.column.name
                     )
-                    when (e.operator) {
-                        ApplyBinaryArrayComparisonOperator.IN -> {
-                            when {
-                                // Generate "IN (SELECT NULL WHERE 1 = 0)" for easier debugging
-                                e.values.isEmpty() -> column.`in`(
-                                    DSL.select(DSL.nullCondition())
-                                        .where(DSL.inline(1).eq(DSL.inline(0)))
-                                )
+                )
+                when (e.operator) {
+                    ApplyBinaryArrayComparisonOperator.IN -> {
+                        when {
+                            e.values.isEmpty() -> column.`in`(
+                                DSL.select(DSL.nullCondition())
+                                    .where(DSL.inline(1).eq(DSL.inline(0)))
+                            )
 
-                                else -> {
-
-                                    // TODO: swtich map to local context as map will need to be separate for the select column comparisions
-                                    // TODO: is it safe to assume that cols will all be from one collections?
-                                    column.`in`(DSL.list(e.values.map {
-                                        when (it) {
-                                            is ComparisonValue.ScalarComp -> DSL.inline(it.value)
-                                            is ComparisonValue.VariableComp -> DSL.field(DSL.name(listOf("vars", it.name)))
-                                            is ComparisonValue.ColumnComp -> {
-                                                val col = getCollectionForCompCol(it.column, request)
-                                                DSL.field(DSL.name(listOf(col, it.column.name)))
-                                            }
-                                        }
-                                    }))
+                            else -> column.`in`(DSL.list(e.values.map {
+                                when (it) {
+                                    is ComparisonValue.ScalarComp -> DSL.inline(it.value)
+                                    is ComparisonValue.VariableComp -> DSL.field(DSL.name(listOf("vars", it.name)))
+                                    is ComparisonValue.ColumnComp -> {
+                                        val col = splitCollectionName(getCollectionForCompCol(it.column, request))
+                                        DSL.field(DSL.name(col + it.column.name))
+                                    }
                                 }
-                            }
+                            }))
                         }
                     }
                 }
-                baseCond
             }
 
-            // Test if a row exists that matches the where subexpression in the specified table (in_table)
-            //
-            // where (
-            //   exists (
-            //     select 1 "one"
-            //     from "AwsDataCatalog"."chinook"."album"
-            //     where (
-            //         "AwsDataCatalog"."chinook"."album"."artistid" = "artist_base_fields_0"."artistid"
-            //         and "AwsDataCatalog"."chinook"."album"."title" = 'For Those About To Rock We Salute You'
-            //         and exists (
-            //           select 1 "one"
-            //           from "AwsDataCatalog"."chinook"."track"
-            //           where (
-            //               "AwsDataCatalog"."chinook"."track"."albumid" = "albumid"
-            //               and "AwsDataCatalog"."chinook"."track"."name" = 'For Those About To Rock (We Salute You)'
-            //           )
-            //         )
-            //     )
-            //   )
-            // )
             is Expression.Exists -> {
                 when (val inTable = e.in_collection) {
-                    // The table is related to the current table via the relationship name specified in relationship
-                    // (this means it should be joined to the current table via the relationship)
                     is ExistsInCollection.Related -> {
-                        val relOrig = request.collection_relationships[inTable.relationship] ?: throw Exception("Exists relationship not found")
+                        val relOrig = request.collection_relationships[inTable.relationship]
+                            ?: throw Exception("Exists relationship not found")
                         val rel = relOrig.copy(arguments = relOrig.arguments + inTable.arguments)
                         DSL.exists(
                             DSL
                                 .selectOne()
                                 .from(
-                                    DSL.table(DSL.name(rel.target_collection))
+                                    DSL.table(DSL.name(splitCollectionName(rel.target_collection)))
                                 )
                                 .where(
                                     DSL.and(
@@ -214,17 +194,21 @@ sealed interface BaseGenerator {
                                                 rel.target_collection
                                             )
                                         ) +
-                                        rel.column_mapping.map { (sourceCol, targetCol) ->
-                                            DSL.field(DSL.name(listOf(request.collection, sourceCol)))
-                                                .eq(DSL.field(DSL.name(listOf(rel.target_collection, targetCol))))
-                                        } + rel.arguments.map {argumentToCondition(request, it, rel.target_collection) }
+                                                rel.column_mapping.map { (sourceCol, targetCol) ->
+                                                    DSL.field(DSL.name(splitCollectionName(request.collection) + sourceCol))
+                                                        .eq(DSL.field(DSL.name(splitCollectionName(rel.target_collection) + targetCol)))
+                                                } + rel.arguments.map {
+                                            argumentToCondition(
+                                                request,
+                                                it,
+                                                rel.target_collection
+                                            )
+                                        }
                                     )
                                 )
                         )
                     }
 
-                    // The table specified by table is unrelated to the current table and therefore is not explicitly joined to the current table
-                    // (this means it should be joined to the current table via a subquery)
                     is ExistsInCollection.Unrelated -> {
                         val condition = mkSQLJoin(
                             Relationship(
@@ -239,7 +223,7 @@ sealed interface BaseGenerator {
                             DSL
                                 .selectOne()
                                 .from(
-                                    DSL.table(DSL.name(inTable.collection))
+                                    DSL.table(DSL.name(splitCollectionName(inTable.collection)))
                                 )
                                 .where(
                                     listOf(
@@ -256,4 +240,5 @@ sealed interface BaseGenerator {
             }
         }
     }
+
 }

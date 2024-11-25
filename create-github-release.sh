@@ -2,15 +2,15 @@
 
 # Check if the correct number of arguments is provided
 if [ "$#" -ne 2 ]; then
-  echo "Usage: $0 <version> <subdir>"
+  echo "Usage: $0 <subdir> <version>"
   exit 1
 fi
 
 # Variables
 OWNER="hasura"
 REPO="ndc-jvm-mono"
-VERSION="$1"  # Version passed as the first argument
-SUBDIR="$2"   # Subdirectory passed as the second argument
+SUBDIR="$1"   # Subdirectory passed as the second argument
+VERSION="$2"  # Version passed as the first argument
 
 # Create tag, release name, and description
 TAG="${SUBDIR#ndc-connector-}/${VERSION}"  # Create tag like oracle/v1.0.0

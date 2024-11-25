@@ -9,6 +9,7 @@ import io.agroal.api.security.SimplePassword
 import io.hasura.ndc.common.ConnectorConfiguration
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import io.opentelemetry.instrumentation.jdbc.datasource.OpenTelemetryDataSource
+import io.quarkus.agroal.runtime.AgroalOpenTelemetryWrapper
 import io.quarkus.agroal.runtime.OpenTelemetryAgroalDataSource
 import io.smallrye.config.ConfigMapping
 import io.smallrye.config.WithDefault
