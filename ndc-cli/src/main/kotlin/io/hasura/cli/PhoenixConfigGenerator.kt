@@ -11,39 +11,37 @@ import java.sql.Types
 object PhoenixConfigGenerator : IConfigGenerator {
 
 
-    private fun translatePhoenixDataTypeToSqlType(phoenixDataType: Int, isThinClient: Boolean = true): String {
+    private fun translatePhoenixDataTypeToSqlType(phoenixDataType: Int?, isThinClient: Boolean = true): String {
 
         val sqlType = if (!isThinClient) {
-            phoenixDataType
+            phoenixDataType ?: Types.OTHER
         } else {
             when (phoenixDataType) {
-                0 -> Types.TINYINT          // UNSIGNED_TINYINT
-                1 -> Types.SMALLINT         // UNSIGNED_SMALLINT
-                2 -> Types.INTEGER          // UNSIGNED_INT
-                3 -> Types.BIGINT           // UNSIGNED_LONG
-                4 -> Types.FLOAT            // UNSIGNED_FLOAT
-                5 -> Types.DOUBLE           // UNSIGNED_DOUBLE
-                6 -> Types.BINARY           // BINARY
-                7 -> Types.CHAR             // CHAR
-                8 -> Types.VARCHAR          // VARCHAR
-                9 -> Types.VARBINARY        // VARBINARY
-                10 -> Types.DECIMAL         // DECIMAL
-                11 -> Types.TIMESTAMP       // TIMESTAMP
-                12 -> Types.DATE            // DATE
-                13 -> Types.TIME            // TIME
-                14 -> Types.TIME            // UNSIGNED_TIME
-                15 -> Types.DATE            // UNSIGNED_DATE
-                16 -> Types.TIMESTAMP       // UNSIGNED_TIMESTAMP
-                17 -> Types.ARRAY           // ARRAY
-                18 -> Types.BOOLEAN         // BOOLEAN
-                19 -> Types.TINYINT         // TINYINT
-                20 -> Types.SMALLINT        // SMALLINT
-                21 -> Types.INTEGER         // INTEGER
-                22 -> Types.BIGINT          // BIGINT
-                23 -> Types.FLOAT           // FLOAT
-                24 -> Types.DOUBLE          // DOUBLE
-                25 -> Types.ARRAY           // UNSIGNED_ARRAY
-                26 -> Types.BINARY          // UUID
+                null -> Types.OTHER           // Handle null data_type
+                -6 -> Types.TINYINT           // TINYINT
+                -5 -> Types.BIGINT            // BIGINT
+                -3 -> Types.VARBINARY         // VARBINARY
+                -2 -> Types.BINARY            // BINARY
+                1 -> Types.CHAR               // CHAR
+                3 -> Types.DECIMAL            // DECIMAL
+                4 -> Types.INTEGER            // INTEGER
+                5 -> Types.SMALLINT           // SMALLINT
+                6 -> Types.FLOAT              // FLOAT
+                8 -> Types.DOUBLE             // DOUBLE
+                9 -> Types.VARCHAR            // VARCHAR
+                10 -> Types.SMALLINT          // UNSIGNED_SMALLINT (maps to SMALLINT)
+                11 -> Types.FLOAT             // UNSIGNED_FLOAT (maps to FLOAT)
+                12 -> Types.VARCHAR           // VARCHAR (Phoenix specific)
+                13 -> Types.VARCHAR           // (Custom/Unsupported, mapped to VARCHAR)
+                14 -> Types.VARCHAR           // (Custom/Unsupported, mapped to VARCHAR)
+                15 -> Types.VARCHAR           // (Custom/Unsupported, mapped to VARCHAR)
+                16 -> Types.BOOLEAN           // BOOLEAN
+                18 -> Types.ARRAY             // ARRAY
+                19 -> Types.VARBINARY         // VARBINARY (Phoenix specific)
+                20 -> Types.VARBINARY         // VARBINARY (Phoenix specific)
+                91 -> Types.DATE              // DATE
+                92 -> Types.TIME              // TIME
+                93 -> Types.TIMESTAMP         // TIMESTAMP
                 else ->
                     if (JDBCType.valueOf(phoenixDataType) != null) {
                         phoenixDataType
@@ -63,10 +61,12 @@ object PhoenixConfigGenerator : IConfigGenerator {
 
         val isThinClient = jdbcUrl.contains("phoenix:thin", ignoreCase = true)
 
-        val result = ctx.fetch("""
+        val result = ctx.fetch(
+            """
             SELECT * FROM SYSTEM.CATALOG
             WHERE TABLE_SCHEM != 'SYSTEM' OR TABLE_SCHEM IS NULL
-        """)
+        """
+        )
 
         val groupedBySchema = result.groupBy { it["TABLE_SCHEM"] as String? }
 
@@ -82,7 +82,7 @@ object PhoenixConfigGenerator : IConfigGenerator {
                     ColumnSchemaRow(
                         name = if (columnFamily != null && columnFamily != "0") "$columnFamily.$columnName" else columnName,
                         description = null,
-                        type = translatePhoenixDataTypeToSqlType(it["DATA_TYPE"] as Int, isThinClient),
+                        type = translatePhoenixDataTypeToSqlType(it["DATA_TYPE"] as? Int, isThinClient),
                         numeric_scale = null,
                         nullable = it["NULLABLE"] == 1,
                         auto_increment = it["IS_AUTOINCREMENT"] == "YES",
@@ -91,7 +91,7 @@ object PhoenixConfigGenerator : IConfigGenerator {
                 }
 
                 TableSchemaRow(
-                    tableName =  if (schema != null) "$schema.$tableName" else tableName,
+                    tableName = if (schema != null) "$schema.$tableName" else tableName,
                     tableType = if (records.any { it["TABLE_TYPE"] == "u" }) TableType.TABLE else TableType.VIEW,
                     description = null,
                     columns = columns,
