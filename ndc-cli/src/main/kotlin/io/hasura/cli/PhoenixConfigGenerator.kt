@@ -55,16 +55,6 @@ object PhoenixConfigGenerator : IConfigGenerator {
         return JDBCType.valueOf(sqlType).name
     }
 
-    fun main() {
-        // Example usage:
-        val phoenixDataType = 8 // Example: VARCHAR
-        val sqlType = translatePhoenixDataTypeToSqlType(phoenixDataType)
-
-        println("Phoenix Data Type: $phoenixDataType")
-        println("Java SQL Type: $sqlType") // Should output: 12 (VARCHAR)
-    }
-
-
     override fun getConfig(
         jdbcUrl: String,
         schemas: List<String>
