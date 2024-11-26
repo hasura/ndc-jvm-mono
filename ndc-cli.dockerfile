@@ -14,6 +14,7 @@ FROM registry.access.redhat.com/ubi9/openjdk-21:1.20-2
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en'
 WORKDIR /app
+USER root
 
 # The "/app/output" directory is used by the NDC CLI "update" command as a bind-mount volume:
 #
