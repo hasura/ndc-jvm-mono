@@ -139,22 +139,29 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                                         request.collection_relationships[field.relationship]
                                                             ?: error("Relationship ${field.relationship} not found")
 
-                                                    val subQuery = buildJSONSelectionForQueryRequest(
-                                                        parentTable = request.collection,
-                                                        parentRelationship = relationship,
-                                                        request = QueryRequest(
-                                                            collection = relationship.target_collection,
-                                                            collection_relationships = request.collection_relationships,
-                                                            query = field.query,
-                                                            arguments = field.arguments,
-                                                            variables = null
+                                                    val isNativeQuery = ConnectorConfiguration.Loader.config.nativeQueries.containsKey(relationship.target_collection)
+                                                    val subQuery = if (isNativeQuery) {
+                                                        mkNativeQueryReltionship(request, field)
+                                                    } else {
+                                                        DSL.select(
+                                                            buildJSONSelectionForQueryRequest(
+                                                                parentTable = request.collection,
+                                                                parentRelationship = relationship,
+                                                                request = QueryRequest(
+                                                                    collection = relationship.target_collection,
+                                                                    collection_relationships = request.collection_relationships,
+                                                                    query = field.query,
+                                                                    arguments = field.arguments,
+                                                                    variables = null
+                                                                )
+                                                            )
                                                         )
-                                                    )
+                                                    }
 
                                                     DSL.jsonEntry(
                                                         alias,
                                                         DSL.coalesce(
-                                                            DSL.select(subQuery),
+                                                            subQuery,
                                                             DSL.jsonObject(
                                                                 DSL.jsonEntry(
                                                                     "rows",
@@ -194,6 +201,36 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                     )
                 }
             }
+        )
+    }
+
+    fun mkNativeQueryReltionship(request: QueryRequest, field: IRField.RelationshipField): Select<*> {
+        val relationship =
+            request.collection_relationships[field.relationship]
+                ?: error("Relationship ${field.relationship} not found")
+        val nativeQuery = ConnectorConfiguration.Loader.config.nativeQueries[relationship.target_collection]!!
+        val nativeQuerySQL = renderNativeQuerySQL(nativeQuery, field.arguments)
+
+        return DSL.select(
+            DSL.jsonObject(
+                DSL.jsonEntry(
+                    "rows",
+                    DSL.jsonArrayAgg(
+                        DSL.jsonObject(
+                            field.query.fields?.map { (columnName, _) ->
+                                DSL.jsonEntry(
+                                    columnName,
+                                    DSL.field(DSL.name(relationship.target_collection, columnName))
+                                )
+                            } ?: emptyList()
+                        )
+                    )
+                )
+            )
+        ).from(
+            DSL.table("($nativeQuerySQL) as ${relationship.target_collection}")
+        ).where(
+            mkJoinWhereClause(request.collection, relationship)
         )
     }
 
