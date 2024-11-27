@@ -89,6 +89,7 @@ abstract class BaseQueryGenerator : BaseGenerator {
         var nativeQueries = findAllNativeQueries(request)
 
         if (nativeQueries.isEmpty()) {
+            // JOOQ is smart enough to not generate CTEs if there are no native queries
             return DSL.with()
         }
 
@@ -113,9 +114,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
             }
         }
 
-        var withStep = DSL.with()
+        val withStep = DSL.with()
         nativeQueries.forEach { collectionName ->
-            withStep = withStep.with(DSL.name(collectionName))
+            withStep.with(DSL.name(collectionName))
                 .`as`(DSL.resultQuery(
                     renderNativeQuerySQL(
                         config.nativeQueries[collectionName]!!,

@@ -30,6 +30,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
     fun queryRequestToSQLInternal(
         request: QueryRequest,
     ): SelectSelectStep<*> {
+        // JOOQ is smart enough to not generate CTEs if there are no native queries
         return mkNativeQueryCTEs(request).select(
             jsonArrayAgg(
                 buildJSONSelectionForQueryRequest(request)
