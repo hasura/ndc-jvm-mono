@@ -25,6 +25,109 @@ abstract class BaseQueryGenerator : BaseGenerator {
         throw NotImplementedError("Mutation not supported for this data source")
     }
 
+    protected fun findAllNativeQueries(request: QueryRequest): Set<String> {
+        val nativeQueries = mutableSetOf<String>()
+        val config = ConnectorConfiguration.Loader.config
+    
+        // Helper function to check if a collection is a native query
+        fun checkAndAddNativeQuery(collection: String) {
+            if (config.nativeQueries.containsKey(collection)) {
+                nativeQueries.add(collection)
+            }
+        }
+    
+        // Check main collection
+        checkAndAddNativeQuery(request.collection)
+    
+        // Check relationships
+        request.collection_relationships.values.forEach { rel ->
+            checkAndAddNativeQuery(rel.target_collection)
+        }
+    
+        // Recursive function to check predicates
+        fun checkPredicates(expression: Expression?) {
+            when (expression) {
+                is Expression.Exists -> {
+                    when (val collection = expression.in_collection) {
+                        is ExistsInCollection.Related -> {
+                            // Check related collection from relationship
+                            val rel = request.collection_relationships[collection.relationship]
+                                ?: error("Relationship ${collection.relationship} not found")
+                            checkAndAddNativeQuery(rel.target_collection)
+                        }
+                        is ExistsInCollection.Unrelated -> {
+                            checkAndAddNativeQuery(collection.collection)
+                        }
+                    }
+                    // Recursively check the predicate within exists
+                    checkPredicates(expression.predicate)
+                }
+                is Expression.And -> expression.expressions.forEach { checkPredicates(it) }
+                is Expression.Or -> expression.expressions.forEach { checkPredicates(it) }
+                is Expression.Not -> checkPredicates(expression.expression)
+                else -> {} // Other expression types don't reference collections
+            }
+        }
+    
+        // Check predicates in the main query
+        checkPredicates(request.query.predicate)
+    
+        // Check predicates in relationship fields
+        request.query.fields?.values?.forEach { field ->
+            if (field is IRField.RelationshipField) {
+                checkPredicates(field.query.predicate)
+            }
+        }
+    
+        return nativeQueries
+    }
+
+    fun mkNativeQueryCTEs(
+        request: QueryRequest
+    ): org.jooq.WithStep {
+        val config = ConnectorConfiguration.Loader.config
+        var nativeQueries = findAllNativeQueries(request)
+
+        if (nativeQueries.isEmpty()) {
+            // JOOQ is smart enough to not generate CTEs if there are no native queries
+            return DSL.with()
+        }
+
+        fun renderNativeQuerySQL(
+            nativeQuery: NativeQueryInfo,
+            arguments: Map<String, Argument>
+        ): String {
+            val sql = nativeQuery.sql
+            val parts = sql.parts
+
+            return parts.joinToString("") { part ->
+                when (part) {
+                    is NativeQueryPart.Text -> part.value
+                    is NativeQueryPart.Parameter -> {
+                        val argument = arguments[part.value] ?: error("Argument ${part.value} not found")
+                        when (argument) {
+                            is Argument.Literal -> argument.value.toString()
+                            else -> error("Only literals are supported in Native Queries in this version")
+                        }
+                    }
+                }
+            }
+        }
+
+        val withStep = DSL.with()
+        nativeQueries.forEach { collectionName ->
+            withStep.with(DSL.name(collectionName))
+                .`as`(DSL.resultQuery(
+                    renderNativeQuerySQL(
+                        config.nativeQueries[collectionName]!!,
+                        request.arguments
+                    )
+                ))
+        }
+
+        return withStep
+    }
+
     fun mkNativeQueryCTE(
         request: QueryRequest
     ): org.jooq.WithStep {
@@ -446,9 +549,7 @@ abstract class BaseQueryGenerator : BaseGenerator {
                     e = where,
                     request
                 )
-            } ?: DSL.noCondition())).also {
-                println("Where conditions: $it")
-        }
+            } ?: DSL.noCondition()))
     }
 
     protected fun getDefaultAggregateJsonEntries(aggregates: Map<String, Aggregate>?): Field<*> {
