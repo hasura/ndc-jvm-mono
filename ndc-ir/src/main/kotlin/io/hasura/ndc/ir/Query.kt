@@ -178,6 +178,8 @@ enum class ApplyBinaryComparisonOperator {
     IS_NULL,
     @JsonProperty("_like")
     LIKE,
+    @JsonProperty("_contains")
+    CONTAINS,
 }
 
 enum class ApplyUnaryComparisonOperator {

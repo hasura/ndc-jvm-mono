@@ -26,6 +26,7 @@ object NoRelationshipsQueryGenerator : BaseQueryGenerator() {
             ApplyBinaryComparisonOperator.IN -> col.`in`(value)
             ApplyBinaryComparisonOperator.IS_NULL -> col.isNull
             ApplyBinaryComparisonOperator.LIKE -> col.like(value as Field<String>)
+            ApplyBinaryComparisonOperator.CONTAINS -> col.contains(value as Field<String>)
         }
     }
 
@@ -50,7 +51,7 @@ object NoRelationshipsQueryGenerator : BaseQueryGenerator() {
             DSL.table(DSL.unquotedName(request.collection))
         ).apply {
             if (request.query.predicate != null) {
-                where(expressionToCondition(request.query.predicate!!, request))
+                where(expressionToConditionPhoenixNoTableNameInPredicates(request.query.predicate!!, request))
             }
             if (request.query.order_by != null) {
                 orderBy(

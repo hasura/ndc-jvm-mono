@@ -65,7 +65,7 @@ class PhoenixDataConnectorService @Inject constructor(
     override val jooqDialect = SQLDialect.DEFAULT
     override val jooqSettings =
         commonDSLContextSettings
-            .withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_QUOTED)
+            .withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_UNQUOTED)
             .withRenderOptionalAsKeywordForFieldAliases(RenderOptionalKeyword.ON)
 
 
