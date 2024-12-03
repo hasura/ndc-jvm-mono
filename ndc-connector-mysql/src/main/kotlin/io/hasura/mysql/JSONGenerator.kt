@@ -18,9 +18,16 @@ import org.jooq.impl.SQLDataType
 object JsonQueryGenerator : BaseQueryGenerator() {
 
     override fun forEachQueryRequestToSQL(request: QueryRequest): Select<*> {
-        return DSL.with(buildVarsCTE(request))
-            .select()
-            .from(queryRequestToSQLInternal(request), DSL.table(DSL.name("vars")))
+        return DSL
+            .with(buildVarsCTE(request))
+            .select(
+                jsonArrayAgg(
+                    buildJSONSelectionForQueryRequest(request)
+                )
+            )
+            .from(
+                DSL.table(DSL.name("vars"))
+            )
     }
 
     override fun queryRequestToSQL(request: QueryRequest): Select<*> {
@@ -184,27 +191,6 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                 }
             }
         )
-    }
-
-    fun renderNativeQuerySQL(
-        nativeQuery: NativeQueryInfo,
-        arguments: Map<String, Argument>
-    ): String {
-        val sql = nativeQuery.sql
-        val parts = sql.parts
-
-        return parts.joinToString("") { part ->
-            when (part) {
-                is NativeQueryPart.Text -> part.value
-                is NativeQueryPart.Parameter -> {
-                    val argument = arguments[part.value] ?: error("Argument ${part.value} not found")
-                    when (argument) {
-                        is Argument.Literal -> argument.value.toString()
-                        else -> error("Only literals are supported in Native Queries in this version")
-                    }
-                }
-            }
-        }
     }
 
     fun jsonArrayAgg(field: JSONObjectNullStep<*>) = CustomField.of("mysql_json_arrayagg", SQLDataType.JSON) {
