@@ -37,23 +37,12 @@ object JsonQueryGenerator : BaseQueryGenerator() {
     fun queryRequestToSQLInternal(
         request: QueryRequest,
     ): SelectSelectStep<*> {
-        // If the QueryRequest "collection" references the name of a Native Query defined in the configuration.json,
-        // we need to prefix the generated query with a CTE named identically to the Native Query, containing the Native Query itself
-        val isNativeQuery = ConnectorConfiguration.Loader.config.nativeQueries.containsKey(request.collection)
-
-        return if (isNativeQuery) {
-            mkNativeQueryCTE(request).select(
-                jsonArrayAgg(
-                    buildJSONSelectionForQueryRequest(request)
-                )
+        // JOOQ is smart enough to not generate CTEs if there are no native queries
+        return mkNativeQueryCTEs(request).select(
+            jsonArrayAgg(
+                buildJSONSelectionForQueryRequest(request)
             )
-        } else {
-            DSL.select(
-                jsonArrayAgg(
-                    buildJSONSelectionForQueryRequest(request)
-                )
-            )
-        }
+        )
     }
 
     fun buildJSONSelectionForQueryRequest(
