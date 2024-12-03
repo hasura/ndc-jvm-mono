@@ -1,6 +1,7 @@
 package io.hasura.cli
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.hasura.ndc.common.ConnectorConfiguration
 import picocli.CommandLine
 import picocli.CommandLine.*
 import java.io.File
@@ -54,11 +55,22 @@ class CLI {
             names = ["-s", "--schemas"],
             arity = "0..*",
             split = ",",
-            defaultValue = "",
             description = ["Comma-separated list of schemas to introspect"]
         )
-        schemas: List<String> = emptyList()
+        schemas: List<String>?
     ) {
+        val file = File(outfile)
+
+        println("Checking for configuration file at ${file.absolutePath}")
+        val existingConfig = file.let {
+            if (it.exists()) {
+                println("Existing configuration file detected")
+                mapper.readValue(it, ConnectorConfiguration::class.java)
+            } else {
+                println("Non-existent or empty configuration file detected")
+                ConnectorConfiguration()
+            }
+        }
 
         val configGenerator = when (database) {
             DatabaseType.ORACLE -> OracleConfigGenerator
@@ -67,20 +79,23 @@ class CLI {
             DatabaseType.PHOENIX -> PhoenixConfigGenerator
         }
 
-        val config = configGenerator.getConfig(
+        println("Generating configuration for $database database...")
+        val introspectedConfig = configGenerator.getConfig(
             jdbcUrl = jdbcUrl,
-            schemas = schemas
+            schemas = schemas ?: emptyList()
+        )
+        val mergedConfigWithNativeQueries = introspectedConfig.copy(
+            nativeQueries = existingConfig.nativeQueries
         )
 
-        val file = File(outfile)
         try {
-            file.createNewFile()
-            mapper.writerWithDefaultPrettyPrinter().writeValue(file, config)
+            println("Writing configuration to ${file.absolutePath}")
+            mapper.writerWithDefaultPrettyPrinter().writeValue(file, mergedConfigWithNativeQueries)
         } catch (e: Exception) {
             println("Error writing configuration to file: ${e.message}")
 
             val parentDir = file.parentFile
-            val permissions =  Files.getPosixFilePermissions(parentDir.toPath())
+            val permissions = Files.getPosixFilePermissions(parentDir.toPath())
             val posixPermissions = PosixFilePermissions.toString(permissions)
 
             println("Current user: ${System.getProperty("user.name")}")
@@ -104,4 +119,3 @@ class CLI {
         }
     }
 }
-

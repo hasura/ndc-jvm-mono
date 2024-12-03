@@ -1,7 +1,13 @@
 # Build stage
 FROM registry.access.redhat.com/ubi9/openjdk-21:1.20-2 AS build
 
+ARG JOOQ_PRO_EMAIL
+ARG JOOQ_PRO_LICENSE
+
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en'
+ENV JOOQ_PRO_EMAIL=${JOOQ_PRO_EMAIL}
+ENV JOOQ_PRO_LICENSE=${JOOQ_PRO_LICENSE}
+
 WORKDIR /build
 COPY . /build
 
@@ -13,7 +19,7 @@ RUN ./gradlew :ndc-connector-phoenix:build --no-daemon --console=plain -x test
 FROM registry.access.redhat.com/ubi9/openjdk-21:1.20-2
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en'
-ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED"
 ENV JAVA_APP_JAR="/app/quarkus-run.jar"
 
 WORKDIR /app

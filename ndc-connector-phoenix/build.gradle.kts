@@ -28,6 +28,7 @@ dependencies {
 
     // Phoenix JDBC driver
     implementation("org.apache.phoenix:phoenix-client-hbase-2.4:5.1.1")
+    implementation("org.apache.phoenix:phoenix-queryserver-client:5.0.0-HBase-2.0")
     implementation("org.jooq:jooq:3.19.8")
 }
 

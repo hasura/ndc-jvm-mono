@@ -1,6 +1,6 @@
 packagingDefinition:
   type: PrebuiltDockerImage
-  dockerImage: "ghcr.io/hasura/ndc-jvm-oracle:v0.1.0"
+  dockerImage: "ghcr.io/hasura/ndc-jvm-oracle:v1.0.3"
 supportedEnvironmentVariables:
   - name: JDBC_URL
     description: "The JDBC URL to connect to the database"
@@ -11,8 +11,7 @@ commands:
     docker run \
       -e HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH \
       -v ${HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH}:/app/output \
-      ghcr.io/hasura/ndc-jvm-cli:v0.1.0 update $JDBC_URL \
+      ghcr.io/hasura/ndc-jvm-cli:v0.1.3 update $JDBC_URL \
         --database ORACLE \
         --schemas $JDBC_SCHEMAS \
         --outfile /app/output/configuration.json
-  
