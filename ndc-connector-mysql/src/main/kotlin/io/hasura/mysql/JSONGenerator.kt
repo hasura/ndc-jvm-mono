@@ -18,9 +18,16 @@ import org.jooq.impl.SQLDataType
 object JsonQueryGenerator : BaseQueryGenerator() {
 
     override fun forEachQueryRequestToSQL(request: QueryRequest): Select<*> {
-        return DSL.with(buildVarsCTE(request))
-            .select()
-            .from(queryRequestToSQLInternal(request), DSL.table(DSL.name("vars")))
+        return DSL
+            .with(buildVarsCTE(request))
+            .select(
+                jsonArrayAgg(
+                    buildJSONSelectionForQueryRequest(request)
+                )
+            )
+            .from(
+                DSL.table(DSL.name("vars"))
+            )
     }
 
     override fun queryRequestToSQL(request: QueryRequest): Select<*> {
@@ -30,23 +37,12 @@ object JsonQueryGenerator : BaseQueryGenerator() {
     fun queryRequestToSQLInternal(
         request: QueryRequest,
     ): SelectSelectStep<*> {
-        // If the QueryRequest "collection" references the name of a Native Query defined in the configuration.json,
-        // we need to prefix the generated query with a CTE named identically to the Native Query, containing the Native Query itself
-        val isNativeQuery = ConnectorConfiguration.Loader.config.nativeQueries.containsKey(request.collection)
-
-        return if (isNativeQuery) {
-            mkNativeQueryCTE(request).select(
-                jsonArrayAgg(
-                    buildJSONSelectionForQueryRequest(request)
-                )
+        // JOOQ is smart enough to not generate CTEs if there are no native queries
+        return mkNativeQueryCTEs(request).select(
+            jsonArrayAgg(
+                buildJSONSelectionForQueryRequest(request)
             )
-        } else {
-            DSL.select(
-                jsonArrayAgg(
-                    buildJSONSelectionForQueryRequest(request)
-                )
-            )
-        }
+        )
     }
 
     fun buildJSONSelectionForQueryRequest(
@@ -195,27 +191,6 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                 }
             }
         )
-    }
-
-    fun renderNativeQuerySQL(
-        nativeQuery: NativeQueryInfo,
-        arguments: Map<String, Argument>
-    ): String {
-        val sql = nativeQuery.sql
-        val parts = sql.parts
-
-        return parts.joinToString("") { part ->
-            when (part) {
-                is NativeQueryPart.Text -> part.value
-                is NativeQueryPart.Parameter -> {
-                    val argument = arguments[part.value] ?: error("Argument ${part.value} not found")
-                    when (argument) {
-                        is Argument.Literal -> argument.value.toString()
-                        else -> error("Only literals are supported in Native Queries in this version")
-                    }
-                }
-            }
-        }
     }
 
     fun jsonArrayAgg(field: JSONObjectNullStep<*>) = CustomField.of("mysql_json_arrayagg", SQLDataType.JSON) {

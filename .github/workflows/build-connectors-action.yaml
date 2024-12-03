@@ -6,6 +6,7 @@ on:
       - "snowflake/*"
       - "mysql/*"
       - "oracle/*"
+      - "phoenix/*"
 
 jobs:
   docker-build:
