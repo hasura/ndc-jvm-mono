@@ -45,15 +45,11 @@ object CTEQueryGenerator : BaseQueryGenerator() {
     }
 
     private fun buildCTEs(request: QueryRequest, varCTE: List<CommonTableExpression<*>> = emptyList()): WithStep {
-        val isNativeQuery = ConnectorConfiguration.Loader.config.nativeQueries.containsKey(request.collection)
+        val withStep = mkNativeQueryCTEs(request)
+            .with(varCTE)
+            .with(forEachQueryLevelRecursively(request, CTEQueryGenerator::buildCTE).distinct())
 
-        return DSL.with(
-            buildList {
-                if (isNativeQuery) add(mkNativeQueryCTESnowflake(request))
-                addAll(varCTE)
-                addAll(forEachQueryLevelRecursively(request, CTEQueryGenerator::buildCTE).distinct())
-            }
-        )
+        return withStep
     }
 
     private fun getCollectionAsjOOQName(collection: String): Name {
