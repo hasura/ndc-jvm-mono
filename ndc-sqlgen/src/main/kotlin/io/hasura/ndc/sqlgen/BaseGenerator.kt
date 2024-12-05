@@ -36,7 +36,7 @@ sealed interface BaseGenerator {
             ApplyBinaryComparisonOperator.GTE -> col.ge(value)
             ApplyBinaryComparisonOperator.LT -> col.lt(value)
             ApplyBinaryComparisonOperator.LTE -> col.le(value)
-            ApplyBinaryComparisonOperator.IN -> col.`in`(value)
+            ApplyBinaryComparisonOperator.IN -> DSL.nullCondition()
             ApplyBinaryComparisonOperator.IS_NULL -> col.isNull
             ApplyBinaryComparisonOperator.LIKE -> col.like(value as Field<String>)
             ApplyBinaryComparisonOperator.CONTAINS -> col.contains(value as Field<String>)
@@ -102,10 +102,6 @@ sealed interface BaseGenerator {
         request: QueryRequest
     ): Condition {
 
-        fun splitCollectionName(collectionName: String): List<String> {
-            return collectionName.split(".")
-        }
-
         return when (e) {
             is Expression.Not -> DSL.not(expressionToCondition(e.expression, request))
 
@@ -131,7 +127,11 @@ sealed interface BaseGenerator {
                         DSL.field(DSL.name(col + v.column.name))
                     }
 
-                    is ComparisonValue.ScalarComp -> DSL.inline(v.value)
+                    is ComparisonValue.ScalarComp ->
+                        if(e.operator == ApplyBinaryComparisonOperator.IN)
+                            return handleInComp(column, v)
+                         else DSL.inline(v.value)
+
                     is ComparisonValue.VariableComp -> DSL.field(DSL.name(listOf("vars", v.name)))
                 }
                 return buildComparison(column, e.operator, comparisonValue)
@@ -141,35 +141,6 @@ sealed interface BaseGenerator {
                 val column = DSL.field(DSL.name(splitCollectionName(request.collection) + e.column))
                 when (e.operator) {
                     ApplyUnaryComparisonOperator.IS_NULL -> column.isNull
-                }
-            }
-
-            is Expression.ApplyBinaryArrayComparison -> {
-                val column = DSL.field(
-                    DSL.name(
-                        splitCollectionName(getCollectionForCompCol(e.column, request)) + e.column.name
-                    )
-                )
-                when (e.operator) {
-                    ApplyBinaryArrayComparisonOperator.IN -> {
-                        when {
-                            e.values.isEmpty() -> column.`in`(
-                                DSL.select(DSL.nullCondition())
-                                    .where(DSL.inline(1).eq(DSL.inline(0)))
-                            )
-
-                            else -> column.`in`(DSL.list(e.values.map {
-                                when (it) {
-                                    is ComparisonValue.ScalarComp -> DSL.inline(it.value)
-                                    is ComparisonValue.VariableComp -> DSL.field(DSL.name(listOf("vars", it.name)))
-                                    is ComparisonValue.ColumnComp -> {
-                                        val col = splitCollectionName(getCollectionForCompCol(it.column, request))
-                                        DSL.field(DSL.name(col + it.column.name))
-                                    }
-                                }
-                            }))
-                        }
-                    }
                 }
             }
 
@@ -239,6 +210,21 @@ sealed interface BaseGenerator {
                 }
             }
         }
+    }
+
+    fun handleInComp(column: Field<Any>, value: ComparisonValue.ScalarComp): Condition {
+        return when (val scalarValue = value.value) {
+            is List<*> -> {
+                if (scalarValue.isEmpty()) DSL.falseCondition()
+                else column.`in`(scalarValue.map { DSL.inline(it) })
+            }
+            // Handle non-array scalar value
+            else -> column.eq(DSL.inline(scalarValue))
+        }
+    }
+
+    fun splitCollectionName(collectionName: String): List<String> {
+        return collectionName.split(".")
     }
 
 }

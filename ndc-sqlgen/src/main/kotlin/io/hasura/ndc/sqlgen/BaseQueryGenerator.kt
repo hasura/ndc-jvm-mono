@@ -285,12 +285,6 @@ abstract class BaseQueryGenerator : BaseGenerator {
                     }
                 }
 
-                is Expression.ApplyBinaryArrayComparison -> {
-                    addForColumn(where.column)
-                    where.values.filterIsInstance<ComparisonValue.ColumnComp>()
-                        .forEach { addForColumn(it.column) }
-                }
-
                 is Expression.ApplyUnaryComparison -> {} // no-op
                 is Expression.Exists -> addJoinsRequiredForPredicate(request, select, where.predicate, seenRelations)
             }

@@ -300,11 +300,6 @@ object CTEQueryGenerator : BaseQueryGenerator() {
                 is Expression.And -> e.expressions.flatMap { getVars(it) }
                 is Expression.Or -> e.expressions.flatMap { getVars(it) }
                 is Expression.Not -> getVars(e.expression)
-                is Expression.ApplyBinaryArrayComparison ->
-                    if (e.values.filterIsInstance<ComparisonValue.VariableComp>().isNotEmpty())
-                        listOf(DSL.field(DSL.name(e.column.name)))
-                    else emptyList()
-
                 is Expression.ApplyBinaryComparison ->
                     if (e.value is ComparisonValue.VariableComp)
                         listOf(DSL.field(DSL.name(e.column.name)))
