@@ -64,6 +64,7 @@ object MySQLJDBCSchemaGenerator : JDBCSchemaGenerator() {
                     "_eq" to ComparisonOperatorDefinition.Equal,
                     "_contains" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.STRING.name)),
                     "_like" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.STRING.name)),
+                    "_in" to ComparisonOperatorDefinition.In
                 ),
                 aggregate_functions = mapOf(
                     "min" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.STRING.name)),
@@ -76,7 +77,8 @@ object MySQLJDBCSchemaGenerator : JDBCSchemaGenerator() {
                     "_lt" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.DATETIME.name)),
                     "_gte" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.DATETIME.name)),
                     "_lte" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.DATETIME.name)),
-                    "_eq" to ComparisonOperatorDefinition.Equal
+                    "_eq" to ComparisonOperatorDefinition.Equal,
+                    "_in" to ComparisonOperatorDefinition.In
                 ),
                 aggregate_functions = emptyMap()
             ),
@@ -86,7 +88,8 @@ object MySQLJDBCSchemaGenerator : JDBCSchemaGenerator() {
                     "_lt" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.DATE.name)),
                     "_gte" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.DATE.name)),
                     "_lte" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.DATE.name)),
-                    "_eq" to ComparisonOperatorDefinition.Equal
+                    "_eq" to ComparisonOperatorDefinition.Equal,
+                    "_in" to ComparisonOperatorDefinition.In
                 ),
                 aggregate_functions = emptyMap()
             ),
@@ -96,7 +99,8 @@ object MySQLJDBCSchemaGenerator : JDBCSchemaGenerator() {
                     "_lt" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.TIME.name)),
                     "_gte" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.TIME.name)),
                     "_lte" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.TIME.name)),
-                    "_eq" to ComparisonOperatorDefinition.Equal
+                    "_eq" to ComparisonOperatorDefinition.Equal,
+                    "_in" to ComparisonOperatorDefinition.In
                 ),
                 aggregate_functions = emptyMap()
             ),

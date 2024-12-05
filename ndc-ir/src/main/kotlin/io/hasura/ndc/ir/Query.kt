@@ -187,11 +187,6 @@ enum class ApplyUnaryComparisonOperator {
     IS_NULL
 }
 
-enum class ApplyBinaryArrayComparisonOperator {
-    @JsonProperty("in")
-    IN
-}
-
 // /////////////////////////////////////////////////////////////////////////
 // EXPRESSIONS
 // /////////////////////////////////////////////////////////////////////////
@@ -212,25 +207,18 @@ sealed interface Expression {
     @JsonTypeName("not")
     data class Not(val expression: Expression) : Expression
 
+    @JsonTypeName("unary_comparison_operator")
+    data class ApplyUnaryComparison(
+        val operator: ApplyUnaryComparisonOperator,
+        val column: String
+    ) : Expression
+
     @JsonTypeName("binary_comparison_operator")
     data class ApplyBinaryComparison(
         val operator: ApplyBinaryComparisonOperator,
         override val column: ComparisonColumn,
         val value: ComparisonValue
     ) : Expression, ExpressionOnColumn
-
-    @JsonTypeName("binary_array_comparison_operator")
-    data class ApplyBinaryArrayComparison(
-        val operator: ApplyBinaryArrayComparisonOperator,
-        override val column: ComparisonColumn,
-        val values: List<ComparisonValue>
-    ) : Expression, ExpressionOnColumn
-
-    @JsonTypeName("unary_op")
-    data class ApplyUnaryComparison(
-        val operator: ApplyUnaryComparisonOperator,
-        val column: String
-    ) : Expression
 
     // Test if a row exists that matches the where subexpression in the specified table (in_table)
     @JsonTypeName("exists")
