@@ -36,7 +36,7 @@ sealed interface BaseGenerator {
             ApplyBinaryComparisonOperator.GTE -> col.ge(value)
             ApplyBinaryComparisonOperator.LT -> col.lt(value)
             ApplyBinaryComparisonOperator.LTE -> col.le(value)
-            ApplyBinaryComparisonOperator.IN -> col.`in`(value)
+            ApplyBinaryComparisonOperator.IN -> DSL.nullCondition()
             ApplyBinaryComparisonOperator.IS_NULL -> col.isNull
             ApplyBinaryComparisonOperator.LIKE -> col.like(value as Field<String>)
             ApplyBinaryComparisonOperator.CONTAINS -> col.contains(value as Field<String>)
@@ -121,23 +121,20 @@ sealed interface BaseGenerator {
                         splitCollectionName(getCollectionForCompCol(e.column, request)) + e.column.name
                     )
                 )
-
-                when (val v = e.value) {
-                    is ComparisonValue.ScalarComp -> {
-                        if (e.operator == ApplyBinaryComparisonOperator.IN) {
-                            handleScalarComp(column, v)
-                        } else {
-                            buildComparison(column, e.operator, DSL.inline(v.value))
-                        }
-                    }
-                    is ComparisonValue.VariableComp -> {
-                        column.`in`(DSL.field(DSL.name(listOf("vars", v.name))))
-                    }
+                val comparisonValue = when (val v = e.value) {
                     is ComparisonValue.ColumnComp -> {
                         val col = splitCollectionName(getCollectionForCompCol(v.column, request))
-                        column.`in`(DSL.field(DSL.name(col + v.column.name)))
+                        DSL.field(DSL.name(col + v.column.name))
                     }
+
+                    is ComparisonValue.ScalarComp ->
+                        if(e.operator == ApplyBinaryComparisonOperator.IN)
+                            return handleInComp(column, v)
+                         else DSL.inline(v.value)
+
+                    is ComparisonValue.VariableComp -> DSL.field(DSL.name(listOf("vars", v.name)))
                 }
+                return buildComparison(column, e.operator, comparisonValue)
             }
 
             is Expression.ApplyUnaryComparison -> {
@@ -215,22 +212,14 @@ sealed interface BaseGenerator {
         }
     }
 
-    fun handleScalarComp(column: Field<Any>, value: ComparisonValue.ScalarComp): Condition {
+    fun handleInComp(column: Field<Any>, value: ComparisonValue.ScalarComp): Condition {
         return when (val scalarValue = value.value) {
             is List<*> -> {
-                if (scalarValue.isEmpty()) {
-                    column.`in`(
-                        DSL.select(DSL.nullCondition())
-                            .where(DSL.inline(1).eq(DSL.inline(0)))
-                    )
-                } else {
-                    column.`in`(scalarValue.map { DSL.inline(it) })
-                }
+                if (scalarValue.isEmpty()) DSL.falseCondition()
+                else column.`in`(scalarValue.map { DSL.inline(it) })
             }
-            else -> {
-                // Handle non-array scalar value
-                column.eq(DSL.inline(scalarValue))
-            }
+            // Handle non-array scalar value
+            else -> column.eq(DSL.inline(scalarValue))
         }
     }
 
