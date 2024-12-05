@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.hasura.ndc.common.ColumnSchemaRow
 import io.hasura.ndc.common.ConnectorConfiguration
+import io.hasura.ndc.common.JdbcUrlConfig
 import io.hasura.ndc.common.TableSchemaRow
 import io.hasura.ndc.common.TableType
 import io.hasura.ndc.ir.ForeignKeyConstraint
@@ -13,11 +14,17 @@ object SnowflakeConfigGenerator : IConfigGenerator {
     private val mapper = jacksonObjectMapper()
 
     override fun getConfig(
-        jdbcUrl: String,
+        jdbcUrl: JdbcUrlConfig,
         schemas: List<String>
     ): ConnectorConfiguration {
+        val jdbcUrlString = when (jdbcUrl) {
+            is JdbcUrlConfig.Literal -> jdbcUrl.value
+            is JdbcUrlConfig.EnvVar -> System.getenv(jdbcUrl.variable)
+                ?: throw IllegalArgumentException("Environment variable ${jdbcUrl.variable} not found")
+        }
+
         // Don't use Arrow memory format so we don't need to --add-opens=java.base/java.nio=ALL-UNNAMED to the JVM
-        val modifiedJdbcUrl = jdbcUrl.find { it == '?' }
+        val modifiedJdbcUrl = jdbcUrlString.find { it == '?' }
             ?.let { "$jdbcUrl&JDBC_QUERY_RESULT_FORMAT=JSON" }
             ?: "$jdbcUrl?JDBC_QUERY_RESULT_FORMAT=JSON"
 

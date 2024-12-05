@@ -1,7 +1,9 @@
 package io.hasura.cli
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.hasura.ndc.common.ConnectorConfiguration
+import io.hasura.ndc.common.JdbcUrlConfig
 import picocli.CommandLine
 import picocli.CommandLine.*
 import java.io.File
@@ -34,11 +36,11 @@ class CLI {
     )
     fun update(
         @Parameters(
-            arity = "1",
+            arity = "0..1",
             paramLabel = "<jdbcUrl>",
-            description = ["JDBC URL to connect to the Oracle database"]
+            description = ["JDBC URL to connect to the database (optional)"]
         )
-        jdbcUrl: String,
+        jdbcUrlParam: String?,
         @Option(
             names = ["-o", "--outfile"],
             defaultValue = "configuration.json",
@@ -60,14 +62,37 @@ class CLI {
     ) {
         val file = File(outfile)
 
-        println("Checking for configuration file at ${file.absolutePath}")
-        val existingConfig = file.let {
-            if (it.exists()) {
-                println("Existing configuration file detected")
-                mapper.readValue(it, ConnectorConfiguration::class.java)
-            } else {
-                println("Non-existent or empty configuration file detected")
-                ConnectorConfiguration()
+        // Parse existing configuration
+        val existingConfig = if (file.exists()) {
+            println("Existing configuration file detected at ${file.absolutePath}")
+            try {
+                mapper.readValue<ConnectorConfiguration>(file)
+            } catch (e: Exception) {
+                println("Error reading existing configuration: ${e.message}")
+                null
+            }
+        } else {
+            println("No existing configuration file found at ${file.absolutePath}")
+            null
+        }
+
+        // Determine the JDBC URL configuration
+        val jdbcUrlConfig = when {
+            jdbcUrlParam != null -> {
+                // If jdbcUrlParam is provided, use it as a literal value
+                JdbcUrlConfig.Literal(jdbcUrlParam)
+            }
+            System.getenv("JDBC_URL") != null -> {
+                // If JDBC_URL environment variable is set, use it
+                JdbcUrlConfig.EnvVar("JDBC_URL")
+            }
+            existingConfig?.jdbcUrl != null -> {
+                // If there's an existing config, use its jdbcUrl (which could be either Literal or EnvVar)
+                existingConfig.jdbcUrl
+            }
+            else -> {
+                // If none of the above conditions are met, throw an error
+                throw IllegalArgumentException("No JDBC URL provided and no existing configuration found")
             }
         }
 
@@ -77,18 +102,21 @@ class CLI {
             DatabaseType.SNOWFLAKE -> SnowflakeConfigGenerator
         }
 
-        println("Generating configuration for $database database...")
+        println("Introspecting database...")
         val introspectedConfig = configGenerator.getConfig(
-            jdbcUrl = jdbcUrl,
-            schemas = schemas ?: emptyList()
+            jdbcUrlConfig = jdbcUrlConfig,
+            schemas = schemas ?: existingConfig?.schemas ?: emptyList()
         )
-        val mergedConfigWithNativeQueries = introspectedConfig.copy(
-            nativeQueries = existingConfig.nativeQueries
+
+        val finalConfig = introspectedConfig.copy(
+            jdbcUrl = jdbcUrlConfig,
+            nativeQueries = existingConfig?.nativeQueries ?: emptyMap()
         )
 
         try {
-            println("Writing configuration to ${file.absolutePath}")
-            mapper.writerWithDefaultPrettyPrinter().writeValue(file, mergedConfigWithNativeQueries)
+            println("Writing updated configuration to ${file.absolutePath}")
+            mapper.writerWithDefaultPrettyPrinter().writeValue(file, finalConfig)
+            println("Configuration updated successfully")
         } catch (e: Exception) {
             println("Error writing configuration to file: ${e.message}")
 
