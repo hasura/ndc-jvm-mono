@@ -9,6 +9,7 @@ supportedEnvironmentVariables:
 commands:
   update: |
     docker run \
+      -e JDBC_URL \
       -e HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH \
       -v ${HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH}:/app/output \
       ghcr.io/hasura/ndc-jvm-cli:v0.1.3 update \
