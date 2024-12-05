@@ -2,11 +2,33 @@ package io.hasura.ndc.common
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.JsonNode
 import java.io.File
 import java.nio.file.Path
 
+@JsonDeserialize(using = JdbcUrlConfigDeserializer::class)
+sealed class JdbcUrlConfig {
+    data class Literal(val value: String) : JdbcUrlConfig()
+    data class EnvVar(val variable: String) : JdbcUrlConfig()
+}
+
+class JdbcUrlConfigDeserializer : JsonDeserializer<JdbcUrlConfig>() {
+    override fun deserialize(p: JsonParser, ctxt: DeserializationContext): JdbcUrlConfig {
+        val node: JsonNode = p.codec.readTree(p)
+        return when {
+            node.isTextual -> JdbcUrlConfig.Literal(node.asText())
+            node.isObject && node.has("variable") -> JdbcUrlConfig.EnvVar(node.get("variable").asText())
+            else -> throw IllegalArgumentException("Invalid JdbcUrlConfig format")
+        }
+    }
+}
+
 data class ConnectorConfiguration(
-    val jdbcUrl: String = "",
+    val jdbcUrl: JdbcUrlConfig = JdbcUrlConfig.Literal(""),
     val jdbcProperties: Map<String, Any> = emptyMap(),
     val schemas: List<String> = emptyList(),
     val tables: List<TableSchemaRow> = emptyList(),

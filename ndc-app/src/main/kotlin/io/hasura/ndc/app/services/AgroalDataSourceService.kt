@@ -7,6 +7,7 @@ import io.agroal.api.configuration.supplier.AgroalDataSourceConfigurationSupplie
 import io.agroal.api.security.NamePrincipal
 import io.agroal.api.security.SimplePassword
 import io.hasura.ndc.common.ConnectorConfiguration
+import io.hasura.ndc.common.JdbcUrlConfig
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import io.opentelemetry.instrumentation.jdbc.datasource.OpenTelemetryDataSource
 import io.quarkus.agroal.runtime.AgroalOpenTelemetryWrapper
@@ -174,7 +175,7 @@ class AgroalDataSourceService {
     }
 
     private fun mkAgroalDataSourceConfigurationSupplier(
-        jdbcUrl: String,
+        jdbcUrl: JdbcUrlConfig,
         properties: Map<String, Any>
     ) =
         AgroalDataSourceConfigurationSupplier().metricsEnabled().connectionPoolConfiguration { connectionPool ->
@@ -193,7 +194,10 @@ class AgroalDataSourceService {
                 .multipleAcquisition(config.connectionPoolConfiguration().multipleAcquisition())
                 .enhancedLeakReport(config.connectionPoolConfiguration().enhancedLeakReport())
                 .connectionFactoryConfiguration { connFactory ->
-                    connFactory.jdbcUrl(jdbcUrl)
+                    connFactory.jdbcUrl(when (jdbcUrl) {
+                        is JdbcUrlConfig.Literal -> jdbcUrl.value
+                        is JdbcUrlConfig.EnvVar -> System.getenv(jdbcUrl.variable) ?: throw IllegalArgumentException("Environment variable ${jdbcUrl.variable} not found")
+                    })
                     connFactory.loginTimeout(config.connectionFactoryConfiguration().loginTimeout())
                     // To explain what is going on here:
                     //
