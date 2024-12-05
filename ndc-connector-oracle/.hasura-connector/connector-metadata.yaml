@@ -11,7 +11,7 @@ commands:
     docker run \
       -e HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH \
       -v ${HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH}:/app/output \
-      ghcr.io/hasura/ndc-jvm-cli:v0.1.3 update $JDBC_URL \
+      ghcr.io/hasura/ndc-jvm-cli:v0.1.3 update \
         --database ORACLE \
         --schemas $JDBC_SCHEMAS \
         --outfile /app/output/configuration.json

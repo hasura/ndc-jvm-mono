@@ -3,6 +3,7 @@ package io.hasura.cli
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.hasura.ndc.common.ConnectorConfiguration
+import io.hasura.ndc.common.JdbcUrlConfig
 import io.hasura.ndc.common.TableSchemaRow
 import io.hasura.ndc.common.TableType
 import org.jooq.impl.DSL
@@ -12,10 +13,15 @@ object OracleConfigGenerator : IConfigGenerator {
     private val mapper = jacksonObjectMapper()
 
     override fun getConfig(
-        jdbcUrl: String,
+        jdbcUrl: JdbcUrlConfig,
         schemas: List<String>
     ): ConnectorConfiguration {
-        val ctx = DSL.using(jdbcUrl)
+        val jdbcUrlString = when (jdbcUrl) {
+            is JdbcUrlConfig.Literal -> jdbcUrl.value
+            is JdbcUrlConfig.EnvVar -> System.getenv(jdbcUrl.variable)
+                ?: throw IllegalArgumentException("Environment variable ${jdbcUrl.variable} not found")
+        }
+        val ctx = DSL.using(jdbcUrlString)
 
         //language=Oracle
         val baseTableSql = """

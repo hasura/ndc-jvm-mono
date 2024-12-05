@@ -7,12 +7,13 @@ import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.annotation.JsonValue
 import java.io.File
 import java.nio.file.Path
 
 @JsonDeserialize(using = JdbcUrlConfigDeserializer::class)
 sealed class JdbcUrlConfig {
-    data class Literal(val value: String) : JdbcUrlConfig()
+    data class Literal(@JsonValue val value: String) : JdbcUrlConfig()
     data class EnvVar(val variable: String) : JdbcUrlConfig()
 }
 
@@ -28,7 +29,7 @@ class JdbcUrlConfigDeserializer : JsonDeserializer<JdbcUrlConfig>() {
 }
 
 data class ConnectorConfiguration(
-    val jdbcUrl: JdbcUrlConfig = JdbcUrlConfig.Literal(""),
+    val jdbcUrl: JdbcUrlConfig = JdbcUrlConfig.EnvVar("JDBC_URL"),
     val jdbcProperties: Map<String, Any> = emptyMap(),
     val schemas: List<String> = emptyList(),
     val tables: List<TableSchemaRow> = emptyList(),
