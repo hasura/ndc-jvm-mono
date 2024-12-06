@@ -25,8 +25,8 @@ object SnowflakeConfigGenerator : IConfigGenerator {
 
         // Don't use Arrow memory format so we don't need to --add-opens=java.base/java.nio=ALL-UNNAMED to the JVM
         val modifiedJdbcUrl = jdbcUrlString.find { it == '?' }
-            ?.let { "$jdbcUrl&JDBC_QUERY_RESULT_FORMAT=JSON" }
-            ?: "$jdbcUrl?JDBC_QUERY_RESULT_FORMAT=JSON"
+            ?.let { "$jdbcUrlString&JDBC_QUERY_RESULT_FORMAT=JSON" }
+            ?: "$jdbcUrlString?JDBC_QUERY_RESULT_FORMAT=JSON"
 
         val ctx = DSL.using(modifiedJdbcUrl)
 

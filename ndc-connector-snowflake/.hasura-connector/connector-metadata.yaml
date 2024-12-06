@@ -1,6 +1,6 @@
 packagingDefinition:
   type: PrebuiltDockerImage
-  dockerImage: "ghcr.io/hasura/ndc-jvm-snowflake:v1.0.2"
+  dockerImage: "ghcr.io/hasura/ndc-jvm-snowflake:v1.0.3"
 supportedEnvironmentVariables:
   - name: JDBC_URL
     description: "The JDBC URL to connect to the database"
@@ -12,7 +12,7 @@ commands:
       -e JDBC_URL \
       -e HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH \
       -v ${HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH}:/app/output \
-      ghcr.io/hasura/ndc-jvm-cli:v0.1.0 update \
+      ghcr.io/hasura/ndc-jvm-cli:v1.0.0 update \
         --database SNOWFLAKE \
         --schemas $JDBC_SCHEMAS \
         --outfile /app/output/configuration.json
