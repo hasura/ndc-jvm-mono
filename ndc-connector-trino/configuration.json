@@ -1,0 +1,90 @@
+{
+  "jdbcUrl": "jdbc:trino://host.docker.internal:8090/tpch/sf1?user=trino",
+  "jdbcProperties": {},
+  "schemas": [],
+  "tables": [
+    {
+      "tableName": "customer",
+        "tableType": "TABLE",
+        "description": null,
+        "columns": [
+          {
+            "name": "custkey",
+            "description": null,
+            "type": "bigint",
+            "numeric_scale": null,
+            "nullable": false,
+            "auto_increment": false,
+            "is_primarykey": true
+          },
+          {
+            "name": "name",
+            "description": null,
+            "type": "varchar",
+            "numeric_scale": null,
+            "nullable": true,
+            "auto_increment": false,
+            "is_primarykey": false
+          },
+          {
+            "name": "address",
+            "description": null,
+            "type": "varchar",
+            "numeric_scale": null,
+            "nullable": true,
+            "auto_increment": false,
+            "is_primarykey": false
+          },
+          {
+            "name": "nationkey",
+            "description": null,
+            "type": "bigint",
+            "numeric_scale": null,
+            "nullable": true,
+            "auto_increment": false,
+            "is_primarykey": false
+          },
+          {
+            "name": "phone",
+            "description": null,
+            "type": "varchar",
+            "numeric_scale": null,
+            "nullable": true,
+            "auto_increment": false,
+            "is_primarykey": false
+          },
+          {
+            "name": "acctbal",
+            "description": null,
+            "type": "double",
+            "numeric_scale": null,
+            "nullable": true,
+            "auto_increment": false,
+            "is_primarykey": false
+          },
+          {
+            "name": "mktsegment",
+            "description": null,
+            "type": "varchar",
+            "numeric_scale": null,
+            "nullable": true,
+            "auto_increment": false,
+            "is_primarykey": false
+          },
+          {
+            "name": "comment",
+            "description": null,
+            "type": "varchar",
+            "numeric_scale": null,
+            "nullable": true,
+            "auto_increment": false,
+            "is_primarykey": false
+          }
+        ],
+        "pks": ["custkey"],
+        "fks": null
+    }
+  ],
+  "functions": [],
+  "nativeQueries": {}
+}

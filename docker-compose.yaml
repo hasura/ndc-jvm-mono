@@ -64,3 +64,9 @@ services:
           - "3306:3306"
       volumes:
           - ./docker/mysql/chinook.sql:/docker-entrypoint-initdb.d/chinook.sql
+
+  trino:
+        image: trinodb/trino:466
+        restart: always
+        ports:
+            - "8090:8080"

@@ -1,0 +1,16 @@
+packagingDefinition:
+  type: PrebuiltDockerImage
+  dockerImage: "ghcr.io/hasura/ndc-jvm-trino:v1.0.0"
+supportedEnvironmentVariables:
+  - name: JDBC_URL
+    description: "The JDBC URL to connect to the database"
+commands:
+  update: |
+    docker run \
+      -e JDBC_URL \
+      -e HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH \
+      -v ${HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH}:/app/output \
+      ghcr.io/hasura/ndc-jvm-cli:v1.0.0 update \
+        --database TRINO \
+        --schemas $JDBC_SCHEMAS \
+        --outfile /app/output/configuration.json
