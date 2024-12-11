@@ -1,16 +1,14 @@
 package io.hasura.mysql
 
+import groovyjarjarantlr4.v4.runtime.atn.SemanticContext.OR
 import io.hasura.ndc.common.ConnectorConfiguration
 import io.hasura.ndc.common.NDCScalar
-import io.hasura.ndc.common.NativeQueryInfo
-import io.hasura.ndc.common.NativeQueryPart
 import io.hasura.ndc.ir.*
 import io.hasura.ndc.ir.Field.ColumnField
 import io.hasura.ndc.ir.Field as IRField
 import io.hasura.ndc.sqlgen.BaseQueryGenerator
 import org.jooq.*
 import org.jooq.Field
-import org.jooq.impl.CustomField
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 
@@ -21,7 +19,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
         return DSL
             .with(buildVarsCTE(request))
             .select(
-                jsonArrayAgg(
+                DSL.jsonArrayAgg(
                     buildJSONSelectionForQueryRequest(request)
                 )
             )
@@ -39,7 +37,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
     ): SelectSelectStep<*> {
         // JOOQ is smart enough to not generate CTEs if there are no native queries
         return mkNativeQueryCTEs(request).select(
-            jsonArrayAgg(
+            DSL.jsonArrayAgg(
                 buildJSONSelectionForQueryRequest(request)
             )
         )
@@ -53,7 +51,8 @@ object JsonQueryGenerator : BaseQueryGenerator() {
 
         val baseSelection = DSL.select(
             DSL.table(DSL.name(request.collection)).asterisk()
-        ).from(
+        ).select(getSelectOrderFields(request))
+            .from(
             if (request.query.predicate == null) {
                 DSL.table(DSL.name(request.collection))
             } else {
@@ -77,8 +76,12 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                         )
                     )
                 }
+
             }
         ).apply {
+            addJoinsRequiredForOrderByFields(this, request)
+        }
+            .apply {
             if (request.query.predicate != null) {
                 where(getWhereConditions(request))
             }
@@ -116,7 +119,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                         DSL.jsonEntry(
                             "rows",
                             DSL.select(
-                                jsonArrayAgg(
+                                DSL.jsonArrayAgg(
                                     DSL.jsonObject(
                                         (request.query.fields ?: emptyMap()).map { (alias, field) ->
                                             when (field) {
@@ -163,6 +166,8 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                             }
                                         }
                                     )
+                                ).orderBy(
+                                    getConcatOrderFields(request)
                                 )
                             ).from(
                                 baseSelection
@@ -193,9 +198,9 @@ object JsonQueryGenerator : BaseQueryGenerator() {
         )
     }
 
-    fun jsonArrayAgg(field: JSONObjectNullStep<*>) = CustomField.of("mysql_json_arrayagg", SQLDataType.JSON) {
-        it.visit(DSL.field("json_arrayagg({0})", field))
-    }
+//    fun DSL.jsonArrayAgg(field: JSONObjectNullStep<*>) = CustomField.of("mysql_json_arrayagg", SQLDataType.JSON) {
+//        it.visit(DSL.field("json_arrayagg({0})", field))
+//    }
 
     fun collectRequiredJoinTablesForWhereClause(
         where: Expression,
@@ -290,6 +295,25 @@ object JsonQueryGenerator : BaseQueryGenerator() {
 
     private fun getTableName(collection: String): String {
         return collection.split('.').last()
+    }
+
+    private const val ORDER_FIELD_SUFFIX = "_order_field"
+
+    private fun getSelectOrderFields(request: QueryRequest) : List<Field<*>>{
+        val sortFields = translateIROrderByField(request, request.collection)
+        return sortFields.map {  it.`$field`().`as`(it.name + ORDER_FIELD_SUFFIX) }
+    }
+
+    private fun getConcatOrderFields(request: QueryRequest) : List<SortField<*>>{
+        val sortFields = translateIROrderByField(request, request.collection)
+        return sortFields.map {
+            val field = DSL.field(DSL.name(it.name + ORDER_FIELD_SUFFIX))
+            when(it.order) {
+                SortOrder.ASC -> field.asc().nullsLast()
+                SortOrder.DESC -> field.desc().nullsFirst()
+                else -> field.asc().nullsLast()
+            }
+        }
     }
 
 }
