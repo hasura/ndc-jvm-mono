@@ -1,6 +1,5 @@
 package io.hasura.mysql
 
-import groovyjarjarantlr4.v4.runtime.atn.SemanticContext.OR
 import io.hasura.ndc.common.ConnectorConfiguration
 import io.hasura.ndc.common.NDCScalar
 import io.hasura.ndc.ir.*
@@ -32,7 +31,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
         return queryRequestToSQLInternal(request)
     }
 
-    fun queryRequestToSQLInternal(
+    private fun queryRequestToSQLInternal(
         request: QueryRequest,
     ): SelectSelectStep<*> {
         // JOOQ is smart enough to not generate CTEs if there are no native queries
@@ -198,11 +197,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
         )
     }
 
-//    fun DSL.jsonArrayAgg(field: JSONObjectNullStep<*>) = CustomField.of("mysql_json_arrayagg", SQLDataType.JSON) {
-//        it.visit(DSL.field("json_arrayagg({0})", field))
-//    }
-
-    fun collectRequiredJoinTablesForWhereClause(
+    private fun collectRequiredJoinTablesForWhereClause(
         where: Expression,
         collectionRelationships: Map<String, Relationship>,
         previousTableName: String? = null
@@ -235,7 +230,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
         }
     }
 
-    fun ndcScalarTypeToSQLDataType(scalarType: NDCScalar): DataType<out Any> = when (scalarType) {
+    private fun ndcScalarTypeToSQLDataType(scalarType: NDCScalar): DataType<out Any> = when (scalarType) {
         NDCScalar.BOOLEAN -> SQLDataType.BOOLEAN
         NDCScalar.INT -> SQLDataType.INTEGER
         NDCScalar.FLOAT -> SQLDataType.FLOAT
