@@ -22,7 +22,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
     override fun queryRequestToSQL(request: QueryRequest): Select<*> {
         return mkNativeQueryCTEs(request).select(
             DSL.jsonArrayAgg(
-                buildJSONSelectionForQueryRequest(request).returning(SQLDataType.CLOB)
+                buildJSONSelectionForQueryRequest(request)
             ).returning(
                 SQLDataType.CLOB
             )
