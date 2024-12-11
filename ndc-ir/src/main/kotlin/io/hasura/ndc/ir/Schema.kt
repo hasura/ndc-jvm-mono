@@ -47,6 +47,16 @@ sealed interface Type {
     data class Nullable(val underlying_type: Type) : Type
     @JsonTypeName("array")
     data class Array(val element_type: Type) : Type
+
+    companion object {
+        fun extractBaseType(type: Type): String {
+            return when (type) {
+                is Type.Nullable -> extractBaseType(type.underlying_type)
+                is Type.Array -> extractBaseType(type.element_type)
+                is Type.Named -> type.name
+            }
+        }
+    }
 }
 
 data class ArgumentInfo (

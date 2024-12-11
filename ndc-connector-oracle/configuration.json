@@ -666,5 +666,62 @@
     }
   } ],
   "functions" : [ ],
-  "nativeQueries" : { }
+  "nativeQueries" : {
+    "oracle_native_query_inline": {
+      "sql": {
+        "parts": [
+          {
+            "type": "text",
+            "value": "SELECT 1 AS result FROM DUAL"
+          }
+        ]
+      },
+      "columns": {
+        "result": {
+          "type": "named",
+          "name": "INT"
+        }
+      },
+      "arguments": {},
+      "description": ""
+    },
+    "ArtistById_Oracle": {
+      "sql": {
+        "parts": [
+          {
+            "type": "text",
+            "value": "SELECT * FROM CHINOOK.ARTIST WHERE ARTISTID = "
+          },
+          {
+            "type": "parameter",
+            "value": "ARTISTID"
+          }
+        ]
+      },
+      "columns": {
+        "ARTISTID": {
+          "type": "named",
+          "name": "INT"
+        },
+        "NAME": {
+          "type": "nullable",
+          "underlying_type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        }
+      },
+      "arguments": {
+        "ARTISTID": {
+          "description": null,
+          "type": {
+            "type": "named",
+            "name": "INT"
+          }
+        }
+      },
+      "description": null,
+      "isProcedure": false
+    }
+  }
 }
