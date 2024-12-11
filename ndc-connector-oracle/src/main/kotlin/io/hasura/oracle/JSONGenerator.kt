@@ -3,6 +3,7 @@ package io.hasura.oracle
 import io.hasura.ndc.common.ConnectorConfiguration
 import io.hasura.ndc.common.NDCScalar
 import io.hasura.ndc.ir.*
+import io.hasura.ndc.ir.Type
 import io.hasura.ndc.ir.Field.ColumnField
 import io.hasura.ndc.ir.Field as IRField
 import io.hasura.ndc.sqlgen.BaseQueryGenerator
@@ -19,23 +20,88 @@ object JsonQueryGenerator : BaseQueryGenerator() {
     }
 
     override fun queryRequestToSQL(request: QueryRequest): Select<*> {
-        return queryRequestToSQLInternal2(request)
+        return mkNativeQueryCTEs(request).select(
+            DSL.jsonArrayAgg(
+                buildJSONSelectionForQueryRequest(request)
+            ).returning(
+                SQLDataType.CLOB
+            )
+        )
     }
 
-    fun queryRequestToSQLInternal2(
+    fun buildJSONSelectionForQueryRequest(
         request: QueryRequest,
         parentTable: String? = null,
-        parentRelationship: Relationship? = null,
-    ): SelectHavingStep<Record1<JSON>> {
-        val isRootQuery = parentRelationship == null
+        parentRelationship: Relationship? = null
+    ): JSONObjectNullStep<*> {
 
-        return DSL.select(
-            DSL.jsonObject(
-                buildList {
-                    if (!request.query.fields.isNullOrEmpty()) {
-                        add(
-                            DSL.jsonEntry(
-                                "rows",
+        val baseSelection = DSL.select(
+            DSL.table(DSL.name(request.collection)).asterisk()
+        ).from(
+            if (request.query.predicate == null) {
+                DSL.table(DSL.name(request.collection))
+            } else {
+                val table = DSL.table(DSL.name(request.collection))
+                val requiredJoinTables = collectRequiredJoinTablesForWhereClause(
+                    where = request.query.predicate!!,
+                    collectionRelationships = request.collection_relationships
+                )
+                requiredJoinTables.foldIndexed(table) { index, acc, relationship ->
+                    val parentTable = if (index == 0) {
+                        request.collection
+                    } else {
+                        requiredJoinTables.elementAt(index - 1).target_collection
+                    }
+
+                    val joinTable = DSL.table(DSL.name(relationship.target_collection))
+                    acc.join(joinTable).on(
+                        mkJoinWhereClause(
+                            sourceTable = parentTable,
+                            parentRelationship = relationship
+                        )
+                    )
+                }
+            }
+        ).apply {
+            if (request.query.predicate != null) {
+                where(getWhereConditions(request))
+            }
+            if (parentRelationship != null) {
+                where(
+                    mkJoinWhereClause(
+                        sourceTable = parentTable ?: error("parentTable is null"),
+                        parentRelationship = parentRelationship
+                    )
+                )
+            }
+            if (request.query.order_by != null) {
+                orderBy(
+                    translateIROrderByField(
+                        orderBy = request.query.order_by,
+                        currentCollection = getTableName(request.collection),
+                        relationships = request.collection_relationships
+                    )
+                )
+            }
+            if (request.query.limit != null) {
+                limit(request.query.limit)
+            }
+            if (request.query.offset != null) {
+                offset(request.query.offset)
+            }
+        }.apply {
+            addJoinsRequiredForOrderByFields(this, request)
+        }.asTable(
+            DSL.name(getTableName(request.collection))
+        )
+
+        return DSL.jsonObject(
+            buildList {
+                if (!request.query.fields.isNullOrEmpty()) {
+                    add(
+                        DSL.jsonEntry(
+                            "rows",
+                            DSL.select(
                                 DSL.jsonArrayAgg(
                                     DSL.jsonObject(
                                         (request.query.fields ?: emptyMap()).map { (alias, field) ->
@@ -55,7 +121,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                                         request.collection_relationships[field.relationship]
                                                             ?: error("Relationship ${field.relationship} not found")
 
-                                                    val subQuery = queryRequestToSQLInternal2(
+                                                    val subQuery = buildJSONSelectionForQueryRequest(
                                                         parentTable = request.collection,
                                                         parentRelationship = relationship,
                                                         request = QueryRequest(
@@ -70,9 +136,8 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                                     DSL.jsonEntry(
                                                         alias,
                                                         DSL.coalesce(
-                                                            DSL.select(
-                                                                subQuery.asField<Any>(alias)
-                                                            ), DSL.jsonObject(
+                                                            DSL.select(subQuery),
+                                                            DSL.jsonObject(
                                                                 DSL.jsonEntry(
                                                                     "rows",
                                                                     DSL.jsonArray().returning(SQLDataType.CLOB)
@@ -84,24 +149,18 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                             }
                                         }
                                     ).returning(SQLDataType.CLOB)
-                                ).apply {
-                                    if (request.query.order_by != null) {
-                                        orderBy(
-                                            translateIROrderByField(
-                                                orderBy = request.query.order_by,
-                                                currentCollection = getTableName(request.collection),
-                                                relationships = request.collection_relationships
-                                            )
-                                        )
-                                    }
-                                }.returning(SQLDataType.CLOB)
+                                ).returning(SQLDataType.CLOB)
+                            ).from(
+                                baseSelection
                             )
                         )
-                    }
-                    if (!request.query.aggregates.isNullOrEmpty()) {
-                        add(
-                            DSL.jsonEntry(
-                                "aggregates",
+                    )
+                }
+                if (!request.query.aggregates.isNullOrEmpty()) {
+                    add(
+                        DSL.jsonEntry(
+                            "aggregates",
+                            DSL.select(
                                 DSL.jsonObject(
                                     (request.query.aggregates ?: emptyMap()).map { (alias, aggregate) ->
                                         DSL.jsonEntry(
@@ -109,84 +168,18 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                             getAggregatejOOQFunction(aggregate)
                                         )
                                     }
-                                )
+                                ).returning(SQLDataType.CLOB)
+                            ).from(
+                                baseSelection
                             )
                         )
-                    }
-                }
-            ).returning(SQLDataType.CLOB).let {
-                when {
-                    isRootQuery -> DSL.jsonArrayAgg(it).returning(SQLDataType.CLOB)
-                    else -> it
+                    )
                 }
             }
-        ).from(
-            DSL.select(
-                DSL.table(DSL.name(request.collection))
-                    .asterisk()
-            ).from(
-                run<Table<Record>> {
-                    val table = DSL.table(DSL.name(request.collection))
-                    if (request.query.predicate == null) {
-                        table
-                    } else {
-                        val requiredJoinTables = collectRequiredJoinTablesForWhereClause(
-                            where = request.query.predicate!!,
-                            collectionRelationships = request.collection_relationships
-                        )
-
-                        requiredJoinTables.foldIndexed(table) { index, acc, relationship ->
-                            val parentTable = if (index == 0) {
-                                request.collection
-                            } else {
-                                requiredJoinTables.elementAt(index - 1).target_collection
-                            }
-
-                            val joinTable = DSL.table(DSL.name(relationship.target_collection))
-                            acc.join(joinTable).on(
-                                mkJoinWhereClause(
-                                    sourceTable = parentTable,
-                                    parentRelationship = relationship
-                                )
-                            )
-                        }
-                    }
-                }
-            ).apply {
-                if (request.query.predicate != null) {
-                    where(getWhereConditions(request))
-                }
-                if (parentRelationship != null) {
-                    where(
-                        mkJoinWhereClause(
-                            sourceTable = parentTable ?: error("parentTable is null"),
-                            parentRelationship = parentRelationship
-                        )
-                    )
-                }
-                if (request.query.order_by != null) {
-                    orderBy(
-                        translateIROrderByField(
-                            orderBy = request.query.order_by,
-                            currentCollection = getTableName(request.collection),
-                            relationships = request.collection_relationships
-                        )
-                    )
-                }
-                if (request.query.limit != null) {
-                    limit(request.query.limit)
-                }
-                if (request.query.offset != null) {
-                    offset(request.query.offset)
-                }
-            }.asTable(
-                DSL.name(getTableName(request.collection))
-            )
-        ).groupBy(
-            DSL.nullCondition()
-        )
+        ).returning(SQLDataType.CLOB) as JSONObjectNullStep<*>
     }
-
+    
+    
     fun collectRequiredJoinTablesForWhereClause(
         where: Expression,
         collectionRelationships: Map<String, Relationship>,
@@ -223,13 +216,37 @@ object JsonQueryGenerator : BaseQueryGenerator() {
     private fun columnTypeTojOOQType(collection: String, field: ColumnField): org.jooq.DataType<out Any> {
         val connectorConfig = ConnectorConfiguration.Loader.config
 
-        val table = connectorConfig.tables.find { it.tableName == collection }
-            ?: error("Table $collection not found in connector configuration")
+        val collectionIsTable = connectorConfig.tables.any { it.tableName == collection }
+        val collectionIsNativeQuery = connectorConfig.nativeQueries.containsKey(collection)
 
-        val column = table.columns.find { it.name == field.column }
-            ?: error("Column ${field.column} not found in table $collection")
+        if (!collectionIsTable && !collectionIsNativeQuery) {
+            error("Collection $collection not found in connector configuration")
+        }
 
-        val scalarType = OracleJDBCSchemaGenerator.mapScalarType(column.type, column.numeric_scale)
+        val scalarType =  when {
+            collectionIsTable -> {
+                val table = connectorConfig.tables.find { it.tableName == collection }
+                    ?: error("Table $collection not found in connector configuration")
+
+                val column = table.columns.find { it.name == field.column }
+                    ?: error("Column ${field.column} not found in table $collection")
+
+                OracleJDBCSchemaGenerator.mapScalarType(column.type, column.numeric_scale)
+            }
+
+            collectionIsNativeQuery -> {
+                val nativeQuery = connectorConfig.nativeQueries[collection]
+                    ?: error("Native query $collection not found in connector configuration")
+
+                val column = nativeQuery.columns[field.column]
+                    ?: error("Column ${field.column} not found in native query $collection")
+
+                OracleJDBCSchemaGenerator.mapScalarType(Type.extractBaseType(column), null)
+            }
+
+            else -> error("Collection $collection not found in connector configuration")
+        }
+
         return when (scalarType) {
             NDCScalar.BOOLEAN -> SQLDataType.BOOLEAN
             NDCScalar.INT -> SQLDataType.INTEGER

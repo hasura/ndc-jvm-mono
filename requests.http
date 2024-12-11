@@ -124,3 +124,199 @@ Content-Type: application/json
   ],
   "root_collection": "CHINOOK.PUBLIC.ARTIST"
 }
+
+###
+POST http://0.0.0.0:8080/query
+Content-Type: application/json
+
+{
+  "collection": "customer",
+  "query": {
+    "fields": {
+      "custkey": {
+        "type": "column",
+        "column": "custkey",
+        "fields": null
+      }
+    },
+    "limit": 3
+  }
+}
+
+###
+POST http://localhost:8080/query
+Content-Type: application/json
+
+{
+  "collection": "oracle_native_query_inline",
+  "query": {
+    "fields": {
+      "result": {
+        "type": "column",
+        "column": "result",
+        "arguments": {}
+      }
+    }
+  },
+  "arguments": {},
+  "collection_relationships": {}
+}
+
+###
+POST http://localhost:8080/query
+Content-Type: application/json
+
+{
+  "collection": "ArtistById_Oracle",
+  "query": {
+    "fields": {
+      "ARTISTID": {
+        "type": "column",
+        "column": "ARTISTID",
+        "arguments": {}
+      },
+      "NAME": {
+          "type": "column",
+          "column": "NAME",
+          "arguments": {}
+      }
+    }
+  },
+  "arguments": {
+    "ARTISTID": {
+      "type": "literal",
+      "value": 3
+    }
+  },
+  "collection_relationships": {}
+}
+
+###
+#  chinookAlbum(
+#    limit: 6,
+#    offset: 1,
+#    where: {
+#      chinookArtist: {
+#        name: {
+#          _contains: "of"
+#        }
+#      }
+#    }
+#    order_by: {
+#      chinookArtist: {
+#        artistid: Desc
+#      }
+#    }
+#  ) {
+#    albumid
+#    title
+#    chinookArtist {
+#      artistid
+#      name
+#    }
+#    chinookTracksAggregate {
+#      _count
+#       trackid {
+#        min
+#        max
+#      }
+#    }
+#  }
+POST http://localhost:8080/query
+Content-Type: application/json
+
+{
+  "collection": "CHINOOK.ALBUM",
+  "query": {
+    "fields": {
+      "albumid": { "type": "column", "column": "ALBUMID", "fields": null },
+      "title": { "type": "column", "column": "TITLE", "fields": null },
+      "chinookArtist": {
+        "type": "relationship",
+        "query": {
+          "fields": {
+            "artistid": {
+              "type": "column",
+              "column": "ARTISTID",
+              "fields": null
+            },
+            "name": { "type": "column", "column": "NAME", "fields": null }
+          }
+        },
+        "relationship": "app___ChinookAlbum__chinookArtist",
+        "arguments": {}
+      },
+      "chinookTracksAggregate": {
+        "type": "relationship",
+        "query": {
+          "aggregates": {
+            "_count": { "type": "star_count" },
+            "trackid_min": {
+              "type": "single_column",
+              "column": "TRACKID",
+              "field_path": null,
+              "function": "min"
+            },
+            "trackid_max": {
+              "type": "single_column",
+              "column": "TRACKID",
+              "field_path": null,
+              "function": "max"
+            }
+          }
+        },
+        "relationship": "app___ChinookAlbum__chinookTracks",
+        "arguments": {}
+      }
+    },
+    "limit": 6,
+    "offset": 1,
+    "order_by": {
+      "elements": [
+        {
+          "order_direction": "desc",
+          "target": {
+            "type": "column",
+            "name": "ARTISTID",
+            "path": [
+              {
+                "relationship": "app___ChinookAlbum__chinookArtist",
+                "arguments": {},
+                "predicate": { "type": "and", "expressions": [] }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "predicate": {
+      "type": "exists",
+      "in_collection": {
+        "type": "related",
+        "relationship": "app___ChinookAlbum__chinookArtist",
+        "arguments": {}
+      },
+      "predicate": {
+        "type": "binary_comparison_operator",
+        "column": { "type": "column", "name": "NAME", "path": [] },
+        "operator": "_contains",
+        "value": { "type": "scalar", "value": "of" }
+      }
+    }
+  },
+  "arguments": {},
+  "collection_relationships": {
+    "app___ChinookAlbum__chinookArtist": {
+      "column_mapping": { "ARTISTID": "ARTISTID" },
+      "relationship_type": "object",
+      "target_collection": "CHINOOK.ARTIST",
+      "arguments": {}
+    },
+    "app___ChinookAlbum__chinookTracks": {
+      "column_mapping": { "ALBUMID": "ALBUMID" },
+      "relationship_type": "array",
+      "target_collection": "CHINOOK.TRACK",
+      "arguments": {}
+    }
+  }
+}
