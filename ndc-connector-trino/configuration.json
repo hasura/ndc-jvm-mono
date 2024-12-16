@@ -1,88 +1,630 @@
 {
-  "jdbcUrl": "jdbc:trino://host.docker.internal:8090/tpch/sf1?user=trino",
-  "jdbcProperties": {},
+  "jdbcUrl": "jdbc:trino://localhost:8090/tpch/sf1?user=trino",
+  "jdbcProperties": {
+    "allowMultiQueries": "true"
+  },
   "schemas": [],
   "tables": [
     {
+      "tableName": "lineitem",
+      "tableType": "TABLE",
+      "description": null,
+      "columns": [
+        {
+          "name": "orderkey",
+          "description": null,
+          "type": "bigint",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "partkey",
+          "description": null,
+          "type": "bigint",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "suppkey",
+          "description": null,
+          "type": "bigint",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "linenumber",
+          "description": null,
+          "type": "integer",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "quantity",
+          "description": null,
+          "type": "double",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "extendedprice",
+          "description": null,
+          "type": "double",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "discount",
+          "description": null,
+          "type": "double",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "tax",
+          "description": null,
+          "type": "double",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "returnflag",
+          "description": null,
+          "type": "varchar(1)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "linestatus",
+          "description": null,
+          "type": "varchar(1)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "shipdate",
+          "description": null,
+          "type": "date",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "commitdate",
+          "description": null,
+          "type": "date",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "receiptdate",
+          "description": null,
+          "type": "date",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "shipinstruct",
+          "description": null,
+          "type": "varchar(25)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "shipmode",
+          "description": null,
+          "type": "varchar(10)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "comment",
+          "description": null,
+          "type": "varchar(44)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        }
+      ],
+      "pks": [],
+      "fks": {}
+    },
+    {
+      "tableName": "nation",
+      "tableType": "TABLE",
+      "description": null,
+      "columns": [
+        {
+          "name": "nationkey",
+          "description": null,
+          "type": "bigint",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "name",
+          "description": null,
+          "type": "varchar(25)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "regionkey",
+          "description": null,
+          "type": "bigint",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "comment",
+          "description": null,
+          "type": "varchar(152)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        }
+      ],
+      "pks": [],
+      "fks": {}
+    },
+    {
       "tableName": "customer",
-        "tableType": "TABLE",
-        "description": null,
-        "columns": [
-          {
-            "name": "custkey",
-            "description": null,
-            "type": "bigint",
-            "numeric_scale": null,
-            "nullable": false,
-            "auto_increment": false,
-            "is_primarykey": true
-          },
-          {
-            "name": "name",
-            "description": null,
-            "type": "varchar",
-            "numeric_scale": null,
-            "nullable": true,
-            "auto_increment": false,
-            "is_primarykey": false
-          },
-          {
-            "name": "address",
-            "description": null,
-            "type": "varchar",
-            "numeric_scale": null,
-            "nullable": true,
-            "auto_increment": false,
-            "is_primarykey": false
-          },
-          {
-            "name": "nationkey",
-            "description": null,
-            "type": "bigint",
-            "numeric_scale": null,
-            "nullable": true,
-            "auto_increment": false,
-            "is_primarykey": false
-          },
-          {
-            "name": "phone",
-            "description": null,
-            "type": "varchar",
-            "numeric_scale": null,
-            "nullable": true,
-            "auto_increment": false,
-            "is_primarykey": false
-          },
-          {
-            "name": "acctbal",
-            "description": null,
-            "type": "double",
-            "numeric_scale": null,
-            "nullable": true,
-            "auto_increment": false,
-            "is_primarykey": false
-          },
-          {
-            "name": "mktsegment",
-            "description": null,
-            "type": "varchar",
-            "numeric_scale": null,
-            "nullable": true,
-            "auto_increment": false,
-            "is_primarykey": false
-          },
-          {
-            "name": "comment",
-            "description": null,
-            "type": "varchar",
-            "numeric_scale": null,
-            "nullable": true,
-            "auto_increment": false,
-            "is_primarykey": false
-          }
-        ],
-        "pks": ["custkey"],
-        "fks": null
+      "tableType": "TABLE",
+      "description": null,
+      "columns": [
+        {
+          "name": "custkey",
+          "description": null,
+          "type": "bigint",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "name",
+          "description": null,
+          "type": "varchar(25)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "address",
+          "description": null,
+          "type": "varchar(40)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "nationkey",
+          "description": null,
+          "type": "bigint",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "phone",
+          "description": null,
+          "type": "varchar(15)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "acctbal",
+          "description": null,
+          "type": "double",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "mktsegment",
+          "description": null,
+          "type": "varchar(10)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "comment",
+          "description": null,
+          "type": "varchar(117)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        }
+      ],
+      "pks": [],
+      "fks": {}
+    },
+    {
+      "tableName": "region",
+      "tableType": "TABLE",
+      "description": null,
+      "columns": [
+        {
+          "name": "regionkey",
+          "description": null,
+          "type": "bigint",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "name",
+          "description": null,
+          "type": "varchar(25)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "comment",
+          "description": null,
+          "type": "varchar(152)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        }
+      ],
+      "pks": [],
+      "fks": {}
+    },
+    {
+      "tableName": "part",
+      "tableType": "TABLE",
+      "description": null,
+      "columns": [
+        {
+          "name": "partkey",
+          "description": null,
+          "type": "bigint",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "name",
+          "description": null,
+          "type": "varchar(55)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "mfgr",
+          "description": null,
+          "type": "varchar(25)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "brand",
+          "description": null,
+          "type": "varchar(10)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "type",
+          "description": null,
+          "type": "varchar(25)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "size",
+          "description": null,
+          "type": "integer",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "container",
+          "description": null,
+          "type": "varchar(10)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "retailprice",
+          "description": null,
+          "type": "double",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "comment",
+          "description": null,
+          "type": "varchar(23)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        }
+      ],
+      "pks": [],
+      "fks": {}
+    },
+    {
+      "tableName": "orders",
+      "tableType": "TABLE",
+      "description": null,
+      "columns": [
+        {
+          "name": "orderkey",
+          "description": null,
+          "type": "bigint",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "custkey",
+          "description": null,
+          "type": "bigint",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "orderstatus",
+          "description": null,
+          "type": "varchar(1)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "totalprice",
+          "description": null,
+          "type": "double",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "orderdate",
+          "description": null,
+          "type": "date",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "orderpriority",
+          "description": null,
+          "type": "varchar(15)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "clerk",
+          "description": null,
+          "type": "varchar(15)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "shippriority",
+          "description": null,
+          "type": "integer",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "comment",
+          "description": null,
+          "type": "varchar(79)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        }
+      ],
+      "pks": [],
+      "fks": {}
+    },
+    {
+      "tableName": "supplier",
+      "tableType": "TABLE",
+      "description": null,
+      "columns": [
+        {
+          "name": "suppkey",
+          "description": null,
+          "type": "bigint",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "name",
+          "description": null,
+          "type": "varchar(25)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "address",
+          "description": null,
+          "type": "varchar(40)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "nationkey",
+          "description": null,
+          "type": "bigint",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "phone",
+          "description": null,
+          "type": "varchar(15)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "acctbal",
+          "description": null,
+          "type": "double",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "comment",
+          "description": null,
+          "type": "varchar(101)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        }
+      ],
+      "pks": [],
+      "fks": {}
+    },
+    {
+      "tableName": "partsupp",
+      "tableType": "TABLE",
+      "description": null,
+      "columns": [
+        {
+          "name": "partkey",
+          "description": null,
+          "type": "bigint",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "suppkey",
+          "description": null,
+          "type": "bigint",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "availqty",
+          "description": null,
+          "type": "integer",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "supplycost",
+          "description": null,
+          "type": "double",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        },
+        {
+          "name": "comment",
+          "description": null,
+          "type": "varchar(199)",
+          "numeric_scale": null,
+          "nullable": false,
+          "auto_increment": false,
+          "is_primarykey": false
+        }
+      ],
+      "pks": [],
+      "fks": {}
     }
   ],
   "functions": [],
