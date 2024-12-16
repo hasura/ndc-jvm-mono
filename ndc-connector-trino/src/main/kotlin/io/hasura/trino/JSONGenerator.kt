@@ -2,15 +2,13 @@ package io.hasura.trino
 
 import io.hasura.ndc.common.ConnectorConfiguration
 import io.hasura.ndc.common.NDCScalar
-import io.hasura.ndc.common.NativeQueryInfo
-import io.hasura.ndc.common.NativeQueryPart
 import io.hasura.ndc.ir.*
 import io.hasura.ndc.ir.Field.ColumnField
 import io.hasura.ndc.ir.Field as IRField
 import io.hasura.ndc.sqlgen.BaseQueryGenerator
+import io.hasura.trino.TrinoJDBCSchemaGenerator
 import org.jooq.*
 import org.jooq.Field
-import org.jooq.impl.CustomField
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 
@@ -34,7 +32,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
         return queryRequestToSQLInternal(request)
     }
 
-    fun queryRequestToSQLInternal(
+    private fun queryRequestToSQLInternal(
         request: QueryRequest,
     ): SelectSelectStep<*> {
         // JOOQ is smart enough to not generate CTEs if there are no native queries
@@ -53,61 +51,66 @@ object JsonQueryGenerator : BaseQueryGenerator() {
 
         val baseSelection = DSL.select(
             DSL.table(DSL.name(request.collection)).asterisk()
-        ).from(
-            if (request.query.predicate == null) {
-                DSL.table(DSL.name(request.collection))
-            } else {
-                val table = DSL.table(DSL.name(request.collection))
-                val requiredJoinTables = collectRequiredJoinTablesForWhereClause(
-                    where = request.query.predicate!!,
-                    collectionRelationships = request.collection_relationships
-                )
-                requiredJoinTables.foldIndexed(table) { index, acc, relationship ->
-                    val parentTable = if (index == 0) {
-                        request.collection
-                    } else {
-                        requiredJoinTables.elementAt(index - 1).target_collection
+        ).select(getSelectOrderFields(request))
+            .from(
+                if (request.query.predicate == null) {
+                    DSL.table(DSL.name(request.collection))
+                } else {
+                    val table = DSL.table(DSL.name(request.collection))
+                    val requiredJoinTables = collectRequiredJoinTablesForWhereClause(
+                        where = request.query.predicate!!,
+                        collectionRelationships = request.collection_relationships
+                    )
+                    requiredJoinTables.foldIndexed(table) { index, acc, relationship ->
+                        val parentTable = if (index == 0) {
+                            request.collection
+                        } else {
+                            requiredJoinTables.elementAt(index - 1).target_collection
+                        }
+
+                        val joinTable = DSL.table(DSL.name(relationship.target_collection))
+                        acc.join(joinTable).on(
+                            mkJoinWhereClause(
+                                sourceTable = parentTable,
+                                parentRelationship = relationship
+                            )
+                        )
                     }
 
-                    val joinTable = DSL.table(DSL.name(relationship.target_collection))
-                    acc.join(joinTable).on(
+                }
+            ).apply {
+                addJoinsRequiredForOrderByFields(this, request)
+            }
+            .apply {
+                if (request.query.predicate != null) {
+                    where(getWhereConditions(request))
+                }
+                if (parentRelationship != null) {
+                    where(
                         mkJoinWhereClause(
-                            sourceTable = parentTable,
-                            parentRelationship = relationship
+                            sourceTable = parentTable ?: error("parentTable is null"),
+                            parentRelationship = parentRelationship
                         )
                     )
                 }
-            }
-        ).apply {
-            if (request.query.predicate != null) {
-                where(getWhereConditions(request))
-            }
-            if (parentRelationship != null) {
-                where(
-                    mkJoinWhereClause(
-                        sourceTable = parentTable ?: error("parentTable is null"),
-                        parentRelationship = parentRelationship
+                if (request.query.order_by != null) {
+                    orderBy(
+                        translateIROrderByField(
+                            orderBy = request.query.order_by,
+                            currentCollection = getTableName(request.collection),
+                            relationships = request.collection_relationships
+                        )
                     )
-                )
-            }
-            if (request.query.order_by != null) {
-                orderBy(
-                    translateIROrderByField(
-                        orderBy = request.query.order_by,
-                        currentCollection = getTableName(request.collection),
-                        relationships = request.collection_relationships
-                    )
-                )
-            }
-            if (request.query.limit != null) {
-                limit(request.query.limit)
-            }
-            if (request.query.offset != null) {
-                offset(request.query.offset)
-            }
-        }.asTable(
-            DSL.name(getTableName(request.collection))
-        )
+                }
+                if (request.query.limit != null) {
+                    limit(request.query.limit)
+                }
+                if (request.query.offset != null) {
+                    offset(request.query.offset)
+                }
+            }.asTable(
+                DSL.name(getTableName(request.collection))
+            )
 
         return DSL.jsonObject(
             buildList {
@@ -163,6 +166,8 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                             }
                                         }
                                     )
+                                ).orderBy(
+                                    getConcatOrderFields(request)
                                 )
                             ).from(
                                 baseSelection
@@ -193,7 +198,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
         )
     }
 
-    fun collectRequiredJoinTablesForWhereClause(
+    private fun collectRequiredJoinTablesForWhereClause(
         where: Expression,
         collectionRelationships: Map<String, Relationship>,
         previousTableName: String? = null
@@ -226,7 +231,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
         }
     }
 
-    fun ndcScalarTypeToSQLDataType(scalarType: NDCScalar): DataType<out Any> = when (scalarType) {
+    private fun ndcScalarTypeToSQLDataType(scalarType: NDCScalar): DataType<out Any> = when (scalarType) {
         NDCScalar.BOOLEAN -> SQLDataType.BOOLEAN
         NDCScalar.INT -> SQLDataType.INTEGER
         NDCScalar.FLOAT -> SQLDataType.FLOAT
@@ -286,6 +291,25 @@ object JsonQueryGenerator : BaseQueryGenerator() {
 
     private fun getTableName(collection: String): String {
         return collection.split('.').last()
+    }
+
+    private const val ORDER_FIELD_SUFFIX = "_order_field"
+
+    private fun getSelectOrderFields(request: QueryRequest) : List<Field<*>>{
+        val sortFields = translateIROrderByField(request, request.collection)
+        return sortFields.map {  it.`$field`().`as`(it.name + ORDER_FIELD_SUFFIX) }
+    }
+
+    private fun getConcatOrderFields(request: QueryRequest) : List<SortField<*>>{
+        val sortFields = translateIROrderByField(request, request.collection)
+        return sortFields.map {
+            val field = DSL.field(DSL.name(it.name + ORDER_FIELD_SUFFIX))
+            when(it.order) {
+                SortOrder.ASC -> field.asc().nullsLast()
+                SortOrder.DESC -> field.desc().nullsFirst()
+                else -> field.asc().nullsLast()
+            }
+        }
     }
 
 }
