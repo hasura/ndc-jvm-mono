@@ -237,6 +237,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                 field.cast(SQLDataType.VARCHAR)
             NDCScalar.GEOMETRY, NDCScalar.GEOGRAPHY -> 
                 DSL.jsonObject(field.cast(SQLDataType.VARCHAR))
+            NDCScalar.BOOLEAN -> field.cast(SQLDataType.BOOLEAN)
             else -> field
         }
     }
@@ -292,6 +293,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
             ?: error("Column ${field.column} not found in table $collection")
 
         val scalarType = MySQLJDBCSchemaGenerator.mapScalarType(column.type, column.numeric_scale)
+
         return Pair(ndcScalarTypeToSQLDataType(scalarType), scalarType)
     }
 

@@ -251,45 +251,54 @@ object MySQLJDBCSchemaGenerator : JDBCSchemaGenerator() {
         )
     }
 
+    // TODO: Proper types for MySQL rather then strings
     override fun mapScalarType(columnTypeStr: String, numericScale: Int?): NDCScalar {
-        return when (columnTypeStr.uppercase()) {
-            // Integer Types
-            "TINYINT" -> NDCScalar.INT8
-            "SMALLINT" -> NDCScalar.INT16
-            "MEDIUMINT" -> NDCScalar.INT32
-            "INT", "INTEGER" -> NDCScalar.INT32
-            "BIGINT" -> NDCScalar.INT64
-    
-            // Floating-Point Types
-            "FLOAT" -> NDCScalar.FLOAT32
-            "DOUBLE" -> NDCScalar.FLOAT64
-    
-            // Numeric and Decimal Types
-            "DECIMAL", "NUMERIC" -> {
-                if (numericScale == 0) {
-                    NDCScalar.BIGINTEGER // Integer-like numeric without scale
-                } else {
-                    NDCScalar.BIGDECIMAL // Numeric with scale
+        return when {
+            columnTypeStr.uppercase().startsWith("BIT") -> {
+                when (numericScale) {
+                    1 -> NDCScalar.BOOLEAN
+                    else -> NDCScalar.BYTES
                 }
             }
+            else -> when (columnTypeStr.uppercase()) {
+                // Integer Types
+                "TINYINT" -> NDCScalar.INT8
+                "SMALLINT" -> NDCScalar.INT16
+                "MEDIUMINT" -> NDCScalar.INT32
+                "INT", "INTEGER" -> NDCScalar.INT32
+                "BIGINT" -> NDCScalar.INT64
     
-            // Date and Time Types
-            "DATE" -> NDCScalar.DATE
-            "DATETIME" -> NDCScalar.TIMESTAMP
-            "TIME" -> NDCScalar.TIMESTAMP
-            "TIMESTAMP" -> NDCScalar.TIMESTAMPTZ
+                // Floating-Point Types
+                "FLOAT" -> NDCScalar.FLOAT32
+                "DOUBLE" -> NDCScalar.FLOAT64
     
-            // String Types
-            "CHAR", "VARCHAR", "TEXT", "TINYTEXT", "MEDIUMTEXT", "LONGTEXT" -> NDCScalar.STRING
+                // Numeric and Decimal Types
+                "DECIMAL", "NUMERIC" -> {
+                    if (numericScale == 0) {
+                        NDCScalar.BIGINTEGER // Integer-like numeric without scale
+                    } else {
+                        NDCScalar.BIGDECIMAL // Numeric with scale
+                    }
+                }
     
-            // Binary Types
-            "BLOB", "TINYBLOB", "MEDIUMBLOB", "LONGBLOB" -> NDCScalar.BYTES
+                // Date and Time Types
+                "DATE" -> NDCScalar.DATE
+                "DATETIME" -> NDCScalar.TIMESTAMP
+                "TIME" -> NDCScalar.TIMESTAMP
+                "TIMESTAMP" -> NDCScalar.TIMESTAMPTZ
     
-            // JSON Type
-            "JSON" -> NDCScalar.JSON
+                // String Types
+                "CHAR", "VARCHAR", "TEXT", "TINYTEXT", "MEDIUMTEXT", "LONGTEXT" -> NDCScalar.STRING
     
-            // Default Fallback
-            else -> NDCScalar.JSON
+                // Binary Types
+                "BLOB", "TINYBLOB", "MEDIUMBLOB", "LONGBLOB" -> NDCScalar.BYTES
+    
+                // JSON Type
+                "JSON" -> NDCScalar.JSON
+    
+                // Default Fallback
+                else -> NDCScalar.JSON
+            }
         }
     }
 }
