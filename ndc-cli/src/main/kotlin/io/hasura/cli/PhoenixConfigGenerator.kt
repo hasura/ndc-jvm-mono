@@ -61,12 +61,12 @@ object PhoenixConfigGenerator : IConfigGenerator {
 
         val isThinClient = jdbcUrl.contains("phoenix:thin", ignoreCase = true)
 
-        val result = ctx.fetch(
-            """
-            SELECT * FROM SYSTEM.CATALOG
-            WHERE TABLE_SCHEM != 'SYSTEM' OR TABLE_SCHEM IS NULL
-        """
-        )
+        val stmt = when {
+            schemas.isNotEmpty() -> "SELECT * FROM SYSTEM.CATALOG WHERE TABLE_SCHEM IN (${schemas.joinToString { "'$it'" } })"
+            else -> "SELECT * FROM SYSTEM.CATALOG WHERE TABLE_SCHEM != 'SYSTEM' OR TABLE_SCHEM IS NULL"
+        }
+        
+        val result = ctx.fetch(stmt)
 
         val groupedBySchema = result.groupBy { it["TABLE_SCHEM"] as String? }
 
