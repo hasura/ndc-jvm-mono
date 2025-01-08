@@ -45,9 +45,9 @@ class TrinoDataConnectorService @Inject constructor(
         val dslCtx = mkDSLCtx()
 
         val query = if (!request.variables.isNullOrEmpty()) {
-            JsonQueryGenerator.forEachQueryRequestToSQL(request)
+            CTEQueryGenerator.forEachQueryRequestToSQL(request)
         } else {
-            JsonQueryGenerator.queryRequestToSQL(request)
+            CTEQueryGenerator.queryRequestToSQL(request)
         }
 
         val rows = executeDbQuery(query, dslCtx)
@@ -60,6 +60,6 @@ class TrinoDataConnectorService @Inject constructor(
     override val jooqDialect = SQLDialect.TRINO
     override val jooqSettings =
         commonDSLContextSettings.withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_UNQUOTED)
-    override val sqlGenerator = JsonQueryGenerator
+    override val sqlGenerator = CTEQueryGenerator
     override val mutationTranslator = MutationTranslator
 }

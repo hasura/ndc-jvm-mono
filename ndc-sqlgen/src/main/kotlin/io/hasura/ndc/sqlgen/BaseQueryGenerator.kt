@@ -157,6 +157,21 @@ abstract class BaseQueryGenerator : BaseGenerator {
         else emptyList()
     }
 
+    protected fun mkJoinKeyFields(
+        rel: Relationship?,
+        currentCollection: org.jooq.Name,
+    ): List<Field<Any>> {
+        return if (rel == null) emptyList()
+        else if (rel.column_mapping.isNotEmpty())
+            rel.column_mapping.values.map { it }.map {
+                val appendedName = currentCollection.name.asList<String>() + it
+                DSL.field(DSL.name(*appendedName.toTypedArray()))
+            }
+        else if (rel.arguments.isNotEmpty())
+            rel.arguments.keys.map { DSL.field(DSL.name(it)) }
+        else emptyList()
+    }
+
     fun mkAggregateSubquery(
         elem: OrderByElement,
         relationship: Relationship,

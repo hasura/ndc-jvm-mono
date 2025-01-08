@@ -13,7 +13,7 @@ services:
         - JOOQ_PRO_EMAIL=${JOOQ_PRO_EMAIL}
         - JOOQ_PRO_LICENSE=${JOOQ_PRO_LICENSE}
     ports:
-      - 8081:8080
+      - 8080:8080
     volumes:
       - ./ndc-connector-oracle/configuration.json:/etc/connector/configuration.json
 
@@ -70,3 +70,5 @@ services:
         restart: always
         ports:
             - "8090:8080"
+        volumes:
+          - ./docker/trino/catalog:/etc/trino/catalog
