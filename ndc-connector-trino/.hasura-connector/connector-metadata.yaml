@@ -7,5 +7,5 @@ supportedEnvironmentVariables:
 commands:
   update:
     type: Dockerized
-    dockerImage: ghcr.io/hasura/ndc-jvm-cli:v1.0.0
+    dockerImage: ghcr.io/hasura/ndc-jvm-cli:v1.0.5
     commandArgs: [update, --database, TRINO, --schemas, $JDBC_SCHEMAS, --outfile, /etc/connector/configuration.json]
