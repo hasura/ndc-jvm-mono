@@ -7,13 +7,14 @@ on:
       - "mysql/*"
       - "oracle/*"
       - "phoenix/*"
+      - "trino/*"
 
 jobs:
   docker-build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        database: [snowflake, mysql, oracle]
+        database: [snowflake, mysql, oracle, phoenix, trino]
 
     outputs:
       release_tag: ${{ steps.extract_tag.outputs.tag }}
@@ -87,12 +88,22 @@ jobs:
           cd ndc-connector-${{ matrix.database }}
           tar -czf package.tar.gz ./.hasura-connector
 
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ needs.docker-build.outputs.release_tag }}
+          release_name: Release ${{ needs.docker-build.outputs.release_tag }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Upload package.tar.gz to GitHub Release
         if: contains(github.ref, matrix.database)
         uses: actions/upload-release-asset@v1
         with:
-          tag_name: ${{ needs.docker-build.outputs.tag }} # Use the correct tag output
-          upload_url: ${{ steps.release.outputs.upload_url }}
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ndc-connector-${{ matrix.database }}/package.tar.gz
           asset_name: package-${{ matrix.database }}.tar.gz
           asset_content_type: application/gzip
