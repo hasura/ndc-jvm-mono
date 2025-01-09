@@ -8,7 +8,7 @@ COPY . /build
 
 # Run Gradle build
 USER root
-RUN ./gradlew :ndc-connector-snowflake:build --no-daemon --console=plain -x test
+RUN ./gradlew :ndc-connector-trino:build --no-daemon --console=plain -x test
 
 # Final stage
 FROM registry.access.redhat.com/ubi9/openjdk-21:1.20-2
