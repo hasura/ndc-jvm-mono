@@ -14,7 +14,8 @@ import kotlin.system.exitProcess
 enum class DatabaseType {
     ORACLE,
     MYSQL,
-    SNOWFLAKE
+    SNOWFLAKE,
+    TRINO
 }
 
 
@@ -100,6 +101,7 @@ class CLI {
             DatabaseType.ORACLE -> OracleConfigGenerator
             DatabaseType.MYSQL -> MySQLConfigGenerator
             DatabaseType.SNOWFLAKE -> SnowflakeConfigGenerator
+            DatabaseType.TRINO -> TrinoConfigGenerator
         }
 
         println("Introspecting database...")
