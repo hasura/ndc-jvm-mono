@@ -69,7 +69,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        database: [snowflake, mysql, oracle]
+        database: [snowflake, mysql, oracle, phoenix, trino]
 
     steps:
       - name: Checkout repository
@@ -90,6 +90,7 @@ jobs:
 
       - name: Create Release
         id: create_release
+        if: contains(github.ref, matrix.database)
         uses: actions/create-release@v1
         with:
           tag_name: ${{ needs.docker-build.outputs.release_tag }}
