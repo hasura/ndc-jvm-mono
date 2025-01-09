@@ -10,13 +10,6 @@ version = properties["version"] as String
 repositories {
     mavenLocal()
     mavenCentral()
-    maven {
-        url = uri("https://repo.jooq.org/repo")
-        credentials {
-            username = env.fetch("JOOQ_PRO_EMAIL")
-            password = env.fetch("JOOQ_PRO_LICENSE")
-        }
-    }
 }
 
 val quarkusPlatformGroupId: String by project
