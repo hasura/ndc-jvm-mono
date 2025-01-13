@@ -13,7 +13,7 @@ services:
         - JOOQ_PRO_EMAIL=${JOOQ_PRO_EMAIL}
         - JOOQ_PRO_LICENSE=${JOOQ_PRO_LICENSE}
     ports:
-      - 8081:8080
+      - 8080:8080
     volumes:
       - ./ndc-connector-oracle/configuration.json:/etc/connector/configuration.json
 
@@ -64,3 +64,11 @@ services:
           - "3306:3306"
       volumes:
           - ./docker/mysql/chinook.sql:/docker-entrypoint-initdb.d/chinook.sql
+
+  trino:
+        image: trinodb/trino:466
+        restart: always
+        ports:
+            - "8090:8080"
+        volumes:
+          - ./docker/trino/catalog:/etc/trino/catalog

@@ -1,0 +1,16 @@
+POST http://0.0.0.0:8080/query
+Content-Type: application/json
+
+{
+  "collection": "customer",
+  "query": {
+    "fields": {
+      "custkey": {
+        "type": "column",
+        "column": "custkey",
+        "fields": null
+      }
+    },
+    "limit": 3
+  }
+}

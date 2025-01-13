@@ -192,6 +192,72 @@ Content-Type: application/json
 }
 
 ###
+# Fetch an Album with ID 1, and its related Artist through ArtistById_Oracle
+POST http://localhost:8080/query
+Content-Type: application/json
+
+{
+  "collection": "AlbumById",
+  "query": {
+    "fields": {
+      "ALBUMID": {
+        "type": "column",
+        "column": "ALBUMID",
+        "arguments": {}
+      },
+      "TITLE": {
+        "type": "column",
+        "column": "TITLE",
+        "arguments": {}
+      },
+      "chinookArtist": {
+        "type": "relationship",
+        "query": {
+          "fields": {
+            "ARTISTID": {
+              "type": "column",
+              "column": "ARTISTID",
+              "arguments": {}
+            },
+            "NAME": {
+              "type": "column",
+              "column": "NAME",
+              "arguments": {}
+            }
+          }
+        },
+        "relationship": "app___AlbumById__chinookArtist",
+        "arguments": {}
+      }
+    },
+    "predicate": {
+      "type": "binary_comparison_operator",
+      "operator": "_eq",
+      "column": {
+        "type": "column",
+        "name": "ALBUMID",
+        "path": []
+      },
+      "value": {
+        "type": "scalar",
+        "value": 1
+      }
+    }
+  },
+  "arguments": {},
+  "collection_relationships": {
+    "app___AlbumById__chinookArtist": {
+      "column_mapping": {
+        "ARTISTID": "ARTISTID"
+      },
+      "relationship_type": "object",
+      "target_collection": "ArtistById_Oracle",
+      "arguments": {}
+    }
+  }
+}
+
+###
 #  chinookAlbum(
 #    limit: 6,
 #    offset: 1,
@@ -317,6 +383,81 @@ Content-Type: application/json
       "relationship_type": "array",
       "target_collection": "CHINOOK.TRACK",
       "arguments": {}
+    }
+  }
+}
+
+
+###
+# Trino order <-> customer query with order.customer.name ordering
+POST http://localhost:8080/query
+Content-Type: application/json
+
+{
+  "collection": "orders",
+  "collection_relationships": {
+    "app___orders__customer": {
+      "column_mapping": {
+        "custkey": "custkey"
+      },
+      "relationship_type": "object",
+      "target_collection": "customer",
+      "arguments": {}
+    }
+  },
+  "query": {
+    "fields": {
+      "custkey": {
+        "type": "column",
+        "column": "custkey",
+        "fields": null
+      },
+      "orderkey": {
+        "type": "column",
+        "column": "orderkey",
+        "fields": null
+      },
+      "orderCustomer": {
+        "type": "relationship",
+        "query": {
+          "fields": {
+            "custkey": {
+              "type": "column",
+              "column": "custkey",
+              "fields": null
+            },
+            "name": {
+              "type": "column",
+              "column": "name",
+              "fields": null
+            }
+          }
+        },
+        "relationship": "app___orders__customer",
+        "arguments": {}
+      }
+    },
+    "limit": 3,
+    "order_by": {
+      "elements": [
+        {
+          "order_direction": "desc",
+          "target": {
+            "type": "column",
+            "name": "name",
+            "path": [
+              {
+                "relationship": "app___orders__customer",
+                "arguments": {},
+                "predicate": {
+                  "type": "and",
+                  "expressions": []
+                }
+              }
+            ]
+          }
+        }
+      ]
     }
   }
 }

@@ -160,6 +160,21 @@ abstract class BaseQueryGenerator : BaseGenerator {
         else emptyList()
     }
 
+    protected fun mkJoinKeyFields(
+        rel: Relationship?,
+        currentCollection: org.jooq.Name,
+    ): List<Field<Any>> {
+        return if (rel == null) emptyList()
+        else if (rel.column_mapping.isNotEmpty())
+            rel.column_mapping.values.map { it }.map {
+                val appendedName = currentCollection.name.asList<String>() + it
+                DSL.field(DSL.name(*appendedName.toTypedArray()))
+            }
+        else if (rel.arguments.isNotEmpty())
+            rel.arguments.keys.map { DSL.field(DSL.name(it)) }
+        else emptyList()
+    }
+
     fun mkAggregateSubquery(
         elem: OrderByElement,
         relationship: Relationship,
@@ -220,9 +235,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
                         val relName = elem.target.path.map { it.relationship }.last()
                         val rel = relationships[relName] ?: throw Exception("Relationship not found")
                         val targetTable = rel.target_collection
-                        DSL.field(DSL.name(listOf(targetTable, target.name)))
+                        DSL.field(DSL.name(targetTable.split(".") + target.name))
                     } else {
-                        DSL.field(DSL.name(listOf(currentCollection, target.name)))
+                        DSL.field(DSL.name(currentCollection.split(".") + target.name))
                     }
                 }
 

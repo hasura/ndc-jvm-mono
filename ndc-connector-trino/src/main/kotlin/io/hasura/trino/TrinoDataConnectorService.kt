@@ -1,7 +1,6 @@
-package io.hasura.snowflake
+package io.hasura.trino
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.hasura.CTEQueryGenerator
 import io.hasura.ndc.app.interfaces.IDataSourceProvider
 import io.hasura.ndc.app.services.dataConnectors.BaseDataConnectorService
 import io.hasura.ndc.ir.*
@@ -14,16 +13,15 @@ import jakarta.inject.Singleton
 import org.jooq.SQLDialect
 import org.jooq.conf.RenderQuotedNames
 
-
 @Singleton
 @Alternative
 @Priority(1)
-class SnowflakeDataConnectorService @Inject constructor(
+class TrinoDataConnectorService @Inject constructor(
     tracer: Tracer,
     datasourceProvider: IDataSourceProvider
 ) : BaseDataConnectorService(
     tracer,
-    SnowflakeJDBCSchemaGenerator,
+    TrinoJDBCSchemaGenerator,
     datasourceProvider
 ) {
 
@@ -59,9 +57,9 @@ class SnowflakeDataConnectorService @Inject constructor(
         return rowsets
     }
 
-    override val jooqDialect = SQLDialect.SNOWFLAKE
+    override val jooqDialect = SQLDialect.TRINO
     override val jooqSettings =
-            commonDSLContextSettings.withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_QUOTED)
+        commonDSLContextSettings.withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_UNQUOTED)
     override val sqlGenerator = CTEQueryGenerator
     override val mutationTranslator = MutationTranslator
 }
