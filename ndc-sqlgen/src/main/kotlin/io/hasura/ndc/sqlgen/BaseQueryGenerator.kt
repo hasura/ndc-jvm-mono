@@ -232,9 +232,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
                         val relName = elem.target.path.map { it.relationship }.last()
                         val rel = relationships[relName] ?: throw Exception("Relationship not found")
                         val targetTable = rel.target_collection
-                        DSL.field(DSL.name(listOf(targetTable, target.name)))
+                        DSL.field(DSL.name(targetTable.split(".") + target.name))
                     } else {
-                        DSL.field(DSL.name(listOf(currentCollection, target.name)))
+                        DSL.field(DSL.name(currentCollection.split(".") + target.name))
                     }
                 }
 

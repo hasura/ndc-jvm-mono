@@ -68,7 +68,7 @@ object CTEQueryGenerator : BaseQueryGenerator() {
                         DSL.rowNumber().over(
                             DSL.partitionBy(
                                 mkJoinKeyFields(
-                                    relationship, request.collection
+                                    relationship, DSL.name(request.collection.split("."))
                                 )
                             ).orderBy(
                                 run {
@@ -98,11 +98,11 @@ object CTEQueryGenerator : BaseQueryGenerator() {
                                 && (relationship.column_mapping.isNotEmpty() || relationship.arguments.isNotEmpty())
                             ) {
                                 from(DSL.name(genCTEName(relSource ?: request.collection)))
-                                    .innerJoin(DSL.name(relationship.target_collection))
+                                    .innerJoin(DSL.name(relationship.target_collection.split(".")))
                                     .on(
                                         mkSQLJoin(
                                             relationship,
-                                            sourceCollection = genCTEName(relSource ?: request.collection)
+                                            sourceCollection = genCTEName(relSource ?: request.collection),
                                         )
                                     )
                             } else from(getCollectionAsjOOQName(request.collection))

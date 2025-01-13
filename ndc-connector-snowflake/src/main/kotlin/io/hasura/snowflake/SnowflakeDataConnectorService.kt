@@ -61,7 +61,7 @@ class SnowflakeDataConnectorService @Inject constructor(
 
     override val jooqDialect = SQLDialect.SNOWFLAKE
     override val jooqSettings =
-        commonDSLContextSettings.withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_UNQUOTED)
+            commonDSLContextSettings.withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_QUOTED)
     override val sqlGenerator = CTEQueryGenerator
     override val mutationTranslator = MutationTranslator
 }
