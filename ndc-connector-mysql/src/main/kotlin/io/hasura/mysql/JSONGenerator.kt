@@ -286,13 +286,36 @@ object JsonQueryGenerator : BaseQueryGenerator() {
     private fun columnTypeTojOOQType(collection: String, field: ColumnField): Pair<org.jooq.DataType<out Any>, NDCScalar> {
         val connectorConfig = ConnectorConfiguration.Loader.config
 
-        val table = connectorConfig.tables.find { it.tableName == collection }
-            ?: error("Table $collection not found in connector configuration")
+        val collectionIsTable = connectorConfig.tables.any { it.tableName == collection }
+        val collectionIsNativeQuery = connectorConfig.nativeQueries.containsKey(collection)
 
-        val column = table.columns.find { it.name == field.column }
-            ?: error("Column ${field.column} not found in table $collection")
+        if (!collectionIsTable && !collectionIsNativeQuery) {
+            error("Collection $collection not found in connector configuration")
+        }
 
-        val scalarType = MySQLJDBCSchemaGenerator.mapScalarType(column.type, column.numeric_scale)
+        val scalarType =  when {
+            collectionIsTable -> {
+                val table = connectorConfig.tables.find { it.tableName == collection }
+                    ?: error("Table $collection not found in connector configuration")
+
+                val column = table.columns.find { it.name == field.column }
+                    ?: error("Column ${field.column} not found in table $collection")
+
+                MySQLJDBCSchemaGenerator.mapScalarType(column.type, column.numeric_scale)
+            }
+
+            collectionIsNativeQuery -> {
+                val nativeQuery = connectorConfig.nativeQueries[collection]
+                    ?: error("Native query $collection not found in connector configuration")
+
+                val column = nativeQuery.columns[field.column]
+                    ?: error("Column ${field.column} not found in native query $collection")
+
+                MySQLJDBCSchemaGenerator.mapScalarType(Type.extractBaseType(column), null)
+            }
+
+            else -> error("Collection $collection not found in connector configuration")
+        }
 
         return Pair(ndcScalarTypeToSQLDataType(scalarType), scalarType)
     }
