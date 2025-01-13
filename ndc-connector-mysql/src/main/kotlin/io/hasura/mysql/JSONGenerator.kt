@@ -125,7 +125,11 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                             when (field) {
                                                 is ColumnField -> {
                                                     val columnField = DSL.field(DSL.name(field.column))
-                                                    val (columnType, ndcScalar) = columnTypeTojOOQType(request.collection, field)
+                                                    val (columnType, ndcScalar) = columnTypeTojOOQType(
+                                                        MySQLJDBCSchemaGenerator::mapScalarType,
+                                                        request.collection,
+                                                        field
+                                                    )
                                                     val castedField = castToSQLDataType(columnField, ndcScalar)
                                                     DSL.jsonEntry(
                                                         alias,
@@ -229,95 +233,6 @@ object JsonQueryGenerator : BaseQueryGenerator() {
 
             else -> emptySet()
         }
-    }
-
-    private fun castToSQLDataType(field: Field<*>, type: NDCScalar): Field<*> {
-        return when (type) {
-            NDCScalar.INT64, NDCScalar.BIGINTEGER, NDCScalar.BIGDECIMAL -> 
-                field.cast(SQLDataType.VARCHAR)
-            NDCScalar.GEOMETRY, NDCScalar.GEOGRAPHY -> 
-                DSL.jsonObject(field.cast(SQLDataType.VARCHAR))
-            NDCScalar.BOOLEAN -> field.cast(SQLDataType.BOOLEAN)
-            else -> field
-        }
-    }
-
-    private fun ndcScalarTypeToSQLDataType(scalarType: NDCScalar): DataType<out Any> = when (scalarType) {
-        // Boolean
-        NDCScalar.BOOLEAN -> SQLDataType.BOOLEAN
-    
-        // Integer Types
-        NDCScalar.INT8 -> SQLDataType.TINYINT
-        NDCScalar.INT16 -> SQLDataType.SMALLINT
-        NDCScalar.INT32 -> SQLDataType.INTEGER
-        NDCScalar.INT64 -> SQLDataType.BIGINT
-    
-        // Floating-Point Types
-        NDCScalar.FLOAT32 -> SQLDataType.FLOAT
-        NDCScalar.FLOAT64 -> SQLDataType.DOUBLE
-    
-        // Arbitrary Precision Types
-        NDCScalar.BIGINTEGER -> SQLDataType.NUMERIC
-        NDCScalar.BIGDECIMAL -> SQLDataType.DECIMAL
-    
-        // String Types
-        NDCScalar.STRING -> SQLDataType.CLOB
-        NDCScalar.UUID -> SQLDataType.VARCHAR(36) // UUIDs are typically stored as VARCHAR(36)
-    
-        // Date and Time Types
-        NDCScalar.DATE -> SQLDataType.DATE
-        NDCScalar.TIMESTAMP -> SQLDataType.TIMESTAMP
-        NDCScalar.TIMESTAMPTZ -> SQLDataType.TIMESTAMPWITHTIMEZONE
-    
-        // GeoJSON Types
-        NDCScalar.GEOGRAPHY -> SQLDataType.JSON
-        NDCScalar.GEOMETRY -> SQLDataType.JSON
-    
-        // Binary Types
-        NDCScalar.BYTES -> SQLDataType.BLOB
-    
-        // JSON Types
-        NDCScalar.JSON -> SQLDataType.JSON
-    
-        // Default Fallback
-        else -> SQLDataType.CLOB
-    }
-
-    private fun columnTypeTojOOQType(collection: String, field: ColumnField): Pair<org.jooq.DataType<out Any>, NDCScalar> {
-        val connectorConfig = ConnectorConfiguration.Loader.config
-
-        val collectionIsTable = connectorConfig.tables.any { it.tableName == collection }
-        val collectionIsNativeQuery = connectorConfig.nativeQueries.containsKey(collection)
-
-        if (!collectionIsTable && !collectionIsNativeQuery) {
-            error("Collection $collection not found in connector configuration")
-        }
-
-        val scalarType =  when {
-            collectionIsTable -> {
-                val table = connectorConfig.tables.find { it.tableName == collection }
-                    ?: error("Table $collection not found in connector configuration")
-
-                val column = table.columns.find { it.name == field.column }
-                    ?: error("Column ${field.column} not found in table $collection")
-
-                MySQLJDBCSchemaGenerator.mapScalarType(column.type, column.numeric_scale)
-            }
-
-            collectionIsNativeQuery -> {
-                val nativeQuery = connectorConfig.nativeQueries[collection]
-                    ?: error("Native query $collection not found in connector configuration")
-
-                val column = nativeQuery.columns[field.column]
-                    ?: error("Column ${field.column} not found in native query $collection")
-
-                MySQLJDBCSchemaGenerator.mapScalarType(Type.extractBaseType(column), null)
-            }
-
-            else -> error("Collection $collection not found in connector configuration")
-        }
-
-        return Pair(ndcScalarTypeToSQLDataType(scalarType), scalarType)
     }
 
     private fun getAggregatejOOQFunction(aggregate: Aggregate) = when (aggregate) {

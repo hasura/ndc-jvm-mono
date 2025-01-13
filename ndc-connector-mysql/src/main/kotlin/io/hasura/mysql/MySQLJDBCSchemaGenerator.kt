@@ -244,7 +244,6 @@ object MySQLJDBCSchemaGenerator : JDBCSchemaGenerator() {
                 representation = ScalarRepresentation(NDCScalar.JSON),
                 comparison_operators = mapOf(
                     "_eq" to ComparisonOperatorDefinition.Equal,
-                    "_contains" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.JSON.name))
                 ),
                 aggregate_functions = emptyMap()
             )
@@ -252,10 +251,10 @@ object MySQLJDBCSchemaGenerator : JDBCSchemaGenerator() {
     }
 
     // TODO: Proper types for MySQL rather then strings
-    override fun mapScalarType(columnTypeStr: String, numericScale: Int?): NDCScalar {
+    override fun mapScalarType(columnTypeStr: String, numericPrecision: Int?, numericScale: Int?): NDCScalar {
         return when {
             columnTypeStr.uppercase().startsWith("BIT") -> {
-                when (numericScale) {
+                when (numericPrecision) {
                     1 -> NDCScalar.BOOLEAN
                     else -> NDCScalar.BYTES
                 }

@@ -15,6 +15,7 @@ abstract class JDBCSchemaGenerator(
 
     abstract fun mapScalarType(
         columnTypeStr: String,
+        numericPrecision: Int?,
         numericScale: Int?
     ): NDCScalar
 
@@ -52,8 +53,8 @@ abstract class JDBCSchemaGenerator(
                     description = it.description,
                     arguments = emptyMap(),
                     type = when (it.nullable) {
-                        true -> Type.Nullable(Type.Named(mapScalarType(it.type, it.numeric_scale).name))
-                        false -> Type.Named(mapScalarType(it.type, it.numeric_scale).name)
+                        true -> Type.Nullable(Type.Named(mapScalarType(it.type, it.numeric_precision, it.numeric_scale).name))
+                        false -> Type.Named(mapScalarType(it.type, it.numeric_precision, it.numeric_scale).name)
                     }
                 )
             }
@@ -87,7 +88,7 @@ abstract class JDBCSchemaGenerator(
             name = function.function_name,
             description = function.comment,
             arguments = emptyMap(),
-            result_type = Type.Named(mapScalarType(function.data_type, null).name)
+            result_type = Type.Named(mapScalarType(function.data_type, null, null).name)
         )
     }
 

@@ -45,7 +45,8 @@ object MySQLConfigGenerator : IConfigGenerator {
                         'name', columns.column_name,
                         'description', columns.column_comment,
                         'type', columns.data_type,
-                        'numeric_scale', coalesce(columns.numeric_scale, columns.numeric_precision),
+                        'numeric_precision', columns.numeric_precision,
+                        'numeric_scale', columns.numeric_scale,
                         'nullable', if (columns.is_nullable = 'yes', true, false),
                         'auto_increment', if(columns.extra = 'auto_increment',true,false),
                         'is_primarykey', if(columns.COLUMN_KEY = 'PRI', true, false)
