@@ -16,11 +16,11 @@ sealed interface BaseGenerator {
         return DSL.and(
             rel.column_mapping.map { (sourceColumn, targetColumn) ->
                 DSL.field(DSL.name(listOf(sourceCollection, sourceColumn)))
-                    .eq(DSL.field(DSL.name(listOf(targetTableFQN, targetColumn))))
+                    .eq(DSL.field(DSL.name(targetTableFQN.split(".") + targetColumn)))
             }
                     + rel.arguments.map { (targetColumn, argument) ->
                 DSL.field(DSL.name(listOf(sourceCollection, (argument as Argument.Column).name)))
-                    .eq(DSL.field(DSL.name(listOf(targetTableFQN, targetColumn))))
+                    .eq(DSL.field(DSL.name(targetTableFQN.split(".") + targetColumn)))
             }
         )
     }
