@@ -193,7 +193,7 @@ object CTEQueryGenerator : BaseQueryGenerator() {
             (request.query.fields?.map { (alias, field) ->
                 when (field) {
                     is IRField.ColumnField -> {
-                        val columnField = DSL.field(DSL.name(field.column))
+                        val columnField = DSL.field(DSL.name(listOf(genCTEName(request.collection)) + field.column))
                         val (columnType, ndcScalar) = columnTypeTojOOQType(
                             SnowflakeJDBCSchemaGenerator::mapScalarType,
                             request.collection,
