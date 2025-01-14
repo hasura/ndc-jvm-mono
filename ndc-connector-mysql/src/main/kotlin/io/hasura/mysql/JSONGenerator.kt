@@ -7,7 +7,6 @@ import io.hasura.ndc.ir.Field.ColumnField
 import io.hasura.ndc.ir.Field as IRField
 import io.hasura.ndc.ir.Type
 import io.hasura.ndc.sqlgen.BaseQueryGenerator
-import io.hasura.ndc.sqlgen.DatabaseType.SNOWFLAKE
 import org.jooq.*
 import org.jooq.Field
 import org.jooq.impl.DSL
