@@ -2,7 +2,6 @@ package io.hasura.snowflake
 
 import io.hasura.ndc.app.services.JDBCSchemaGenerator
 import io.hasura.ndc.common.NDCScalar
-import io.hasura.ndc.common.javaSqlTypeToNDCScalar
 import io.hasura.ndc.ir.AggregateFunctionDefinition
 import io.hasura.ndc.ir.ComparisonOperatorDefinition
 import io.hasura.ndc.ir.ScalarRepresentation
@@ -47,7 +46,6 @@ object SnowflakeJDBCSchemaGenerator : JDBCSchemaGenerator() {
                 aggregate_functions = mapOf(
                     "avg" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
                     "sum" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
-                    "count" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
                     "min" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT8.name)),
                     "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT8.name))
                 )
@@ -65,7 +63,6 @@ object SnowflakeJDBCSchemaGenerator : JDBCSchemaGenerator() {
                 aggregate_functions = mapOf(
                     "avg" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
                     "sum" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
-                    "count" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
                     "min" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT16.name)),
                     "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT16.name))
                 )
@@ -83,7 +80,6 @@ object SnowflakeJDBCSchemaGenerator : JDBCSchemaGenerator() {
                 aggregate_functions = mapOf(
                     "avg" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
                     "sum" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
-                    "count" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
                     "min" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT32.name)),
                     "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT32.name))
                 )
@@ -101,7 +97,6 @@ object SnowflakeJDBCSchemaGenerator : JDBCSchemaGenerator() {
                 aggregate_functions = mapOf(
                     "avg" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
                     "sum" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
-                    "count" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
                     "min" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
                     "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name))
                 )
@@ -119,7 +114,6 @@ object SnowflakeJDBCSchemaGenerator : JDBCSchemaGenerator() {
                 aggregate_functions = mapOf(
                     "avg" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
                     "sum" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT32.name)),
-                    "count" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
                     "min" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT32.name)),
                     "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT32.name))
                 )
@@ -137,7 +131,6 @@ object SnowflakeJDBCSchemaGenerator : JDBCSchemaGenerator() {
                 aggregate_functions = mapOf(
                     "avg" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
                     "sum" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
-                    "count" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
                     "min" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
                     "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name))
                 )
@@ -155,7 +148,6 @@ object SnowflakeJDBCSchemaGenerator : JDBCSchemaGenerator() {
                 aggregate_functions = mapOf(
                     "avg" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
                     "sum" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.BIGINTEGER.name)),
-                    "count" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
                     "min" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.BIGINTEGER.name)),
                     "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.BIGINTEGER.name))
                 )
@@ -173,7 +165,6 @@ object SnowflakeJDBCSchemaGenerator : JDBCSchemaGenerator() {
                 aggregate_functions = mapOf(
                     "avg" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
                     "sum" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.BIGDECIMAL.name)),
-                    "count" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
                     "min" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.BIGDECIMAL.name)),
                     "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.BIGDECIMAL.name))
                 )
@@ -239,6 +230,13 @@ object SnowflakeJDBCSchemaGenerator : JDBCSchemaGenerator() {
                 representation = ScalarRepresentation(NDCScalar.BYTES),
                 comparison_operators = mapOf(
                     "_eq" to ComparisonOperatorDefinition.Equal
+                ),
+                aggregate_functions = emptyMap()
+            ),
+            NDCScalar.VECTOR.name to ScalarType(
+                representation = ScalarRepresentation(NDCScalar.JSON),
+                comparison_operators = mapOf(
+                    "_eq" to ComparisonOperatorDefinition.Equal,
                 ),
                 aggregate_functions = emptyMap()
             ),
@@ -315,6 +313,9 @@ object SnowflakeJDBCSchemaGenerator : JDBCSchemaGenerator() {
     
             // Boolean Type
             "BOOLEAN" -> NDCScalar.BOOLEAN
+
+            // Vector Type
+            "VECTOR" -> NDCScalar.VECTOR
     
             // Default Fallback
             else -> NDCScalar.JSON

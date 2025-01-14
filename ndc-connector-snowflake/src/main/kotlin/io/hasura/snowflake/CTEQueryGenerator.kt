@@ -9,6 +9,7 @@ import io.hasura.ndc.ir.Field.ColumnField
 import io.hasura.ndc.sqlgen.BaseQueryGenerator
 import io.hasura.ndc.sqlgen.BaseQueryGenerator.Companion.INDEX
 import io.hasura.ndc.sqlgen.BaseQueryGenerator.Companion.ROWS_AND_AGGREGATES
+import io.hasura.ndc.sqlgen.DatabaseType.SNOWFLAKE
 import io.hasura.snowflake.SnowflakeJDBCSchemaGenerator
 import org.jooq.*
 import org.jooq.impl.DSL
@@ -199,7 +200,7 @@ object CTEQueryGenerator : BaseQueryGenerator() {
                             request.collection,
                             field
                         )
-                        val castedField = castToSQLDataType(columnField, ndcScalar)
+                        val castedField = castToSQLDataType(SNOWFLAKE, columnField, ndcScalar)
                         DSL.jsonEntry(
                             alias,
                             castedField
@@ -277,7 +278,8 @@ object CTEQueryGenerator : BaseQueryGenerator() {
                 rel.copy(arguments = args)
             }
 
-            relationships.forEach { relationship ->
+            val distinctRelationships = relationships.distinctBy { it.target_collection }
+            distinctRelationships.forEach { relationship ->
 
                 val innerSelects =
                     selects.minus(selects[idx]).filter { it.first.collection == relationship.target_collection }

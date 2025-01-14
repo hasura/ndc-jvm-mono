@@ -14,6 +14,13 @@ import org.jooq.Field
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 
+enum class DatabaseType {
+    ORACLE,
+    MYSQL,
+    SNOWFLAKE,
+    TRINO
+}
+
 abstract class BaseQueryGenerator : BaseGenerator {
 
     fun handleRequest(request: QueryRequest): Select<*> {
@@ -551,12 +558,18 @@ abstract class BaseQueryGenerator : BaseGenerator {
         const val ROWS_AND_AGGREGATES = "rows_and_aggregates"
     }
 
-    fun castToSQLDataType(field: Field<*>, type: NDCScalar): Field<*> {
+    fun castToSQLDataType(databaseType: DatabaseType, field: Field<*>, type: NDCScalar): Field<*> {
         return when (type) {
             NDCScalar.INT64, NDCScalar.BIGINTEGER, NDCScalar.BIGDECIMAL -> 
                 field.cast(SQLDataType.VARCHAR)
             NDCScalar.GEOMETRY, NDCScalar.GEOGRAPHY -> 
-                DSL.jsonObject(field.cast(SQLDataType.VARCHAR))
+                when(databaseType) {
+                    DatabaseType.MYSQL -> DSL.cast(field, SQLDataType.JSON)
+                    DatabaseType.SNOWFLAKE -> DSL.cast(DSL.field("ST_AsGeoJSON({0})", Any::class.java, field), SQLDataType.JSON)
+                    else -> field
+                }
+            NDCScalar.VECTOR -> 
+                DSL.cast(DSL.field("TO_ARRAY({0})", Any::class.java, field), SQLDataType.JSON)
             NDCScalar.BOOLEAN -> field.cast(SQLDataType.BOOLEAN)
             else -> field
         }
