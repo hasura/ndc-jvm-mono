@@ -15,6 +15,7 @@ data class ColumnSchemaRow(
     val name: String,
     val description: String?,
     val type: String,
+    val numeric_precision: Int?,
     val numeric_scale: Int?,
     val nullable: Boolean,
     val auto_increment: Boolean,

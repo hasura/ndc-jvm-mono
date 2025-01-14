@@ -45,6 +45,7 @@ object TrinoConfigGenerator : IConfigGenerator {
                         auto_increment = false,
                         is_primarykey = false,
                         description = null,
+                        numeric_precision = null,
                         numeric_scale = null
                     )
                 },

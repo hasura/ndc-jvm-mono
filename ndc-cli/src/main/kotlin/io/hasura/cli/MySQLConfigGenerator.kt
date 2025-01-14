@@ -25,7 +25,7 @@ object MySQLConfigGenerator : IConfigGenerator {
 
         //language=MySQL
         val sql = """
-             SELECT
+            SELECT
                 concat(tables.TABLE_SCHEMA, '.', tables.TABLE_NAME) AS TABLE_NAME,
                 tables.TABLE_TYPE,
                 tables.table_COMMENT as DESCRIPTION,
@@ -45,6 +45,7 @@ object MySQLConfigGenerator : IConfigGenerator {
                         'name', columns.column_name,
                         'description', columns.column_comment,
                         'type', columns.data_type,
+                        'numeric_precision', columns.numeric_precision,
                         'numeric_scale', columns.numeric_scale,
                         'nullable', if (columns.is_nullable = 'yes', true, false),
                         'auto_increment', if(columns.extra = 'auto_increment',true,false),

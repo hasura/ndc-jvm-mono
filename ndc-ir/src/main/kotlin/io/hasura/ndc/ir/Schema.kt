@@ -1,9 +1,10 @@
 package io.hasura.ndc.ir
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
-
+import io.hasura.ndc.common.NDCScalar
 
 data class SchemaResponse (
     val scalar_types: Map<String, ScalarType>,
@@ -13,7 +14,14 @@ data class SchemaResponse (
     val procedures: List<ProcedureInfo>
 )
 
+data class ScalarRepresentation(
+    @JsonProperty("type")
+    val scalarType: NDCScalar
+)
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class ScalarType (
+    val representation: ScalarRepresentation? = null,
     val aggregate_functions: Map<String, AggregateFunctionDefinition>,
     val comparison_operators: Map<String, ComparisonOperatorDefinition>,
 )

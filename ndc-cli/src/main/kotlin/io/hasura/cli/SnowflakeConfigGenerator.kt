@@ -64,6 +64,7 @@ object SnowflakeConfigGenerator : IConfigGenerator {
                     'name', columns.column_name,
                     'description', columns.comment,
                     'type', columns.data_type,
+                    'numeric_precision', columns.numeric_precision,
                     'numeric_scale', columns.numeric_scale,
                     'nullable', to_boolean(columns.is_nullable),
                     'auto_increment', to_boolean(columns.is_identity)
