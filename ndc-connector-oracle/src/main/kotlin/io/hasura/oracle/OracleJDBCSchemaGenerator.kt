@@ -47,7 +47,11 @@ object OracleJDBCSchemaGenerator : JDBCSchemaGenerator() {
                     "sum" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
                     "count" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
                     "min" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT8.name)),
-                    "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT8.name))
+                    "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT8.name)),
+                    "stddev_pop" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "stddev_samp" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "var_pop" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "var_samp" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name))
                 )
             ),
             NDCScalar.INT16.name to ScalarType(
@@ -65,7 +69,11 @@ object OracleJDBCSchemaGenerator : JDBCSchemaGenerator() {
                     "sum" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
                     "count" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
                     "min" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT16.name)),
-                    "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT16.name))
+                    "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT16.name)),
+                    "stddev_pop" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "stddev_samp" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "var_pop" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "var_samp" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name))
                 )
             ),
             NDCScalar.INT32.name to ScalarType(
@@ -83,7 +91,11 @@ object OracleJDBCSchemaGenerator : JDBCSchemaGenerator() {
                     "sum" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
                     "count" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
                     "min" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT32.name)),
-                    "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT32.name))
+                    "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT32.name)),
+                    "stddev_pop" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "stddev_samp" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "var_pop" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "var_samp" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name))
                 )
             ),
             NDCScalar.INT64.name to ScalarType(
@@ -101,7 +113,11 @@ object OracleJDBCSchemaGenerator : JDBCSchemaGenerator() {
                     "sum" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
                     "count" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
                     "min" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
-                    "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name))
+                    "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
+                    "stddev_pop" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "stddev_samp" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "var_pop" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "var_samp" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name))
                 )
             ),
             NDCScalar.FLOAT32.name to ScalarType(
@@ -119,7 +135,11 @@ object OracleJDBCSchemaGenerator : JDBCSchemaGenerator() {
                     "sum" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT32.name)),
                     "count" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
                     "min" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT32.name)),
-                    "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT32.name))
+                    "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT32.name)),
+                    "stddev_pop" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "stddev_samp" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "var_pop" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "var_samp" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name))
                 )
             ),
             NDCScalar.FLOAT64.name to ScalarType(
@@ -137,7 +157,11 @@ object OracleJDBCSchemaGenerator : JDBCSchemaGenerator() {
                     "sum" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
                     "count" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
                     "min" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
-                    "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name))
+                    "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "stddev_pop" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "stddev_samp" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "var_pop" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "var_samp" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name))
                 )
             ),
             NDCScalar.BIGINTEGER.name to ScalarType(
@@ -155,7 +179,11 @@ object OracleJDBCSchemaGenerator : JDBCSchemaGenerator() {
                     "sum" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.BIGINTEGER.name)),
                     "count" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
                     "min" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.BIGINTEGER.name)),
-                    "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.BIGINTEGER.name))
+                    "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.BIGINTEGER.name)),
+                    "stddev_pop" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "stddev_samp" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "var_pop" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "var_samp" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name))
                 )
             ),
             NDCScalar.BIGDECIMAL.name to ScalarType(
@@ -173,8 +201,19 @@ object OracleJDBCSchemaGenerator : JDBCSchemaGenerator() {
                     "sum" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.BIGDECIMAL.name)),
                     "count" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
                     "min" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.BIGDECIMAL.name)),
-                    "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.BIGDECIMAL.name))
+                    "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.BIGDECIMAL.name)),
+                    "stddev_pop" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "stddev_samp" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "var_pop" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "var_samp" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name))
                 )
+            ),
+            NDCScalar.UUID.name to ScalarType(
+                representation = ScalarRepresentation(NDCScalar.UUID),
+                comparison_operators = mapOf(
+                    "_eq" to ComparisonOperatorDefinition.Equal
+                ),
+                aggregate_functions = emptyMap()
             ),
             NDCScalar.DATE.name to ScalarType(
                 representation = ScalarRepresentation(NDCScalar.DATE),
@@ -212,6 +251,20 @@ object OracleJDBCSchemaGenerator : JDBCSchemaGenerator() {
                 ),
                 aggregate_functions = emptyMap()
             ),
+            NDCScalar.GEOGRAPHY.name to ScalarType(
+                representation = ScalarRepresentation(NDCScalar.GEOGRAPHY),
+                comparison_operators = mapOf(
+                    "_eq" to ComparisonOperatorDefinition.Equal
+                ),
+                aggregate_functions = emptyMap()
+            ),
+            NDCScalar.GEOMETRY.name to ScalarType(
+                representation = ScalarRepresentation(NDCScalar.GEOMETRY),
+                comparison_operators = mapOf(
+                    "_eq" to ComparisonOperatorDefinition.Equal
+                ),
+                aggregate_functions = emptyMap()
+            ),
             NDCScalar.BYTES.name to ScalarType(
                 representation = ScalarRepresentation(NDCScalar.BYTES),
                 comparison_operators = mapOf(
@@ -246,24 +299,7 @@ object OracleJDBCSchemaGenerator : JDBCSchemaGenerator() {
             t == "BINARY_DOUBLE" -> NDCScalar.FLOAT64
             t == "JSON" -> NDCScalar.JSON
             t == "FLOAT" -> NDCScalar.FLOAT64
-            t == "NUMBER" -> {
-                if (numericScale == 0) {
-                    when (numericPrecision) {
-                        1 -> NDCScalar.BOOLEAN
-                        in 1..3 -> NDCScalar.INT8
-                        in 4..5 -> NDCScalar.INT16
-                        in 6..10 -> NDCScalar.INT32
-                        in 11..19 -> NDCScalar.INT64
-                        else -> NDCScalar.BIGINTEGER
-                    }
-                } else {
-                    when (numericScale) {
-                        2 -> NDCScalar.FLOAT32
-                        null -> NDCScalar.BIGINTEGER
-                        else -> NDCScalar.BIGDECIMAL
-                    }
-                }
-            }
+            t == "NUMBER" -> mapNumericPrecisionAndScaleToNDCScalar(numericPrecision ?: 0, numericScale ?: 0)
             else -> NDCScalar.STRING
         }
     }
