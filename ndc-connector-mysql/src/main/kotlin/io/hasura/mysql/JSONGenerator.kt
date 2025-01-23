@@ -5,6 +5,7 @@ import io.hasura.ndc.common.NDCScalar
 import io.hasura.ndc.ir.*
 import io.hasura.ndc.ir.Field.ColumnField
 import io.hasura.ndc.ir.Field as IRField
+import io.hasura.ndc.ir.Type
 import io.hasura.ndc.sqlgen.BaseQueryGenerator
 import org.jooq.*
 import org.jooq.Field
@@ -123,12 +124,16 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                         (request.query.fields ?: emptyMap()).map { (alias, field) ->
                                             when (field) {
                                                 is ColumnField -> {
+                                                    val columnField = DSL.field(DSL.name(field.column))
+                                                    val (columnType, ndcScalar) = columnTypeTojOOQType(
+                                                        MySQLJDBCSchemaGenerator::mapScalarType,
+                                                        request.collection,
+                                                        field
+                                                    )
+                                                    val castedField = castToSQLDataType(MYSQL, columnField, ndcScalar)
                                                     DSL.jsonEntry(
                                                         alias,
-                                                        DSL.field(
-                                                            DSL.name(field.column),
-                                                            // columnTypeTojOOQType(request.collection, field)
-                                                        )
+                                                        castedField
                                                     )
                                                 }
 
@@ -228,31 +233,6 @@ object JsonQueryGenerator : BaseQueryGenerator() {
 
             else -> emptySet()
         }
-    }
-
-    private fun ndcScalarTypeToSQLDataType(scalarType: NDCScalar): DataType<out Any> = when (scalarType) {
-        NDCScalar.BOOLEAN -> SQLDataType.BOOLEAN
-        NDCScalar.INT -> SQLDataType.INTEGER
-        NDCScalar.FLOAT -> SQLDataType.FLOAT
-        NDCScalar.STRING -> SQLDataType.CLOB
-        NDCScalar.DATE -> SQLDataType.DATE
-        NDCScalar.DATETIME -> SQLDataType.TIMESTAMP
-        NDCScalar.DATETIME_WITH_TIMEZONE -> SQLDataType.TIMESTAMP
-        NDCScalar.TIME -> SQLDataType.TIME
-        NDCScalar.TIME_WITH_TIMEZONE -> SQLDataType.TIME
-    }
-
-    private fun columnTypeTojOOQType(collection: String, field: ColumnField): org.jooq.DataType<out Any> {
-        val connectorConfig = ConnectorConfiguration.Loader.config
-
-        val table = connectorConfig.tables.find { it.tableName == collection }
-            ?: error("Table $collection not found in connector configuration")
-
-        val column = table.columns.find { it.name == field.column }
-            ?: error("Column ${field.column} not found in table $collection")
-
-        val scalarType = MySQLJDBCSchemaGenerator.mapScalarType(column.type, column.numeric_scale)
-        return ndcScalarTypeToSQLDataType(scalarType)
     }
 
     private fun getAggregatejOOQFunction(aggregate: Aggregate) = when (aggregate) {

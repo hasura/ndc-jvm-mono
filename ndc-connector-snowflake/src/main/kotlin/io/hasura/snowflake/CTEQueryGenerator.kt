@@ -1,14 +1,19 @@
 package io.hasura
 
 import io.hasura.ndc.common.ConnectorConfiguration
+import io.hasura.ndc.common.NDCScalar
 import io.hasura.ndc.ir.*
 import io.hasura.ndc.ir.extensions.isVariablesRequest
+import io.hasura.ndc.ir.Field as IRField
+import io.hasura.ndc.ir.Field.ColumnField
 import io.hasura.ndc.sqlgen.BaseQueryGenerator
 import io.hasura.ndc.sqlgen.BaseQueryGenerator.Companion.INDEX
 import io.hasura.ndc.sqlgen.BaseQueryGenerator.Companion.ROWS_AND_AGGREGATES
+import io.hasura.ndc.sqlgen.DatabaseType.SNOWFLAKE
+import io.hasura.snowflake.SnowflakeJDBCSchemaGenerator
 import org.jooq.*
 import org.jooq.impl.DSL
-import io.hasura.ndc.ir.Field as IRField
+import org.jooq.impl.SQLDataType
 
 
 object SnowflakeDSL {
@@ -188,11 +193,19 @@ object CTEQueryGenerator : BaseQueryGenerator() {
         return DSL.jsonObject(
             (request.query.fields?.map { (alias, field) ->
                 when (field) {
-                    is IRField.ColumnField ->
+                    is IRField.ColumnField -> {
+                        val columnField = DSL.field(DSL.name(listOf(genCTEName(request.collection)) + field.column))
+                        val (columnType, ndcScalar) = columnTypeTojOOQType(
+                            SnowflakeJDBCSchemaGenerator::mapScalarType,
+                            request.collection,
+                            field
+                        )
+                        val castedField = castToSQLDataType(SNOWFLAKE, columnField, ndcScalar)
                         DSL.jsonEntry(
                             alias,
-                            DSL.field(DSL.name(genCTEName(request.collection), field.column))
+                            castedField
                         )
+                    }
 
                     is IRField.RelationshipField -> {
                         val relation = request.collection_relationships[field.relationship]!!
@@ -265,7 +278,8 @@ object CTEQueryGenerator : BaseQueryGenerator() {
                 rel.copy(arguments = args)
             }
 
-            relationships.forEach { relationship ->
+            val distinctRelationships = relationships.distinctBy { it.target_collection }
+            distinctRelationships.forEach { relationship ->
 
                 val innerSelects =
                     selects.minus(selects[idx]).filter { it.first.collection == relationship.target_collection }
@@ -347,5 +361,4 @@ object CTEQueryGenerator : BaseQueryGenerator() {
     private fun createAlias(collection: String, isAggregateOnly: Boolean): String {
         return "$collection${if (isAggregateOnly) "_AGG" else ""}".replace(".", "_")
     }
-
 }

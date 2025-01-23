@@ -231,7 +231,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                 val column = table.columns.find { it.name == field.column }
                     ?: error("Column ${field.column} not found in table $collection")
 
-                OracleJDBCSchemaGenerator.mapScalarType(column.type, column.numeric_scale)
+                OracleJDBCSchemaGenerator.mapScalarType(column.type, column.numeric_precision, column.numeric_scale)
             }
 
             collectionIsNativeQuery -> {
@@ -241,23 +241,13 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                 val column = nativeQuery.columns[field.column]
                     ?: error("Column ${field.column} not found in native query $collection")
 
-                OracleJDBCSchemaGenerator.mapScalarType(Type.extractBaseType(column), null)
+                OracleJDBCSchemaGenerator.mapScalarType(Type.extractBaseType(column), null, null)
             }
 
             else -> error("Collection $collection not found in connector configuration")
         }
 
-        return when (scalarType) {
-            NDCScalar.BOOLEAN -> SQLDataType.BOOLEAN
-            NDCScalar.INT -> SQLDataType.INTEGER
-            NDCScalar.FLOAT -> SQLDataType.FLOAT
-            NDCScalar.STRING -> SQLDataType.CLOB
-            NDCScalar.DATE -> SQLDataType.DATE
-            NDCScalar.DATETIME -> SQLDataType.TIMESTAMP
-            NDCScalar.DATETIME_WITH_TIMEZONE -> SQLDataType.TIMESTAMP
-            NDCScalar.TIME -> SQLDataType.TIME
-            NDCScalar.TIME_WITH_TIMEZONE -> SQLDataType.TIME
-        }
+        return ndcScalarTypeToSQLDataType(scalarType)
     }
 
     private fun getAggregatejOOQFunction(aggregate: Aggregate) = when (aggregate) {

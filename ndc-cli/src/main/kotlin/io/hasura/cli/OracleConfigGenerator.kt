@@ -72,6 +72,7 @@ object OracleConfigGenerator : IConfigGenerator {
                                     'description' VALUE column_comments.COMMENTS,
                                     'type' VALUE columns.DATA_TYPE,
                                     'numeric_scale' VALUE columns.DATA_SCALE,
+                                    'numeric_precision' VALUE columns.DATA_PRECISION,
                                     'nullable' VALUE case when columns.NULLABLE = 'Y' then 'true' else 'false' end,
                                     'auto_increment' VALUE case when columns.IDENTITY_COLUMN = 'YES' then 'true' else 'false' end
                                 )
