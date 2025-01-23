@@ -29,6 +29,24 @@ object TrinoConfigGenerator : IConfigGenerator {
            WHERE table_schema = current_schema
         """.trimIndent()
 
+
+        // Take a string of the format "decimal(20)" or "decimal(20,2)" and extract the numeric precision and scale
+        fun extractNumericPrecisionAndScale(
+            decimalString: String
+        ): Pair<Int, Int> {
+            val (precision, scale) = decimalString
+                .substringAfter("(")
+                .substringBefore(")")
+                .let {
+                    when {
+                        it.contains(",") -> it.split(",")
+                        else -> listOf(it, "0")
+                    }
+                }
+                .map { it.toInt() }
+            return precision to scale
+        }
+
         // fetch every column, use jOOQ's fetchGroups to group them by table_name
         val tables = ctx.resultQuery(sql).fetchGroups("table_name").map { (tableName, rows) ->
             TableSchemaRow(
@@ -38,6 +56,11 @@ object TrinoConfigGenerator : IConfigGenerator {
                 pks = emptyList(),
                 fks = emptyMap(),
                 columns = rows.map { row ->
+                    val dataType = row.get("data_type", String::class.java)
+                    val (numericPrecision, numericScale) = when {
+                        dataType.startsWith("decimal") -> extractNumericPrecisionAndScale(dataType)
+                        else -> null to null
+                    }
                     ColumnSchemaRow(
                         name = row.get("column_name", String::class.java),
                         type = row.get("data_type", String::class.java),
@@ -45,12 +68,13 @@ object TrinoConfigGenerator : IConfigGenerator {
                         auto_increment = false,
                         is_primarykey = false,
                         description = null,
-                        numeric_precision = null,
-                        numeric_scale = null
+                        numeric_precision = numericPrecision,
+                        numeric_scale = numericScale
                     )
                 },
             )
         }
+
 
         return ConnectorConfiguration(
             jdbcUrl = jdbcUrl,

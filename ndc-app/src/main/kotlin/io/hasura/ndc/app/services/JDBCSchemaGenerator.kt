@@ -4,8 +4,6 @@ import io.hasura.ndc.app.interfaces.ISchemaGenerator
 import io.hasura.ndc.common.ConnectorConfiguration
 import io.hasura.ndc.common.*
 import io.hasura.ndc.ir.*
-import jakarta.enterprise.context.ApplicationScoped
-import jakarta.enterprise.inject.Default
 
 abstract class JDBCSchemaGenerator(
     private val supportsMutations: Boolean = false
@@ -111,5 +109,31 @@ abstract class JDBCSchemaGenerator(
 
     override fun getSchema(config: ConnectorConfiguration): SchemaResponse {
         return buildSchema(config.tables, config.functions, config.nativeQueries)
+    }
+
+    fun mapNumericPrecisionAndScaleToNDCScalar(
+        precision: Int,
+        scale: Int
+    ): NDCScalar {
+        return when {
+            scale != 0 -> when {
+                // FLOAT32: Up to 7 digits (values from -3.4028235E+38 to 3.4028235E+38).
+                precision <= 7 -> NDCScalar.FLOAT32
+                // FLOAT64: Up to 15 digits (values from -1.7976931348623157E+308 to 1.7976931348623157E+308).
+                precision <= 15 -> NDCScalar.FLOAT64
+                // BIGDECIMAL: More than 15 digits.
+                else -> NDCScalar.BIGDECIMAL
+            }
+            // INT8: Up to 3 digits (values from -128 to 127).
+            precision <= 3 -> NDCScalar.INT8
+            // INT16: Up to 5 digits (values from -32,768 to 32,767).
+            precision <= 5 -> NDCScalar.INT16
+            // INT32: Up to 10 digits (values from -2,147,483,648 to 2,147,483,647).
+            precision <= 10 -> NDCScalar.INT32
+            // INT64: Up to 19 digits (values from -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807).
+            precision <= 19 -> NDCScalar.INT64
+            // BIGINTEGER: More than 19 digits.
+            else -> NDCScalar.BIGINTEGER
+        }
     }
 }
