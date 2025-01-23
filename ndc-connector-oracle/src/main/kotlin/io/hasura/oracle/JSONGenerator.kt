@@ -1,7 +1,6 @@
 package io.hasura.oracle
 
 import io.hasura.ndc.common.ConnectorConfiguration
-import io.hasura.ndc.common.NDCScalar
 import io.hasura.ndc.ir.*
 import io.hasura.ndc.ir.Type
 import io.hasura.ndc.ir.Field.ColumnField
@@ -187,7 +186,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
     ): Set<Relationship> {
         return when (where) {
             is ExpressionOnColumn -> when (val column = where.column) {
-                is ComparisonColumn.Column -> {
+                is ComparisonTarget.Column -> {
                     column.path.fold(emptySet()) { acc, path ->
                         val relationship = collectionRelationships[path.relationship]
                             ?: error("Relationship ${path.relationship} not found")

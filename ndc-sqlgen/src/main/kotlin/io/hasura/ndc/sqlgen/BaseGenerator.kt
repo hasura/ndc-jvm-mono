@@ -52,13 +52,13 @@ sealed interface BaseGenerator {
     }
 
     private fun getCollectionForCompCol(
-        col: ComparisonColumn,
+        col: ComparisonTarget,
         request: QueryRequest
     ): String {
         // Make sure to handle the case when the path references a related table
         return when (col) {
-            is ComparisonColumn.RootCollectionColumn -> request.root_collection
-            is ComparisonColumn.Column -> {
+            is ComparisonTarget.RootCollectionColumn -> request.root_collection
+            is ComparisonTarget.Column -> {
                 if (col.path.isNotEmpty()) {
                     // Traverse the relationship path to get to the current collection name
                     val targetCollection = col.path.fold("") { acc, pathElement ->
@@ -84,11 +84,11 @@ sealed interface BaseGenerator {
         val compVal = when (val arg = argument.value) {
             is Argument.Variable -> ComparisonValue.VariableComp(arg.name)
             is Argument.Literal -> ComparisonValue.ScalarComp(arg.value)
-            is Argument.Column -> ComparisonValue.ColumnComp(ComparisonColumn.RootCollectionColumn(arg.name))
+            is Argument.Column -> ComparisonValue.ColumnComp(ComparisonTarget.RootCollectionColumn(arg.name))
         }
         val e = Expression.ApplyBinaryComparison(
             ApplyBinaryComparisonOperator.EQ,
-            ComparisonColumn.Column(argument.key, emptyList()),
+            ComparisonTarget.Column(argument.key, emptyList()),
             compVal
         )
         return expressionToCondition(e, request)
@@ -147,9 +147,21 @@ sealed interface BaseGenerator {
             }
 
             is Expression.ApplyUnaryComparison -> {
-                val column = DSL.field(DSL.name(splitCollectionName(request.collection) + e.column))
+                val field = when (e.column) {
+                    is ComparisonTarget.Column -> DSL.field(
+                        DSL.name(
+                            splitCollectionName(getCollectionForCompCol(e.column, request)) + e.column.name
+                        )
+                    )
+
+                    is ComparisonTarget.RootCollectionColumn -> DSL.field(
+                        DSL.name(
+                            splitCollectionName(request.collection) + e.column.name
+                        )
+                    )
+                }
                 when (e.operator) {
-                    ApplyUnaryComparisonOperator.IS_NULL -> column.isNull
+                    ApplyUnaryComparisonOperator.IS_NULL -> field.isNull
                 }
             }
 

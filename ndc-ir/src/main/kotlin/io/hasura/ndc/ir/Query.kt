@@ -22,16 +22,16 @@ data class QueryRequest(
 sealed interface Argument {
 
     @JsonTypeName("variable")
-    data class Variable(val name: String): Argument
+    data class Variable(val name: String) : Argument
 
     @JsonTypeName("literal")
-    data class Literal (val value: Any): Argument
+    data class Literal(val value: Any) : Argument
 
     @JsonTypeName("column")
-    data class Column (val name: String): Argument
+    data class Column(val name: String) : Argument
 }
 
-data class Relationship (
+data class Relationship(
     val column_mapping: Map<String, String>,
     val relationship_type: RelationshipType,
     val target_collection: String,
@@ -72,18 +72,25 @@ sealed interface Aggregate {
 enum class SingleColumnAggregateFunction {
     @JsonProperty("avg")
     AVG,
+
     @JsonProperty("sum")
     SUM,
+
     @JsonProperty("min")
     MIN,
+
     @JsonProperty("max")
     MAX,
+
     @JsonProperty("stddev_pop")
     STDDEV_POP,
+
     @JsonProperty("stddev_samp")
     STDDEV_SAMP,
+
     @JsonProperty("var_pop")
     VAR_POP,
+
     @JsonProperty("var_samp")
     VAR_SAMP
 }
@@ -106,7 +113,7 @@ sealed interface Field {
 sealed interface ComparisonValue {
 
     @JsonTypeName("column")
-    data class ColumnComp(val column: ComparisonColumn) : ComparisonValue
+    data class ColumnComp(val column: ComparisonTarget) : ComparisonValue
 
     @JsonTypeName("scalar")
     data class ScalarComp(val value: Any) : ComparisonValue
@@ -152,7 +159,7 @@ sealed interface OrderByTarget {
     ) : OrderByTarget
 }
 
-data class PathElement (
+data class PathElement(
     val relationship: String,
     val arguments: Map<String, Argument>,
     val predicate: Expression
@@ -164,20 +171,28 @@ data class PathElement (
 enum class ApplyBinaryComparisonOperator {
     @JsonProperty("_eq")
     EQ,
+
     @JsonProperty("_gt")
     GT,
+
     @JsonProperty("_lt")
     LT,
+
     @JsonProperty("_gte")
     GTE,
+
     @JsonProperty("_lte")
     LTE,
+
     @JsonProperty("_in")
     IN,
+
     @JsonProperty("_is_null")
     IS_NULL,
+
     @JsonProperty("_like")
     LIKE,
+
     @JsonProperty("_contains")
     CONTAINS,
 }
@@ -192,7 +207,7 @@ enum class ApplyUnaryComparisonOperator {
 // /////////////////////////////////////////////////////////////////////////
 
 interface ExpressionOnColumn {
-    val column: ComparisonColumn
+    val column: ComparisonTarget
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
@@ -210,13 +225,13 @@ sealed interface Expression {
     @JsonTypeName("unary_comparison_operator")
     data class ApplyUnaryComparison(
         val operator: ApplyUnaryComparisonOperator,
-        val column: String
+        val column: ComparisonTarget
     ) : Expression
 
     @JsonTypeName("binary_comparison_operator")
     data class ApplyBinaryComparison(
         val operator: ApplyBinaryComparisonOperator,
-        override val column: ComparisonColumn,
+        override val column: ComparisonTarget,
         val value: ComparisonValue
     ) : Expression, ExpressionOnColumn
 
@@ -229,15 +244,22 @@ sealed interface Expression {
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-sealed interface ComparisonColumn {
+sealed interface ComparisonTarget {
 
     val name: String
 
     @JsonTypeName("column")
-    data class Column(override val name: String, val path: List<PathElement>) : ComparisonColumn
+    data class Column(
+        override val name: String,
+        val path: List<PathElement>,
+        val field_path: List<String>? = null
+    ) : ComparisonTarget
 
     @JsonTypeName("root_collection_column")
-    data class RootCollectionColumn(override val name: String) : ComparisonColumn
+    data class RootCollectionColumn(
+        override val name: String,
+        val field_path: List<String>? = null
+    ) : ComparisonTarget
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
@@ -247,7 +269,7 @@ sealed interface ExistsInCollection {
     data class Related(
         val relationship: String,
         val arguments: Map<String, Argument> = emptyMap()
-        ) : ExistsInCollection
+    ) : ExistsInCollection
 
     @JsonTypeName("unrelated")
     data class Unrelated(
@@ -257,7 +279,7 @@ sealed interface ExistsInCollection {
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class RowSet (
+data class RowSet(
     val aggregates: Map<String, Any>? = null,
     val rows: List<Map<String, Any>>? = null
 )
