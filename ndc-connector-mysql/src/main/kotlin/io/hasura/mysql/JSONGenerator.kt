@@ -1,16 +1,13 @@
 package io.hasura.mysql
 
-import io.hasura.ndc.common.ConnectorConfiguration
-import io.hasura.ndc.common.NDCScalar
 import io.hasura.ndc.ir.*
 import io.hasura.ndc.ir.Field.ColumnField
 import io.hasura.ndc.ir.Field as IRField
-import io.hasura.ndc.ir.Type
 import io.hasura.ndc.sqlgen.BaseQueryGenerator
+import io.hasura.ndc.sqlgen.DatabaseType
 import org.jooq.*
 import org.jooq.Field
 import org.jooq.impl.DSL
-import org.jooq.impl.SQLDataType
 
 
 object JsonQueryGenerator : BaseQueryGenerator() {
@@ -130,7 +127,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                                         request.collection,
                                                         field
                                                     )
-                                                    val castedField = castToSQLDataType(MYSQL, columnField, ndcScalar)
+                                                    val castedField = castToSQLDataType(DatabaseType.MYSQL, columnField, ndcScalar)
                                                     DSL.jsonEntry(
                                                         alias,
                                                         castedField
@@ -209,7 +206,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
     ): Set<Relationship> {
         return when (where) {
             is ExpressionOnColumn -> when (val column = where.column) {
-                is ComparisonColumn.Column -> {
+                is ComparisonTarget.Column -> {
                     column.path.fold(emptySet()) { acc, path ->
                         val relationship = collectionRelationships[path.relationship]
                             ?: error("Relationship ${path.relationship} not found")

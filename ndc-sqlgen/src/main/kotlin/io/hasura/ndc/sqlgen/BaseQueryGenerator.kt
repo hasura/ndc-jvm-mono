@@ -276,8 +276,8 @@ abstract class BaseQueryGenerator : BaseGenerator {
         expression: Expression? = request.query.predicate,
         seenRelations: MutableSet<String> = mutableSetOf()
     ) {
-        fun addForColumn(column: ComparisonColumn) {
-            if (column is ComparisonColumn.Column) {
+        fun addForColumn(column: ComparisonTarget) {
+            if (column is ComparisonTarget.Column) {
                 column.path.forEach {
                     if (!seenRelations.contains(it.relationship)) {
                         val r = request.collection_relationships[it.relationship]!!
