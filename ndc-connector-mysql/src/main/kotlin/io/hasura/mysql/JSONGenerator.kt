@@ -48,8 +48,9 @@ object JsonQueryGenerator : BaseQueryGenerator() {
 
         val baseSelection = DSL.select(
             DSL.table(DSL.name(request.collection)).asterisk()
-        ).select(getSelectOrderFields(request))
-            .from(
+        ).select(
+            getSelectOrderFields(request)
+        ).from(
             if (request.query.predicate == null) {
                 DSL.table(DSL.name(request.collection))
             } else {
@@ -77,8 +78,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
             }
         ).apply {
             addJoinsRequiredForOrderByFields(this, request)
-        }
-            .apply {
+        }.apply {
             if (request.query.predicate != null) {
                 where(getWhereConditions(request))
             }
