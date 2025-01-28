@@ -15,7 +15,16 @@ import org.jooq.impl.SQLDataType
 object JsonQueryGenerator : BaseQueryGenerator() {
 
     override fun forEachQueryRequestToSQL(request: QueryRequest): Select<*> {
-        TODO("Not yet implemented")
+        return DSL
+            .with(buildVarsCTE(request))
+            .select(
+                DSL.jsonArrayAgg(
+                    buildJSONSelectionForQueryRequest(request)
+                )
+            )
+            .from(
+                DSL.table(DSL.name("vars"))
+            )
     }
 
     override fun queryRequestToSQL(request: QueryRequest): Select<*> {
@@ -36,6 +45,8 @@ object JsonQueryGenerator : BaseQueryGenerator() {
 
         val baseSelection = DSL.select(
             DSL.table(DSL.name(request.collection)).asterisk()
+        ).select(
+            getSelectOrderFields(request)
         ).from(
             if (request.query.predicate == null) {
                 DSL.table(DSL.name(request.collection))
@@ -62,6 +73,8 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                 }
             }
         ).apply {
+            addJoinsRequiredForOrderByFields(this, request)
+        }.apply {
             if (request.query.predicate != null) {
                 where(getWhereConditions(request))
             }
@@ -88,10 +101,8 @@ object JsonQueryGenerator : BaseQueryGenerator() {
             if (request.query.offset != null) {
                 offset(request.query.offset)
             }
-        }.apply {
-            addJoinsRequiredForOrderByFields(this, request)
         }.asTable(
-            DSL.name(getTableName(request.collection))
+            DSL.name(getAliasedTableName(request.collection))
         )
 
         return DSL.jsonObject(
@@ -148,6 +159,8 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                             }
                                         }
                                     ).returning(SQLDataType.CLOB)
+                                ).orderBy(
+                                    getConcatOrderFields(request)
                                 ).returning(SQLDataType.CLOB)
                             ).from(
                                 baseSelection
@@ -276,7 +289,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
         parentRelationship: Relationship
     ) = DSL.and(
         parentRelationship.column_mapping.map { (from, to) ->
-            val childField = DSL.field(DSL.name(getTableName(sourceTable), from))
+            val childField = DSL.field(DSL.name(getAliasedTableName(sourceTable), from))
             val parentField = DSL.field(DSL.name(parentRelationship.target_collection, to))
             childField.eq(parentField)
         }
@@ -284,6 +297,29 @@ object JsonQueryGenerator : BaseQueryGenerator() {
 
     private fun getTableName(collection: String): String {
         return collection.split('.').last()
+    }
+
+    private fun getAliasedTableName(collection: String): String {
+        return getTableName(collection) + "_alias"
+    }
+
+    private const val ORDER_FIELD_SUFFIX = "_order_field"
+
+    private fun getSelectOrderFields(request: QueryRequest) : List<Field<*>>{
+        val sortFields = translateIROrderByField(request, request.collection)
+        return sortFields.map {  it.`$field`().`as`(it.name + ORDER_FIELD_SUFFIX) }
+    }
+
+    private fun getConcatOrderFields(request: QueryRequest) : List<SortField<*>>{
+        val sortFields = translateIROrderByField(request, request.collection)
+        return sortFields.map {
+            val field = DSL.field(DSL.name(it.name + ORDER_FIELD_SUFFIX))
+            when(it.order) {
+                SortOrder.ASC -> field.asc().nullsLast()
+                SortOrder.DESC -> field.desc().nullsFirst()
+                else -> field.asc().nullsLast()
+            }
+        }
     }
 
 }
