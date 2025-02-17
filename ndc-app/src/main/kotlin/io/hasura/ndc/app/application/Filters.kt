@@ -24,6 +24,8 @@ class Filters {
 
     @ServerRequestFilter
     fun tokenFilter(ctx: ContainerRequestContext): Response? {
+        if(ctx.uriInfo.path.startsWith("/health")) return null
+
         val secret = System.getenv("HASURA_SERVICE_TOKEN_SECRET")
         if (secret.isNullOrEmpty()) {
             logger.warn("Environment variable HASURA_SERVICE_TOKEN_SECRET not set. Token validation is bypassed.")
