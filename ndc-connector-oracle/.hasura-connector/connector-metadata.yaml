@@ -1,6 +1,39 @@
 packagingDefinition:
   type: PrebuiltDockerImage
-  dockerImage: "ghcr.io/hasura/ndc-jvm-oracle:v1.0.7"
+  dockerImage: "ghcr.io/hasura/ndc-jvm-oracle:v1.0.9"
+nativeToolchainDefinition:
+  commands:
+    start:
+      type: ShellScript
+      bash: |
+        #!/usr/bin/env bash
+        set -eu -o pipefail 
+        HASURA_CONFIGURATION_DIRECTORY="$HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH" \
+        java -Dquarkus.http.host=0.0.0.0 -Dquarkus.http.port=$HASURA_CONNECTOR_PORT -Djava.util.logging.manager=org.jboss.logmanager.LogManager \
+        -jar "$HASURA_DDN_NATIVE_CONNECTOR_DIR/quarkus-run.jar"
+      powershell: |
+        $ErrorActionPreference = "Stop"
+        $env:HASURA_CONFIGURATION_DIRECTORY="$env:HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH";
+        java `
+          -Dquarkus.http.host=0.0.0.0 `
+          -Dquarkus.http.port=$env:HASURA_CONNECTOR_PORT `
+          -Djava.util.logging.manager=org.jboss.logmanager.LogManager `
+          -jar "$env:HASURA_DDN_NATIVE_CONNECTOR_DIR\quarkus-run.jar"
+    update:
+      type: ShellScript
+      bash: |
+        #!/usr/bin/env bash
+        set -eu -o pipefail
+        "$HASURA_DDN_NATIVE_CONNECTOR_PLUGIN_DIR/bin/ndc-cli" update \
+        --database ORACLE \
+        --schemas $JDBC_SCHEMAS \
+        --outfile "$HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH/configuration.json"
+      powershell: |
+        $ErrorActionPreference = "Stop"
+        & "$env:HASURA_DDN_NATIVE_CONNECTOR_PLUGIN_DIR\bin\ndc-cli.exe" update `
+          --database ORACLE `
+          --schemas $env:JDBC_SCHEMAS `
+          --outfile "$env:HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH\configuration.json"
 supportedEnvironmentVariables:
   - name: JDBC_URL
     description: "The JDBC URL to connect to the database"
