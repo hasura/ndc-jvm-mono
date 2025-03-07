@@ -1,8 +1,11 @@
 package io.hasura.ndc.sqlgen
 
+import io.hasura.ndc.common.ConnectorConfiguration
+import io.hasura.ndc.common.NDCScalar
 import io.hasura.ndc.ir.*
 import org.jooq.Condition
 import org.jooq.impl.DSL
+import org.jooq.impl.SQLDataType
 import org.jooq.Field
 
 sealed interface BaseGenerator {
@@ -28,7 +31,8 @@ sealed interface BaseGenerator {
     fun buildComparison(
         col: Field<Any>,
         operator: ApplyBinaryComparisonOperator,
-        listVal: List<Field<Any>>
+        listVal: List<Field<Any>>,
+        columnType: NDCScalar?
     ): Condition {
         if (operator != ApplyBinaryComparisonOperator.IN && listVal.size != 1) {
             error("Only the IN operator supports multiple values")
@@ -39,15 +43,62 @@ sealed interface BaseGenerator {
         val singleVal = listVal.firstOrNull() ?: return DSL.falseCondition()
 
         return when (operator) {
-            ApplyBinaryComparisonOperator.EQ -> col.eq(singleVal)
-            ApplyBinaryComparisonOperator.GT -> col.gt(singleVal)
-            ApplyBinaryComparisonOperator.GTE -> col.ge(singleVal)
-            ApplyBinaryComparisonOperator.LT -> col.lt(singleVal)
-            ApplyBinaryComparisonOperator.LTE -> col.le(singleVal)
-            ApplyBinaryComparisonOperator.IN -> col.`in`(listVal)
+            ApplyBinaryComparisonOperator.EQ -> col.eq(castValue(singleVal, columnType))
+            ApplyBinaryComparisonOperator.GT -> col.gt(castValue(singleVal, columnType))
+            ApplyBinaryComparisonOperator.GTE -> col.ge(castValue(singleVal, columnType))
+            ApplyBinaryComparisonOperator.LT -> col.lt(castValue(singleVal, columnType))
+            ApplyBinaryComparisonOperator.LTE -> col.le(castValue(singleVal, columnType))
+            ApplyBinaryComparisonOperator.IN -> col.`in`(listVal.map { castValue(it, columnType) })
             ApplyBinaryComparisonOperator.IS_NULL -> col.isNull
             ApplyBinaryComparisonOperator.LIKE -> col.like(singleVal as Field<String>)
             ApplyBinaryComparisonOperator.CONTAINS -> col.contains(singleVal as Field<String>)
+        }
+    }
+
+    // 
+    fun castValue(value: Any, scalarType: NDCScalar?): Any {
+        return when (scalarType) {
+            NDCScalar.TIMESTAMPTZ -> DSL.cast(value, java.sql.Timestamp::class.java)
+            NDCScalar.TIMESTAMP -> DSL.cast(value, java.sql.Timestamp::class.java)
+            NDCScalar.DATE -> DSL.cast(value, java.sql.Date::class.java)
+            else -> value
+        }
+    }
+
+    fun getColumnType(col: ComparisonTarget, request: QueryRequest): NDCScalar? {
+        val connectorConfig = ConnectorConfiguration.Loader.config
+        val collection = getCollectionForCompCol(col, request)
+        val collectionIsTable = connectorConfig.tables.any { it.tableName == collection }
+        val collectionIsNativeQuery = connectorConfig.nativeQueries.containsKey(collection)
+        val columnType =  when {
+            collectionIsTable -> {
+                val table = connectorConfig.tables.find { it.tableName == collection }
+                    ?: error("Table $collection not found in connector configuration")
+
+                val column = table.columns.find { it.name == col.name }
+                    ?: error("Column ${col.name} not found in table $collection")
+
+                column.type
+            }
+
+            collectionIsNativeQuery -> {
+                val nativeQuery = connectorConfig.nativeQueries[collection]
+                    ?: error("Native query $collection not found in connector configuration")
+
+                val column = nativeQuery.columns[col.name]
+                    ?: error("Column ${col.name} not found in native query $collection")
+
+                Type.extractBaseType(column)
+            }
+
+            else -> error("Collection $collection not found in connector configuration")
+        }
+
+        return when {
+          columnType == "DATE" -> NDCScalar.DATE
+          columnType.contains("TIMESTAMP") && !columnType.contains("TIME ZONE") -> NDCScalar.TIMESTAMP
+          columnType.contains("TIMESTAMP") && columnType.contains("TIME ZONE") -> NDCScalar.TIMESTAMPTZ
+          else -> null
         }
     }
 
@@ -124,6 +175,7 @@ sealed interface BaseGenerator {
             }
 
             is Expression.ApplyBinaryComparison -> {
+                val columnType = getColumnType(e.column, request)
                 val column = DSL.field(
                     DSL.name(
                         splitCollectionName(getCollectionForCompCol(e.column, request)) + e.column.name
@@ -143,7 +195,7 @@ sealed interface BaseGenerator {
 
                     is ComparisonValue.VariableComp -> listOf(DSL.field(DSL.name(listOf("vars", v.name))))
                 }
-                return buildComparison(column, e.operator, comparisonValue)
+                return buildComparison(column, e.operator, comparisonValue, columnType)
             }
 
             is Expression.ApplyUnaryComparison -> {
