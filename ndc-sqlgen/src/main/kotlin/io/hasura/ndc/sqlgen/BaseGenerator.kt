@@ -41,13 +41,14 @@ sealed interface BaseGenerator {
         // unwrap single value for use in all but the IN operator
         // OR return falseCondition if listVal is empty
         val singleVal = listVal.firstOrNull() ?: return DSL.falseCondition()
+        val castedValue = castValue(singleVal, columnType)
 
         return when (operator) {
-            ApplyBinaryComparisonOperator.EQ -> col.eq(castValue(singleVal, columnType))
-            ApplyBinaryComparisonOperator.GT -> col.gt(castValue(singleVal, columnType))
-            ApplyBinaryComparisonOperator.GTE -> col.ge(castValue(singleVal, columnType))
-            ApplyBinaryComparisonOperator.LT -> col.lt(castValue(singleVal, columnType))
-            ApplyBinaryComparisonOperator.LTE -> col.le(castValue(singleVal, columnType))
+            ApplyBinaryComparisonOperator.EQ -> col.eq(castedValue)
+            ApplyBinaryComparisonOperator.GT -> col.gt(castedValue)
+            ApplyBinaryComparisonOperator.GTE -> col.ge(castedValue)
+            ApplyBinaryComparisonOperator.LT -> col.lt(castedValue)
+            ApplyBinaryComparisonOperator.LTE -> col.le(castedValue)
             ApplyBinaryComparisonOperator.IN -> col.`in`(listVal.map { castValue(it, columnType) })
             ApplyBinaryComparisonOperator.IS_NULL -> col.isNull
             ApplyBinaryComparisonOperator.LIKE -> col.like(singleVal as Field<String>)
@@ -55,12 +56,11 @@ sealed interface BaseGenerator {
         }
     }
 
-    // 
     fun castValue(value: Any, scalarType: NDCScalar?): Any {
         return when (scalarType) {
-            NDCScalar.TIMESTAMPTZ -> DSL.cast(value, java.sql.Timestamp::class.java)
-            NDCScalar.TIMESTAMP -> DSL.cast(value, java.sql.Timestamp::class.java)
-            NDCScalar.DATE -> DSL.cast(value, java.sql.Date::class.java)
+            NDCScalar.TIMESTAMPTZ -> DSL.cast(value, SQLDataType.TIMESTAMPWITHTIMEZONE)
+            NDCScalar.TIMESTAMP -> DSL.cast(value, SQLDataType.TIMESTAMP)
+            NDCScalar.DATE -> DSL.cast(value, SQLDataType.DATE)
             else -> value
         }
     }
