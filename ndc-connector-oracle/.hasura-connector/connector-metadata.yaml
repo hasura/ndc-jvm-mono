@@ -7,7 +7,7 @@ nativeToolchainDefinition:
       type: ShellScript
       bash: |
         #!/usr/bin/env bash
-        set -eu -o pipefail 
+        set -eu -o pipefail
         HASURA_CONFIGURATION_DIRECTORY="$HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH" \
         java -Dquarkus.http.host=0.0.0.0 -Dquarkus.http.port=$HASURA_CONNECTOR_PORT -Djava.util.logging.manager=org.jboss.logmanager.LogManager \
         -jar "$HASURA_DDN_NATIVE_CONNECTOR_DIR/quarkus-run.jar"
@@ -34,6 +34,15 @@ nativeToolchainDefinition:
           --database ORACLE `
           --schemas $env:JDBC_SCHEMAS `
           --outfile "$env:HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH\configuration.json"
+    watch:
+      type: ShellScript
+      bash: |
+        #!/usr/bin/env bash
+        echo "Watch is not supported for this connector"
+        exit 1
+      powershell: |
+        Write-Output "Watch is not supported for this connector"
+        exit 1
 supportedEnvironmentVariables:
   - name: JDBC_URL
     description: "The JDBC URL to connect to the database"
