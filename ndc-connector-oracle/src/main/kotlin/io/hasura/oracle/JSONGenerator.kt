@@ -117,12 +117,23 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                         (request.query.fields ?: emptyMap()).map { (alias, field) ->
                                             when (field) {
                                                 is ColumnField -> {
+                                                    val field = DSL.field(
+                                                        DSL.name(field.column),
+                                                        columnTypeTojOOQType(request.collection, field)
+                                                    )
+
                                                     DSL.jsonEntry(
                                                         alias,
-                                                        DSL.field(
-                                                            DSL.name(field.column),
-                                                            columnTypeTojOOQType(request.collection, field)
-                                                        )
+                                                        // Oracle JSON functions convert DATE to ISO8601 format, which includes a timestamp
+                                                        // We need to convert it to a date-only format to preserve the actual date value
+                                                        //
+                                                        // SEE: https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/overview-json-generation.html
+                                                        //      (Section: "Result Returned by SQL/JSON Generation Functions")
+                                                        when (field.dataType) {
+                                                            SQLDataType.DATE -> DSL.toChar(field, DSL.inline("YYYY-MM-DD"))
+                                                            SQLDataType.TIMESTAMP -> DSL.toChar(field, DSL.inline("YYYY-MM-DD HH24:MI:SS"))
+                                                            else -> field
+                                                        }
                                                     )
                                                 }
 
