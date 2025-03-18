@@ -60,7 +60,7 @@ sealed interface BaseGenerator {
         return when (scalarType) {
             NDCScalar.TIMESTAMPTZ -> DSL.cast(value, SQLDataType.TIMESTAMPWITHTIMEZONE)
             NDCScalar.TIMESTAMP -> DSL.cast(value, SQLDataType.TIMESTAMP)
-            NDCScalar.DATE -> DSL.cast(value, SQLDataType.DATE)
+            NDCScalar.DATE -> DSL.cast(value, SQLDataType.TIMESTAMP)
             else -> value
         }
     }

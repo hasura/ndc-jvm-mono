@@ -291,8 +291,8 @@ object OracleJDBCSchemaGenerator : JDBCSchemaGenerator() {
         return when {
             t in listOf("CHAR", "VARCHAR", "VARCHAR2", "NCHAR", "NVARCHAR2", "CLOB", "NCLOB") -> NDCScalar.STRING
             t in listOf("BLOB", "BFILE", "RAW", "LONG RAW") -> NDCScalar.BYTES
-            t in listOf("TIMESTAMP WITH TIME ZONE", "TIMESTAMP WITH LOCAL TIME ZONE") -> NDCScalar.TIMESTAMPTZ
-            t.startsWith("TIMESTAMP") -> NDCScalar.TIMESTAMP
+            t.contains("TIMESTAMP") && t.contains("TIME ZONE") -> NDCScalar.TIMESTAMPTZ
+            t.contains("TIMESTAMP") && !t.contains("TIME ZONE") -> NDCScalar.TIMESTAMP
             t == "DATE" -> NDCScalar.DATE
             t == "BOOLEAN" -> NDCScalar.BOOLEAN
             t == "BINARY_FLOAT" -> NDCScalar.FLOAT32

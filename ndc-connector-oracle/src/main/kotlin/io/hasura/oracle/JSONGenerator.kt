@@ -130,8 +130,9 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                                         // SEE: https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/overview-json-generation.html
                                                         //      (Section: "Result Returned by SQL/JSON Generation Functions")
                                                         when (field.dataType) {
-                                                            SQLDataType.DATE -> DSL.toChar(field, DSL.inline("YYYY-MM-DD"))
-                                                            SQLDataType.TIMESTAMP -> DSL.toChar(field, DSL.inline("YYYY-MM-DD HH24:MI:SS"))
+                                                            SQLDataType.DATE -> DSL.toChar(field, DSL.inline("YYYY-MM-DD HH24:MI:SS"))
+                                                            SQLDataType.TIMESTAMP -> DSL.toChar(field, DSL.inline("YYYY-MM-DD HH24:MI:SS.FF6"))
+                                                            SQLDataType.TIMESTAMPWITHTIMEZONE -> DSL.toChar(field, DSL.inline("YYYY-MM-DD HH24:MI:SS.FF6 TZR"))
                                                             else -> field
                                                         }
                                                     )
