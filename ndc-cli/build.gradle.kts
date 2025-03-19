@@ -22,8 +22,8 @@ dependencies {
     implementation("info.picocli:picocli:4.7.5")
 
     implementation("com.oracle.database.jdbc:ojdbc8:19.18.0.0")
-    implementation("com.mysql:mysql-connector-j:8.4.0")
-    implementation("net.snowflake:snowflake-jdbc:3.16.1")
+    implementation("com.mysql:mysql-connector-j:9.2.0")
+    implementation("net.snowflake:snowflake-jdbc:3.23.1")
     implementation("io.trino:trino-jdbc:466")
 }
 

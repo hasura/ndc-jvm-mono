@@ -33,7 +33,7 @@ dependencies {
     implementation(project(":ndc-app"))
 
     // JDBC driver
-    implementation("net.snowflake:snowflake-jdbc:3.16.1")
+    implementation("net.snowflake:snowflake-jdbc:3.23.1")
 
     implementation("org.jooq.pro:jooq:3.19.8")
     modules {
