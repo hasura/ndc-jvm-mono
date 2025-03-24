@@ -1,6 +1,6 @@
 packagingDefinition:
   type: PrebuiltDockerImage
-  dockerImage: "ghcr.io/hasura/ndc-jvm-trino:v1.0.2"
+  dockerImage: "ghcr.io/hasura/ndc-jvm-trino:v1.0.3"
 
 supportedEnvironmentVariables:
   - name: JDBC_URL
