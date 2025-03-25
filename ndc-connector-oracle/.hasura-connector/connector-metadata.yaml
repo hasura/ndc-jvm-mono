@@ -23,7 +23,7 @@ nativeToolchainDefinition:
       type: ShellScript
       bash: |
         #!/usr/bin/env bash
-        set -eu -o pipefail
+        set -e -o pipefail
         "$HASURA_DDN_NATIVE_CONNECTOR_PLUGIN_DIR/bin/ndc-cli" update \
         --database ORACLE \
         --schemas $JDBC_SCHEMAS \
