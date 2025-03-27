@@ -11,7 +11,7 @@ supportedEnvironmentVariables:
 commands:
   update:
     type: Dockerized
-    dockerImage: ghcr.io/hasura/ndc-jvm-cli:v1.0.5-snowflake
+    dockerImage: ghcr.io/hasura/ndc-jvm-cli:v1.0.6
     commandArgs: [update, --database, SNOWFLAKE, --schemas, $JDBC_SCHEMAS, --outfile, /etc/connector/configuration.json]
 
 nativeToolchainDefinition:
