@@ -58,8 +58,7 @@ class MySQLDataConnectorService @Inject constructor(
     }
 
     override val jooqDialect = SQLDialect.MYSQL_8_0
-    override val jooqSettings =
-        commonDSLContextSettings.withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_UNQUOTED)
+    override val jooqSettings = commonDSLContextSettings
     override val sqlGenerator = JsonQueryGenerator
     override val mutationTranslator = MutationTranslator
 }

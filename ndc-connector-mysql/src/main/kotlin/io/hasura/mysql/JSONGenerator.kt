@@ -47,14 +47,14 @@ object JsonQueryGenerator : BaseQueryGenerator() {
     ): JSONObjectNullStep<*> {
 
         val baseSelection = DSL.select(
-            DSL.table(DSL.name(request.collection)).asterisk()
+            DSL.table(DSL.name(getTableName(request.collection))).asterisk()
         ).select(
             getSelectOrderFields(request)
         ).from(
             if (request.query.predicate == null) {
-                DSL.table(DSL.name(request.collection))
+                DSL.table(DSL.name(getTableName(request.collection)))
             } else {
-                val table = DSL.table(DSL.name(request.collection))
+                val table = DSL.table(DSL.name(getTableName(request.collection)))
                 val requiredJoinTables = collectRequiredJoinTablesForWhereClause(
                     where = request.query.predicate!!,
                     collectionRelationships = request.collection_relationships
@@ -69,7 +69,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                     val joinTable = DSL.table(DSL.name(relationship.target_collection))
                     acc.join(joinTable).on(
                         mkJoinWhereClause(
-                            sourceTable = parentTable,
+                            sourceTable = getTableName(parentTable),
                             parentRelationship = relationship
                         )
                     )
