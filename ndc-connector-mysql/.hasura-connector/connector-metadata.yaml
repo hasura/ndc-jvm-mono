@@ -1,6 +1,6 @@
 packagingDefinition:
   type: PrebuiltDockerImage
-  dockerImage: "ghcr.io/hasura/ndc-jvm-mysql:v1.0.13"
+  dockerImage: "ghcr.io/hasura/ndc-jvm-mysql:v1.0.14"
 
 supportedEnvironmentVariables:
   - name: JDBC_URL
