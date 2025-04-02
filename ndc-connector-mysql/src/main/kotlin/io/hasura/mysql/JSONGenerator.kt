@@ -69,7 +69,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                     val joinTable = DSL.table(DSL.name(relationship.target_collection))
                     acc.join(joinTable).on(
                         mkJoinWhereClause(
-                            sourceTable = getTableName(parentTable),
+                            sourceTable = parentTable,
                             parentRelationship = relationship
                         )
                     )
@@ -260,7 +260,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
     ) = DSL.and(
         parentRelationship.column_mapping.map { (from, to) ->
             val childField = DSL.field(DSL.name(getTableName(sourceTable), from))
-            val parentField = DSL.field(DSL.name(parentRelationship.target_collection, to))
+            val parentField = DSL.field(DSL.name(getTableName(parentRelationship.target_collection), to))
             childField.eq(parentField)
         }
     )
