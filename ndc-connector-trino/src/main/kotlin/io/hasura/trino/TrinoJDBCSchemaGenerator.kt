@@ -164,28 +164,28 @@ object TrinoJDBCSchemaGenerator : JDBCSchemaGenerator() {
                     "var_samp" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name))
                 )
             ),
-//            NDCScalar.BIGINTEGER.name to ScalarType(
-//                representation = ScalarRepresentation(NDCScalar.BIGINTEGER),
-//                comparison_operators = mapOf(
-//                    "_gt" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.BIGINTEGER.name)),
-//                    "_lt" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.BIGINTEGER.name)),
-//                    "_gte" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.BIGINTEGER.name)),
-//                    "_lte" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.BIGINTEGER.name)),
-//                    "_eq" to ComparisonOperatorDefinition.Equal,
-//                    "_in" to ComparisonOperatorDefinition.In
-//                ),
-//                aggregate_functions = mapOf(
-//                    "avg" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
-//                    "sum" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.BIGINTEGER.name)),
-//                    // "count" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
-//                    "min" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.BIGINTEGER.name)),
-//                    "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.BIGINTEGER.name)),
-//                    "stddev_pop" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
-//                    "stddev_samp" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
-//                    "var_pop" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
-//                    "var_samp" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name))
-//                )
-//            ),
+            NDCScalar.BIGINTEGER.name to ScalarType(
+                representation = ScalarRepresentation(NDCScalar.BIGINTEGER),
+                comparison_operators = mapOf(
+                    "_gt" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.BIGINTEGER.name)),
+                    "_lt" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.BIGINTEGER.name)),
+                    "_gte" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.BIGINTEGER.name)),
+                    "_lte" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.BIGINTEGER.name)),
+                    "_eq" to ComparisonOperatorDefinition.Equal,
+                    "_in" to ComparisonOperatorDefinition.In
+                ),
+                aggregate_functions = mapOf(
+                    "avg" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "sum" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.BIGINTEGER.name)),
+                    // "count" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.INT64.name)),
+                    "min" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.BIGINTEGER.name)),
+                    "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.BIGINTEGER.name)),
+                    "stddev_pop" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "stddev_samp" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "var_pop" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name)),
+                    "var_samp" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.FLOAT64.name))
+                )
+            ),
             NDCScalar.BIGDECIMAL.name to ScalarType(
                 representation = ScalarRepresentation(NDCScalar.BIGDECIMAL),
                 comparison_operators = mapOf(
