@@ -109,66 +109,88 @@ object JsonQueryGenerator : BaseQueryGenerator() {
             DSL.name(getTableName(request.collection))
         )
 
+        val isAggregatesOnlyQuery = request.query.fields.isNullOrEmpty() && !request.query.aggregates.isNullOrEmpty()
+
         return DSL.jsonObject(
             buildList {
-                if (!request.query.fields.isNullOrEmpty()) {
+                if (request.query.fields.isNullOrEmpty()) {
+                    add(
+                        DSL.jsonEntry(
+                            "rows",
+                            // If this is an only-aggregates query, the engine expects: { "rows": null }
+                            if (isAggregatesOnlyQuery)
+                                DSL.inline(null as? String?)
+                            else
+                            // Otherwise, it expects: { "rows": [] }
+                                DSL.jsonArray()
+                        )
+                    )
+                }
+                else {
                     add(
                         DSL.jsonEntry(
                             "rows",
                             DSL.select(
-                                DSL.jsonArrayAgg(
-                                    DSL.jsonObject(
-                                        (request.query.fields ?: emptyMap()).map { (alias, field) ->
-                                            when (field) {
-                                                is ColumnField -> {
-                                                    val columnField = DSL.field(DSL.name(field.column))
-                                                    val (columnType, ndcScalar) = columnTypeTojOOQType(
-                                                        MySQLJDBCSchemaGenerator::mapScalarType,
-                                                        request.collection,
-                                                        field
-                                                    )
-                                                    val castedField = castToSQLDataType(DatabaseType.MYSQL, columnField, ndcScalar)
-                                                    DSL.jsonEntry(
-                                                        alias,
-                                                        castedField
-                                                    )
-                                                }
-
-                                                is IRField.RelationshipField -> {
-                                                    val relationship =
-                                                        request.collection_relationships[field.relationship]
-                                                            ?: error("Relationship ${field.relationship} not found")
-
-                                                    val subQuery = buildJSONSelectionForQueryRequest(
-                                                        parentTable = request.collection,
-                                                        parentRelationship = relationship,
-                                                        request = QueryRequest(
-                                                            collection = relationship.target_collection,
-                                                            collection_relationships = request.collection_relationships,
-                                                            query = field.query,
-                                                            arguments = field.arguments,
-                                                            variables = null
+                                DSL.nvl(
+                                    DSL.jsonArrayAgg(
+                                        DSL.jsonObject(
+                                            (request.query.fields ?: emptyMap()).map { (alias, field) ->
+                                                when (field) {
+                                                    is ColumnField -> {
+                                                        val columnField = DSL.field(DSL.name(field.column))
+                                                        val (columnType, ndcScalar) = columnTypeTojOOQType(
+                                                            MySQLJDBCSchemaGenerator::mapScalarType,
+                                                            request.collection,
+                                                            field
                                                         )
-                                                    )
+                                                        val castedField = castToSQLDataType(
+                                                            DatabaseType.MYSQL,
+                                                            columnField,
+                                                            ndcScalar
+                                                        )
+                                                        DSL.jsonEntry(
+                                                            alias,
+                                                            castedField
+                                                        )
+                                                    }
 
-                                                    DSL.jsonEntry(
-                                                        alias,
-                                                        DSL.coalesce(
-                                                            DSL.select(subQuery),
-                                                            DSL.jsonObject(
-                                                                DSL.jsonEntry(
-                                                                    "rows",
-                                                                    DSL.jsonArray()
+                                                    is IRField.RelationshipField -> {
+                                                        val relationship =
+                                                            request.collection_relationships[field.relationship]
+                                                                ?: error("Relationship ${field.relationship} not found")
+
+                                                        val subQuery = buildJSONSelectionForQueryRequest(
+                                                            parentTable = request.collection,
+                                                            parentRelationship = relationship,
+                                                            request = QueryRequest(
+                                                                collection = relationship.target_collection,
+                                                                collection_relationships = request.collection_relationships,
+                                                                query = field.query,
+                                                                arguments = field.arguments,
+                                                                variables = null
+                                                            )
+                                                        )
+
+                                                        DSL.jsonEntry(
+                                                            alias,
+                                                            DSL.coalesce(
+                                                                DSL.select(subQuery),
+                                                                DSL.jsonObject(
+                                                                    DSL.jsonEntry(
+                                                                        "rows",
+                                                                        DSL.jsonArray()
+                                                                    )
                                                                 )
                                                             )
                                                         )
-                                                    )
+                                                    }
                                                 }
                                             }
-                                        }
-                                    )
-                                ).orderBy(
-                                    getConcatOrderFields(request)
+                                        )
+                                    ).orderBy(
+                                        getConcatOrderFields(request)
+                                    ),
+                                    DSL.jsonArray()
                                 )
                             ).from(
                                 baseSelection
@@ -176,18 +198,29 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                         )
                     )
                 }
-                if (!request.query.aggregates.isNullOrEmpty()) {
+                if (request.query.aggregates.isNullOrEmpty()) {
+                    add(
+                        DSL.jsonEntry(
+                            "aggregates",
+                            DSL.inline(null as? String?)
+                        )
+                    )
+                }
+                else {
                     add(
                         DSL.jsonEntry(
                             "aggregates",
                             DSL.select(
-                                DSL.jsonObject(
-                                    (request.query.aggregates ?: emptyMap()).map { (alias, aggregate) ->
-                                        DSL.jsonEntry(
-                                            alias,
-                                            getAggregatejOOQFunction(aggregate)
-                                        )
-                                    }
+                                DSL.nvl(
+                                    DSL.jsonObject(
+                                        (request.query.aggregates ?: emptyMap()).map { (alias, aggregate) ->
+                                            DSL.jsonEntry(
+                                                alias,
+                                                getAggregatejOOQFunction(aggregate)
+                                            )
+                                        }
+                                    ),
+                                    DSL.jsonObject()
                                 )
                             ).from(
                                 baseSelection
@@ -271,16 +304,16 @@ object JsonQueryGenerator : BaseQueryGenerator() {
 
     private const val ORDER_FIELD_SUFFIX = "_order_field"
 
-    private fun getSelectOrderFields(request: QueryRequest) : List<Field<*>>{
+    private fun getSelectOrderFields(request: QueryRequest): List<Field<*>> {
         val sortFields = translateIROrderByField(request, request.collection)
-        return sortFields.map {  it.`$field`().`as`(it.name + ORDER_FIELD_SUFFIX) }
+        return sortFields.map { it.`$field`().`as`(it.name + ORDER_FIELD_SUFFIX) }
     }
 
-    private fun getConcatOrderFields(request: QueryRequest) : List<SortField<*>>{
+    private fun getConcatOrderFields(request: QueryRequest): List<SortField<*>> {
         val sortFields = translateIROrderByField(request, request.collection)
         return sortFields.map {
             val field = DSL.field(DSL.name(it.name + ORDER_FIELD_SUFFIX))
-            when(it.order) {
+            when (it.order) {
                 SortOrder.ASC -> field.asc().nullsLast()
                 SortOrder.DESC -> field.desc().nullsFirst()
                 else -> field.asc().nullsLast()
