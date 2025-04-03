@@ -109,24 +109,9 @@ object JsonQueryGenerator : BaseQueryGenerator() {
             DSL.name(getTableName(request.collection))
         )
 
-        val isAggregatesOnlyQuery = request.query.fields.isNullOrEmpty() && !request.query.aggregates.isNullOrEmpty()
-
         return DSL.jsonObject(
             buildList {
-                if (request.query.fields.isNullOrEmpty()) {
-                    add(
-                        DSL.jsonEntry(
-                            "rows",
-                            // If this is an only-aggregates query, the engine expects: { "rows": null }
-                            if (isAggregatesOnlyQuery)
-                                DSL.inline(null as? String?)
-                            else
-                            // Otherwise, it expects: { "rows": [] }
-                                DSL.jsonArray()
-                        )
-                    )
-                }
-                else {
+                if (!request.query.fields.isNullOrEmpty()) {
                     add(
                         DSL.jsonEntry(
                             "rows",
@@ -198,15 +183,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                         )
                     )
                 }
-                if (request.query.aggregates.isNullOrEmpty()) {
-                    add(
-                        DSL.jsonEntry(
-                            "aggregates",
-                            DSL.inline(null as? String?)
-                        )
-                    )
-                }
-                else {
+                if (!request.query.aggregates.isNullOrEmpty()) {
                     add(
                         DSL.jsonEntry(
                             "aggregates",
@@ -273,6 +250,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                 SingleColumnAggregateFunction.AVG -> DSL.avg(col)
                 SingleColumnAggregateFunction.MAX -> DSL.max(col)
                 SingleColumnAggregateFunction.MIN -> DSL.min(col)
+                SingleColumnAggregateFunction.COUNT -> DSL.count(col)
                 SingleColumnAggregateFunction.SUM -> DSL.sum(col)
                 SingleColumnAggregateFunction.STDDEV_POP -> DSL.stddevPop(col)
                 SingleColumnAggregateFunction.STDDEV_SAMP -> DSL.stddevSamp(col)
