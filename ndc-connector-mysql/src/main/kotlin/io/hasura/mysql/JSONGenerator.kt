@@ -10,6 +10,14 @@ import org.jooq.Field
 import org.jooq.impl.DSL
 
 
+fun tojOOQName(name: String): Name {
+    return DSL.name(name.split("."))
+}
+
+fun tojOOQName(name: String, vararg parts: String): Name {
+    return DSL.name(name.split(".") + parts.toList())
+}
+
 object JsonQueryGenerator : BaseQueryGenerator() {
 
     override fun forEachQueryRequestToSQL(request: QueryRequest): Select<*> {
@@ -45,69 +53,55 @@ object JsonQueryGenerator : BaseQueryGenerator() {
         parentTable: String? = null,
         parentRelationship: Relationship? = null
     ): JSONObjectNullStep<*> {
+        val baseTable = DSL.table(tojOOQName(request.collection))
 
-        val baseSelection = DSL.select(
-            DSL.table(DSL.name(getTableName(request.collection))).asterisk()
+        val baseQuery = DSL.select(
+            baseTable.asterisk()
         ).select(
             getSelectOrderFields(request)
         ).from(
-            if (request.query.predicate == null) {
-                DSL.table(DSL.name(getTableName(request.collection)))
-            } else {
-                val table = DSL.table(DSL.name(getTableName(request.collection)))
-                val requiredJoinTables = collectRequiredJoinTablesForWhereClause(
-                    where = request.query.predicate!!,
-                    collectionRelationships = request.collection_relationships
-                )
-                requiredJoinTables.foldIndexed(table) { index, acc, relationship ->
-                    val parentTable = if (index == 0) {
-                        request.collection
-                    } else {
-                        requiredJoinTables.elementAt(index - 1).target_collection
-                    }
-
-                    val joinTable = DSL.table(DSL.name(relationship.target_collection))
-                    acc.join(joinTable).on(
-                        mkJoinWhereClause(
-                            sourceTable = parentTable,
-                            parentRelationship = relationship
-                        )
-                    )
-                }
-
-            }
-        ).apply {
-            addJoinsRequiredForOrderByFields(this, request)
-        }.apply {
-            if (request.query.predicate != null) {
-                where(getWhereConditions(request))
-            }
-            if (parentRelationship != null) {
-                where(
-                    mkJoinWhereClause(
-                        sourceTable = parentTable ?: error("parentTable is null"),
-                        parentRelationship = parentRelationship
-                    )
-                )
-            }
-            if (request.query.order_by != null) {
-                orderBy(
-                    translateIROrderByField(
-                        orderBy = request.query.order_by,
-                        currentCollection = getTableName(request.collection),
-                        relationships = request.collection_relationships
-                    )
-                )
-            }
-            if (request.query.limit != null) {
-                limit(request.query.limit)
-            }
-            if (request.query.offset != null) {
-                offset(request.query.offset)
-            }
-        }.asTable(
-            DSL.name(getTableName(request.collection))
+            baseTable
         )
+
+        if (request.query.predicate != null) {
+            val requiredJoinTables = collectRequiredJoinTablesForWhereClause(
+                where = request.query.predicate!!,
+                collectionRelationships = request.collection_relationships
+            )
+            requiredJoinTables.forEach { relationship ->
+                baseQuery.leftJoin(DSL.table(tojOOQName(relationship.target_collection)))
+                    .on(mkJoinWhereClause(request.collection, relationship))
+            }
+        }
+
+        addJoinsRequiredForOrderByFields2(baseQuery, request)
+
+        if (parentRelationship != null && parentTable != null) {
+            baseQuery.where(
+                mkJoinWhereClause(parentTable, parentRelationship)
+            )
+        }
+
+        if (request.query.predicate != null) {
+            baseQuery.where(getWhereConditions(request))
+        }
+        if (request.query.order_by != null) {
+            baseQuery.orderBy(
+                translateIROrderByField(
+                    orderBy = request.query.order_by,
+                    currentCollection = request.collection,
+                    relationships = request.collection_relationships
+                )
+            )
+        }
+        if (request.query.limit != null) {
+            baseQuery.limit(request.query.limit)
+        }
+        if (request.query.offset != null) {
+            baseQuery.offset(request.query.offset)
+        }
+
+        val baseSelection = baseQuery.asTable(DSL.name(tojOOQName(request.collection)))
 
         return DSL.jsonObject(
             buildList {
@@ -270,15 +264,13 @@ object JsonQueryGenerator : BaseQueryGenerator() {
         parentRelationship: Relationship
     ) = DSL.and(
         parentRelationship.column_mapping.map { (from, to) ->
-            val childField = DSL.field(DSL.name(getTableName(sourceTable), from))
-            val parentField = DSL.field(DSL.name(getTableName(parentRelationship.target_collection), to))
+            val childField = DSL.field(tojOOQName(sourceTable, from))
+            val parentField = DSL.field(tojOOQName(parentRelationship.target_collection, to))
             childField.eq(parentField)
         }
     )
 
-    private fun getTableName(collection: String): String {
-        return collection.split('.').last()
-    }
+
 
     private const val ORDER_FIELD_SUFFIX = "_order_field"
 
@@ -297,6 +289,134 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                 else -> field.asc().nullsLast()
             }
         }
+    }
+
+    fun addJoinsRequiredForOrderByFields2(
+        select: SelectJoinStep<*>,
+        request: QueryRequest,
+        sourceCollection: String = request.collection
+    ) {
+        val seenRelations = mutableSetOf<List<String>>()
+        request.query.order_by?.elements?.forEach { orderByElement ->
+            if (orderByElement.target.path.isNotEmpty()) {
+                var currentCollection = sourceCollection
+                orderByElement.target.path.forEach { pathElem ->
+                    val relationshipName = pathElem.relationship
+                    val relChain = listOf(currentCollection, relationshipName)
+
+                    if (!seenRelations.contains(relChain)) {
+                        seenRelations.add(relChain)
+
+                        val relationship = request.collection_relationships[relationshipName]
+                            ?: throw Exception("Relationship not found")
+
+                        when (relationship.relationship_type) {
+                            RelationshipType.Object -> {
+                                select.leftJoin(
+                                    DSL.table(tojOOQName(relationship.target_collection))
+                                ).on(
+                                    mkSQLJoin2(
+                                        rel = relationship,
+                                        sourceCollection = currentCollection,
+                                    )
+                                )
+                            }
+                            RelationshipType.Array -> {
+                                select.leftJoin(
+                                    mkAggregateSubquery2(
+                                        elem = orderByElement,
+                                        relationship = relationship,
+                                        whereCondition = DSL.trueCondition()
+                                    ).asTable(
+                                        DSL.name(relationshipName + "_aggregate")
+                                    )
+                                ).on(
+                                    mkSQLJoin2(
+                                        rel = relationship,
+                                        sourceCollection = currentCollection,
+                                        targetTableNameTransform = { "${relationshipName}_aggregate" }
+                                    )
+                                )
+                            }
+                        }
+                    }
+
+                    val relationship = request.collection_relationships[relationshipName]
+                        ?: throw Exception("Relationship not found")
+
+                    currentCollection = relationship.target_collection
+                }
+            }
+        }
+    }
+
+    fun mkSQLJoin2(
+        rel: Relationship,
+        sourceCollection: String,
+        targetTableNameTransform: (String) -> String = { it },
+    ): Condition {
+        val targetTableFQN = targetTableNameTransform(rel.target_collection)
+        return DSL.and(
+            rel.column_mapping.map { (sourceColumn, targetColumn) ->
+                DSL.field(tojOOQName(sourceCollection, sourceColumn))
+                    .eq(DSL.field(DSL.name(targetTableFQN.split(".") + targetColumn)))
+            }
+                    + rel.arguments.map { (targetColumn, argument) ->
+                DSL.field(tojOOQName(sourceCollection, (argument as Argument.Column).name))
+                    .eq(DSL.field(DSL.name(targetTableFQN.split(".") + targetColumn)))
+            }
+        )
+    }
+
+
+    fun mkAggregateSubquery2(
+        elem: OrderByElement,
+        relationship: Relationship,
+        whereCondition: Condition
+    ): SelectHavingStep<Record> {
+        // If the target is a star-count aggregate, we need to select the special aggregate_count field
+        // Otherwise, it's a regular aggregate, so our "SELECT *" will give us access to it in the other
+        // parts of the query
+        val orderElem = when (val target = elem.target) {
+            is OrderByTarget.OrderByStarCountAggregate -> {
+                listOf(DSL.count().`as`(DSL.name("aggregate_field")))
+            }
+
+            is OrderByTarget.OrderBySingleColumnAggregate -> {
+                val aggregate = Aggregate.SingleColumn(target.column, target.function)
+                listOf(translateIRAggregateField(aggregate).`as`(DSL.name("aggregate_field")))
+            }
+
+            else -> {
+                emptyList()
+            }
+        }
+
+        fun mkJoinKeyFields2(
+            rel: Relationship?,
+            currentCollection: String,
+        ): List<Field<Any>> {
+            return if (rel == null)
+                emptyList()
+            else if (rel.column_mapping.isNotEmpty())
+                rel.column_mapping.values.map { DSL.field(tojOOQName(currentCollection, it)) }
+            else if (rel.arguments.isNotEmpty())
+                rel.arguments.keys.map { DSL.field(DSL.name(it)) }
+            else emptyList()
+        }
+
+        val joinCols = mkJoinKeyFields2(relationship, relationship.target_collection)
+
+        // Select fields that need to be present in order for the ORDER BY clause to work
+        return DSL.select(
+            orderElem + joinCols
+        ).from(
+            DSL.table(tojOOQName(relationship.target_collection))
+        ).where(
+            whereCondition
+        ).groupBy(
+            joinCols
+        )
     }
 
 }
