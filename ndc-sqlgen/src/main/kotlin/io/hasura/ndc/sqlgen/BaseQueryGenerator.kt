@@ -398,6 +398,7 @@ abstract class BaseQueryGenerator : BaseGenerator {
                 when (field.function) {
                     SingleColumnAggregateFunction.AVG -> DSL.avg(jooqField)
                     SingleColumnAggregateFunction.SUM -> DSL.sum(jooqField)
+                    SingleColumnAggregateFunction.COUNT -> DSL.count(jooqField)
                     SingleColumnAggregateFunction.MIN -> DSL.min(jooqField)
                     SingleColumnAggregateFunction.MAX -> DSL.max(jooqField)
                     SingleColumnAggregateFunction.STDDEV_POP -> DSL.stddevPop(jooqField)

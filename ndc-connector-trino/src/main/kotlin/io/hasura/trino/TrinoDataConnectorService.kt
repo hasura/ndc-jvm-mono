@@ -26,7 +26,7 @@ class TrinoDataConnectorService @Inject constructor(
 ) {
 
     override val capabilitiesResponse = CapabilitiesResponse(
-        version = "0.1.2",
+        version = "0.1.6",
         capabilities = Capabilities(
             query = QueryCapabilities(
                 aggregates = mapOf(),
