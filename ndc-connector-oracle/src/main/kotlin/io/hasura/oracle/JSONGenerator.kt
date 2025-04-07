@@ -282,6 +282,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                 SingleColumnAggregateFunction.AVG -> DSL.avg(col)
                 SingleColumnAggregateFunction.MAX -> DSL.max(col)
                 SingleColumnAggregateFunction.MIN -> DSL.min(col)
+                SingleColumnAggregateFunction.COUNT -> DSL.count(col)
                 SingleColumnAggregateFunction.SUM -> DSL.sum(col)
                 SingleColumnAggregateFunction.STDDEV_POP -> DSL.stddevPop(col)
                 SingleColumnAggregateFunction.STDDEV_SAMP -> DSL.stddevSamp(col)
