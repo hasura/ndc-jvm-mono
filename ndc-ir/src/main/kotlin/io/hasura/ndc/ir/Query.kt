@@ -76,6 +76,9 @@ enum class SingleColumnAggregateFunction {
     @JsonProperty("sum")
     SUM,
 
+    @JsonProperty("count")
+    COUNT,
+
     @JsonProperty("min")
     MIN,
 
