@@ -175,6 +175,9 @@ enum class ApplyBinaryComparisonOperator {
     @JsonProperty("_eq")
     EQ,
 
+    @JsonProperty("_neq")
+    NEQ,
+
     @JsonProperty("_gt")
     GT,
 
@@ -195,6 +198,27 @@ enum class ApplyBinaryComparisonOperator {
 
     @JsonProperty("_like")
     LIKE,
+
+    @JsonProperty("_ilike")
+    ILIKE,
+
+    @JsonProperty("_nike")
+    NOT_LIKE,
+
+    @JsonProperty("_nilike")
+    NOT_ILIKE,
+
+    @JsonProperty("_regex")
+    REGEX,
+
+    @JsonProperty("_nregex")
+    NOT_REGEX,
+
+    @JsonProperty("_iregex")
+    IREGEX,
+
+    @JsonProperty("_niregex")
+    NOT_IREGEX,
 
     @JsonProperty("_contains")
     CONTAINS,
