@@ -1,16 +1,19 @@
 packagingDefinition:
   type: PrebuiltDockerImage
-  dockerImage: "ghcr.io/hasura/ndc-jvm-mysql:v1.0.15"
+  dockerImage: "ghcr.io/hasura/ndc-jvm-mysql:v1.0.16"
 
 supportedEnvironmentVariables:
   - name: JDBC_URL
     description: "The JDBC URL to connect to the database"
+  - name: FULLY_QUALIFY_NAMES
+    description: "Whether to fully qualify table names in the generated configuration, e.g., `schema.table` rather than `table`"
+    defaultValue: "false"
 
 commands:
   update:
     type: Dockerized
-    dockerImage: ghcr.io/hasura/ndc-jvm-cli:v1.0.6
-    commandArgs: [update, --database, MYSQL, --schemas, $JDBC_SCHEMAS, --outfile, /etc/connector/configuration.json]
+    dockerImage: ghcr.io/hasura/ndc-jvm-cli:v1.0.7
+    commandArgs: [update, --database, MYSQL, --schemas, $JDBC_SCHEMAS, --fully-qualify-names=$FULLY_QUALIFY_NAMES --outfile, /etc/connector/configuration.json]
 
 nativeToolchainDefinition:
   commands:
@@ -38,12 +41,14 @@ nativeToolchainDefinition:
         "$HASURA_DDN_NATIVE_CONNECTOR_PLUGIN_DIR/bin/ndc-cli" update \
         --database MYSQL \
         --schemas $JDBC_SCHEMAS \
+        --fully-qualify-names=$FULLY_QUALIFY_NAMES \
         --outfile "$HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH/configuration.json"
       powershell: |
         $ErrorActionPreference = "Stop"
         & "$env:HASURA_DDN_NATIVE_CONNECTOR_PLUGIN_DIR\bin\ndc-cli.exe" update `
           --database MYSQL `
           --schemas $env:JDBC_SCHEMAS `
+          --fully-qualify-names=$env:FULLY_QUALIFY_NAMES `
           --outfile "$env:HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH\configuration.json"
     watch:
       type: ShellScript
