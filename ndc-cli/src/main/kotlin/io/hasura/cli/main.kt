@@ -59,7 +59,12 @@ class CLI {
             split = ",",
             description = ["Comma-separated list of schemas to introspect"]
         )
-        schemas: List<String>?
+        schemas: List<String>?,
+        @Option(
+            names = ["-f", "--fully-qualify-names"],
+            description = ["Whether to fully qualify table names"]
+        )
+        fullyQualifyNames: Boolean = false,
     ) {
         val file = File(outfile)
 
@@ -107,7 +112,8 @@ class CLI {
         println("Introspecting database...")
         val introspectedConfig = configGenerator.getConfig(
             jdbcUrlConfig = jdbcUrlConfig,
-            schemas = schemas ?: existingConfig?.schemas ?: emptyList()
+            schemas = schemas ?: existingConfig?.schemas ?: emptyList(),
+            fullyQualifyNames = fullyQualifyNames
         )
 
         val finalConfig = introspectedConfig.copy(

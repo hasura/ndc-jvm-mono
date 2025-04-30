@@ -3,7 +3,7 @@
   "jdbcProperties" : { "allowMultiQueries": "true" },
   "schemas" : [ ],
   "tables" : [ {
-    "tableName" : "Chinook.Album",
+    "tableName" : "Album",
     "tableType" : "TABLE",
     "description" : "",
     "columns" : [ {
@@ -37,11 +37,11 @@
         "column_mapping" : {
           "ArtistId" : "ArtistId"
         },
-        "foreign_collection" : "Chinook.Artist"
+        "foreign_collection" : "Artist"
       }
     }
   }, {
-    "tableName" : "Chinook.Artist",
+    "tableName" : "Artist",
     "tableType" : "TABLE",
     "description" : "",
     "columns" : [ {
@@ -64,7 +64,7 @@
     "pks" : [ "ArtistId" ],
     "fks" : null
   }, {
-    "tableName" : "Chinook.Customer",
+    "tableName" : "Customer",
     "tableType" : "TABLE",
     "description" : "",
     "columns" : [ {
@@ -178,11 +178,11 @@
         "column_mapping" : {
           "SupportRepId" : "EmployeeId"
         },
-        "foreign_collection" : "Chinook.Employee"
+        "foreign_collection" : "Employee"
       }
     }
   }, {
-    "tableName" : "Chinook.Employee",
+    "tableName" : "Employee",
     "tableType" : "TABLE",
     "description" : "",
     "columns" : [ {
@@ -312,11 +312,11 @@
         "column_mapping" : {
           "ReportsTo" : "EmployeeId"
         },
-        "foreign_collection" : "Chinook.Employee"
+        "foreign_collection" : "Employee"
       }
     }
   }, {
-    "tableName" : "Chinook.Genre",
+    "tableName" : "Genre",
     "tableType" : "TABLE",
     "description" : "",
     "columns" : [ {
@@ -339,7 +339,7 @@
     "pks" : [ "GenreId" ],
     "fks" : null
   }, {
-    "tableName" : "Chinook.Invoice",
+    "tableName" : "Invoice",
     "tableType" : "TABLE",
     "description" : "",
     "columns" : [ {
@@ -421,11 +421,11 @@
         "column_mapping" : {
           "CustomerId" : "CustomerId"
         },
-        "foreign_collection" : "Chinook.Customer"
+        "foreign_collection" : "Customer"
       }
     }
   }, {
-    "tableName" : "Chinook.InvoiceLine",
+    "tableName" : "InvoiceLine",
     "tableType" : "TABLE",
     "description" : "",
     "columns" : [ {
@@ -475,17 +475,17 @@
         "column_mapping" : {
           "TrackId" : "TrackId"
         },
-        "foreign_collection" : "Chinook.Track"
+        "foreign_collection" : "Track"
       },
       "FK_InvoiceLineInvoiceId" : {
         "column_mapping" : {
           "InvoiceId" : "InvoiceId"
         },
-        "foreign_collection" : "Chinook.Invoice"
+        "foreign_collection" : "Invoice"
       }
     }
   }, {
-    "tableName" : "Chinook.MediaType",
+    "tableName" : "MediaType",
     "tableType" : "TABLE",
     "description" : "",
     "columns" : [ {
@@ -508,7 +508,7 @@
     "pks" : [ "MediaTypeId" ],
     "fks" : null
   }, {
-    "tableName" : "Chinook.Playlist",
+    "tableName" : "Playlist",
     "tableType" : "TABLE",
     "description" : "",
     "columns" : [ {
@@ -531,7 +531,7 @@
     "pks" : [ "PlaylistId" ],
     "fks" : null
   }, {
-    "tableName" : "Chinook.PlaylistTrack",
+    "tableName" : "PlaylistTrack",
     "tableType" : "TABLE",
     "description" : "",
     "columns" : [ {
@@ -557,17 +557,17 @@
         "column_mapping" : {
           "TrackId" : "TrackId"
         },
-        "foreign_collection" : "Chinook.Track"
+        "foreign_collection" : "Track"
       },
       "FK_PlaylistTrackPlaylistId" : {
         "column_mapping" : {
           "PlaylistId" : "PlaylistId"
         },
-        "foreign_collection" : "Chinook.Playlist"
+        "foreign_collection" : "Playlist"
       }
     }
   }, {
-    "tableName" : "Chinook.Track",
+    "tableName" : "Track",
     "tableType" : "TABLE",
     "description" : "",
     "columns" : [ {
@@ -649,19 +649,19 @@
         "column_mapping" : {
           "AlbumId" : "AlbumId"
         },
-        "foreign_collection" : "Chinook.Album"
+        "foreign_collection" : "Album"
       },
       "FK_TrackGenreId" : {
         "column_mapping" : {
           "GenreId" : "GenreId"
         },
-        "foreign_collection" : "Chinook.Genre"
+        "foreign_collection" : "Genre"
       },
       "FK_TrackMediaTypeId" : {
         "column_mapping" : {
           "MediaTypeId" : "MediaTypeId"
         },
-        "foreign_collection" : "Chinook.MediaType"
+        "foreign_collection" : "MediaType"
       }
     }
   } ],

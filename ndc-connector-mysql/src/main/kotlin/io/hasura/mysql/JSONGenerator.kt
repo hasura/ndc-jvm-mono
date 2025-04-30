@@ -63,17 +63,6 @@ object JsonQueryGenerator : BaseQueryGenerator() {
             baseTable
         )
 
-        if (request.query.predicate != null) {
-            val requiredJoinTables = collectRequiredJoinTablesForWhereClause(
-                where = request.query.predicate!!,
-                collectionRelationships = request.collection_relationships
-            )
-            requiredJoinTables.forEach { relationship ->
-                baseQuery.leftJoin(DSL.table(tojOOQName(relationship.target_collection)))
-                    .on(mkJoinWhereClause(request.collection, relationship))
-            }
-        }
-
         addJoinsRequiredForOrderByFields2(baseQuery, request)
 
         if (parentRelationship != null && parentTable != null) {
@@ -84,6 +73,36 @@ object JsonQueryGenerator : BaseQueryGenerator() {
 
         if (request.query.predicate != null) {
             baseQuery.where(getWhereConditions(request))
+
+            val requiredJoinTables = collectRequiredJoinTablesForWhereClause(
+                rootTable = request.collection,
+                where = request.query.predicate!!,
+                collectionRelationships = request.collection_relationships
+            )
+
+            requiredJoinTables.forEach { relationshipInfo ->
+                val relationship = request.collection_relationships[relationshipInfo.relationshipName]
+                    ?: error("Relationship ${relationshipInfo.relationshipName} not found")
+
+                baseQuery.leftJoin(
+                    DSL.table(tojOOQName(relationship.target_collection))
+                ).on(
+                    mkSQLJoin2(
+                        rel = relationship,
+                        sourceCollection = relationshipInfo.fromTable,
+                        targetTableNameTransform = { relationshipInfo.toTable }
+                    )
+                )
+            }
+
+            // If requiredJoinTables is non-empty, we must add the primary key of the parent table to GROUP BY
+            // to prevent duplicate rows
+            if (requiredJoinTables.isNotEmpty()) {
+                baseQuery.groupBy(
+                    getSelectOrderFields(request)
+                )
+            }
+
         }
         if (request.query.order_by != null) {
             baseQuery.orderBy(
@@ -203,37 +222,68 @@ object JsonQueryGenerator : BaseQueryGenerator() {
         )
     }
 
-    private fun collectRequiredJoinTablesForWhereClause(
-        where: Expression,
-        collectionRelationships: Map<String, Relationship>,
-        previousTableName: String? = null
-    ): Set<Relationship> {
-        return when (where) {
-            is ExpressionOnColumn -> when (val column = where.column) {
-                is ComparisonTarget.Column -> {
-                    column.path.fold(emptySet()) { acc, path ->
-                        val relationship = collectionRelationships[path.relationship]
-                            ?: error("Relationship ${path.relationship} not found")
+    data class RelationshipInfo(
+        val fromTable: String,
+        val toTable: String,
+        val relationshipName: String,
+    )
 
-                        acc + relationship
+    // Collect the required relationships from "column.path" and "value.path"
+    private fun collectRequiredJoinTablesForWhereClause(
+        rootTable: String,
+        where: Expression,
+        collectionRelationships: Map<String, Relationship>
+    ): Set<RelationshipInfo> {
+        val requiredRelationships = mutableSetOf<RelationshipInfo>()
+        var currentTable = rootTable
+
+        fun collectFromExpression(expression: Expression) {
+            fun collectFromPath(path: List<PathElement>) {
+                path.forEach { pathElement ->
+                    val relationshipName = pathElement.relationship
+                    val relationship = collectionRelationships[relationshipName]
+                        ?: error("Relationship $relationshipName not found")
+
+                    if (currentTable != relationship.target_collection) {
+                        requiredRelationships.add(
+                            RelationshipInfo(
+                                fromTable = currentTable,
+                                toTable = relationship.target_collection,
+                                relationshipName = relationshipName
+                            )
+                        )
+                    }
+                    currentTable = relationship.target_collection
+
+                    // Recursively collect from the predicate of the path element
+                    collectFromExpression(pathElement.predicate)
+                }
+            }
+
+            when (expression) {
+                is Expression.ApplyBinaryComparison -> {
+                    if (expression.column is ComparisonTarget.Column) {
+                        val columnPath = (expression.column as ComparisonTarget.Column).path
+                        collectFromPath(columnPath)
+                    }
+                    if (expression.value is ComparisonValue.ColumnComp) {
+                        val value = (expression.value as ComparisonValue.ColumnComp)
+                        if (value.column is ComparisonTarget.Column) {
+                            val columnPath = (value.column as ComparisonTarget.Column).path
+                            collectFromPath(columnPath)
+                        }
                     }
                 }
 
-                else -> emptySet()
+                is Expression.And -> expression.expressions.forEach { collectFromExpression(it) }
+                is Expression.Or -> expression.expressions.forEach { collectFromExpression(it) }
+                is Expression.Not -> collectFromExpression(expression.expression)
+                else -> {}
             }
-
-            is Expression.And -> where.expressions.fold(emptySet()) { acc, expr ->
-                acc + collectRequiredJoinTablesForWhereClause(expr, collectionRelationships)
-            }
-
-            is Expression.Or -> where.expressions.fold(emptySet()) { acc, expr ->
-                acc + collectRequiredJoinTablesForWhereClause(expr, collectionRelationships)
-            }
-
-            is Expression.Not -> collectRequiredJoinTablesForWhereClause(where.expression, collectionRelationships)
-
-            else -> emptySet()
         }
+
+        collectFromExpression(where)
+        return requiredRelationships.distinctBy { it.relationshipName }.toSet()
     }
 
     private fun getAggregatejOOQFunction(aggregate: Aggregate) = when (aggregate) {
@@ -271,22 +321,29 @@ object JsonQueryGenerator : BaseQueryGenerator() {
     )
 
 
-
     private const val ORDER_FIELD_SUFFIX = "_order_field"
 
     private fun getSelectOrderFields(request: QueryRequest): List<Field<*>> {
         val sortFields = translateIROrderByField(request, request.collection)
-        return sortFields.map { it.`$field`().`as`(it.name + ORDER_FIELD_SUFFIX) }
+        return sortFields.map {
+            // Use the qualified name (which includes the table name) to ensure uniqueness
+            val field = it.`$field`()
+            val qualifiedName = field.qualifiedName.toString().replace("\"", "")
+            field.`as`(qualifiedName + ORDER_FIELD_SUFFIX)
+        }
     }
 
     private fun getConcatOrderFields(request: QueryRequest): List<SortField<*>> {
         val sortFields = translateIROrderByField(request, request.collection)
         return sortFields.map {
-            val field = DSL.field(DSL.name(it.name + ORDER_FIELD_SUFFIX))
+            // Use the qualified name (which includes the table name) to ensure uniqueness
+            val field = it.`$field`()
+            val qualifiedName = field.qualifiedName.toString().replace("\"", "")
+            val orderField = DSL.field(DSL.name(qualifiedName + ORDER_FIELD_SUFFIX))
             when (it.order) {
-                SortOrder.ASC -> field.asc().nullsLast()
-                SortOrder.DESC -> field.desc().nullsFirst()
-                else -> field.asc().nullsLast()
+                SortOrder.ASC -> orderField.asc().nullsLast()
+                SortOrder.DESC -> orderField.desc().nullsFirst()
+                else -> orderField.asc().nullsLast()
             }
         }
     }
@@ -300,7 +357,10 @@ object JsonQueryGenerator : BaseQueryGenerator() {
         request.query.order_by?.elements?.forEach { orderByElement ->
             if (orderByElement.target.path.isNotEmpty()) {
                 var currentCollection = sourceCollection
-                orderByElement.target.path.forEach { pathElem ->
+                var currentTableName = sourceCollection
+
+                // Process each relationship in path sequentially
+                orderByElement.target.path.forEachIndexed { index, pathElem ->
                     val relationshipName = pathElem.relationship
                     val relChain = listOf(currentCollection, relationshipName)
 
@@ -310,6 +370,18 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                         val relationship = request.collection_relationships[relationshipName]
                             ?: throw Exception("Relationship not found")
 
+                        val forwardJoinKeys = if (index + 1 < orderByElement.target.path.size) {
+                            val nextPathElem = orderByElement.target.path[index + 1]
+                            val nextRelationshipName = nextPathElem.relationship
+                            val nextRelationship = request.collection_relationships[nextRelationshipName]
+                                ?: throw Exception("Relationship '$nextRelationshipName' not found for next step")
+                            nextRelationship.column_mapping.keys.map { sourceColumnInNextMapping ->
+                                DSL.field(tojOOQName(sourceColumnInNextMapping))
+                            }
+                        } else {
+                            emptyList()
+                        }
+
                         when (relationship.relationship_type) {
                             RelationshipType.Object -> {
                                 select.leftJoin(
@@ -317,27 +389,46 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                 ).on(
                                     mkSQLJoin2(
                                         rel = relationship,
-                                        sourceCollection = currentCollection,
+                                        sourceCollection = currentTableName,
                                     )
                                 )
+                                // Update current table name for the next join
+                                currentTableName = relationship.target_collection
                             }
+
                             RelationshipType.Array -> {
+                                val aggregateTableAlias = "${relationshipName}_aggregate"
                                 select.leftJoin(
                                     mkAggregateSubquery2(
                                         elem = orderByElement,
                                         relationship = relationship,
-                                        whereCondition = DSL.trueCondition()
+                                        whereCondition = DSL.noCondition(),
+                                        forwardJoinKeys = forwardJoinKeys,
                                     ).asTable(
-                                        DSL.name(relationshipName + "_aggregate")
+                                        DSL.name(aggregateTableAlias)
                                     )
                                 ).on(
                                     mkSQLJoin2(
                                         rel = relationship,
-                                        sourceCollection = currentCollection,
-                                        targetTableNameTransform = { "${relationshipName}_aggregate" }
+                                        sourceCollection = currentTableName,
+                                        targetTableNameTransform = { aggregateTableAlias }
                                     )
                                 )
+                                // Update current table name for the next join
+                                currentTableName = aggregateTableAlias
                             }
+                        }
+
+                        // Add predicate condition for the path element
+                        if (pathElem.predicate != Expression.And(emptyList())) {
+                            select.where(
+                                expressionToCondition(
+                                    pathElem.predicate,
+                                    request.copy(
+                                        collection = relationship.target_collection,
+                                    )
+                                )
+                            )
                         }
                     }
 
@@ -359,11 +450,11 @@ object JsonQueryGenerator : BaseQueryGenerator() {
         return DSL.and(
             rel.column_mapping.map { (sourceColumn, targetColumn) ->
                 DSL.field(tojOOQName(sourceCollection, sourceColumn))
-                    .eq(DSL.field(DSL.name(targetTableFQN.split(".") + targetColumn)))
+                    .eq(DSL.field(tojOOQName(targetTableFQN, targetColumn)))
             }
                     + rel.arguments.map { (targetColumn, argument) ->
                 DSL.field(tojOOQName(sourceCollection, (argument as Argument.Column).name))
-                    .eq(DSL.field(DSL.name(targetTableFQN.split(".") + targetColumn)))
+                    .eq(DSL.field(tojOOQName(targetTableFQN, targetColumn)))
             }
         )
     }
@@ -372,7 +463,8 @@ object JsonQueryGenerator : BaseQueryGenerator() {
     fun mkAggregateSubquery2(
         elem: OrderByElement,
         relationship: Relationship,
-        whereCondition: Condition
+        whereCondition: Condition,
+        forwardJoinKeys: List<Field<*>> = emptyList(),
     ): SelectHavingStep<Record> {
         // If the target is a star-count aggregate, we need to select the special aggregate_count field
         // Otherwise, it's a regular aggregate, so our "SELECT *" will give us access to it in the other
@@ -394,18 +486,17 @@ object JsonQueryGenerator : BaseQueryGenerator() {
 
         fun mkJoinKeyFields2(
             rel: Relationship?,
-            currentCollection: String,
         ): List<Field<Any>> {
             return if (rel == null)
                 emptyList()
             else if (rel.column_mapping.isNotEmpty())
-                rel.column_mapping.values.map { DSL.field(tojOOQName(currentCollection, it)) }
+                rel.column_mapping.values.map { DSL.field(tojOOQName(rel.target_collection, it)) }
             else if (rel.arguments.isNotEmpty())
                 rel.arguments.keys.map { DSL.field(DSL.name(it)) }
             else emptyList()
         }
 
-        val joinCols = mkJoinKeyFields2(relationship, relationship.target_collection)
+        val joinCols = mkJoinKeyFields2(relationship) + forwardJoinKeys
 
         // Select fields that need to be present in order for the ORDER BY clause to work
         return DSL.select(
@@ -418,5 +509,4 @@ object JsonQueryGenerator : BaseQueryGenerator() {
             joinCols
         )
     }
-
 }

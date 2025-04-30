@@ -45,6 +45,7 @@ sealed interface BaseGenerator {
 
         return when (operator) {
             ApplyBinaryComparisonOperator.EQ -> col.eq(castedValue)
+            ApplyBinaryComparisonOperator.NEQ -> col.ne(castedValue)
             ApplyBinaryComparisonOperator.GT -> col.gt(castedValue)
             ApplyBinaryComparisonOperator.GTE -> col.ge(castedValue)
             ApplyBinaryComparisonOperator.LT -> col.lt(castedValue)
@@ -52,7 +53,19 @@ sealed interface BaseGenerator {
             ApplyBinaryComparisonOperator.IN -> col.`in`(listVal.map { castValue(it, columnType) })
             ApplyBinaryComparisonOperator.IS_NULL -> col.isNull
             ApplyBinaryComparisonOperator.LIKE -> col.like(singleVal as Field<String>)
+            ApplyBinaryComparisonOperator.ILIKE -> col.likeIgnoreCase(singleVal as Field<String>)
+            ApplyBinaryComparisonOperator.NOT_LIKE -> col.notLike(singleVal as Field<String>)
+            ApplyBinaryComparisonOperator.NOT_ILIKE -> col.notLikeIgnoreCase(singleVal as Field<String>)
+            ApplyBinaryComparisonOperator.REGEX -> col.likeRegex(singleVal as Field<String>)
+            ApplyBinaryComparisonOperator.NOT_REGEX -> col.notLikeRegex(singleVal as Field<String>)
+            ApplyBinaryComparisonOperator.IREGEX -> DSL.lower(col as Field<String>)
+                .likeRegex(DSL.lower(singleVal as Field<String>))
+
+            ApplyBinaryComparisonOperator.NOT_IREGEX -> DSL.lower(col as Field<String>)
+                .notLikeRegex(DSL.lower(singleVal as Field<String>))
+
             ApplyBinaryComparisonOperator.CONTAINS -> col.contains(singleVal as Field<String>)
+
         }
     }
 
@@ -70,7 +83,7 @@ sealed interface BaseGenerator {
         val collection = getCollectionForCompCol(col, request)
         val collectionIsTable = connectorConfig.tables.any { it.tableName == collection }
         val collectionIsNativeQuery = connectorConfig.nativeQueries.containsKey(collection)
-        val columnType =  when {
+        val columnType = when {
             collectionIsTable -> {
                 val table = connectorConfig.tables.find { it.tableName == collection }
                     ?: error("Table $collection not found in connector configuration")
@@ -95,10 +108,10 @@ sealed interface BaseGenerator {
         }
 
         return when {
-          columnType == "DATE" -> NDCScalar.DATE
-          columnType.contains("TIMESTAMP") && !columnType.contains("TIME ZONE") -> NDCScalar.TIMESTAMP
-          columnType.contains("TIMESTAMP") && columnType.contains("TIME ZONE") -> NDCScalar.TIMESTAMPTZ
-          else -> null
+            columnType == "DATE" -> NDCScalar.DATE
+            columnType.contains("TIMESTAMP") && !columnType.contains("TIME ZONE") -> NDCScalar.TIMESTAMP
+            columnType.contains("TIMESTAMP") && columnType.contains("TIME ZONE") -> NDCScalar.TIMESTAMPTZ
+            else -> null
         }
     }
 
@@ -223,6 +236,14 @@ sealed interface BaseGenerator {
                         val relOrig = request.collection_relationships[inTable.relationship]
                             ?: throw Exception("Exists relationship not found")
                         val rel = relOrig.copy(arguments = relOrig.arguments + inTable.arguments)
+
+                        // Create a new request with the target collection as the main collection
+                        // This ensures that table references in the predicate are properly handled
+                        val subRequest = request.copy(
+                            collection = rel.target_collection,
+                            collection_relationships = request.collection_relationships
+                        )
+
                         DSL.exists(
                             DSL
                                 .selectOne()
@@ -234,8 +255,7 @@ sealed interface BaseGenerator {
                                         listOf(
                                             expressionToCondition(
                                                 e.predicate,
-                                                request,
-                                                rel.target_collection
+                                                subRequest
                                             )
                                         ) +
                                                 rel.column_mapping.map { (sourceCol, targetCol) ->
@@ -243,7 +263,7 @@ sealed interface BaseGenerator {
                                                         .eq(DSL.field(DSL.name(splitCollectionName(rel.target_collection) + targetCol)))
                                                 } + rel.arguments.map {
                                             argumentToCondition(
-                                                request,
+                                                subRequest,
                                                 it,
                                                 rel.target_collection
                                             )

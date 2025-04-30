@@ -175,6 +175,9 @@ enum class ApplyBinaryComparisonOperator {
     @JsonProperty("_eq")
     EQ,
 
+    @JsonProperty("_neq")
+    NEQ,
+
     @JsonProperty("_gt")
     GT,
 
@@ -195,6 +198,27 @@ enum class ApplyBinaryComparisonOperator {
 
     @JsonProperty("_like")
     LIKE,
+
+    @JsonProperty("_ilike")
+    ILIKE,
+
+    @JsonProperty("_nike")
+    NOT_LIKE,
+
+    @JsonProperty("_nilike")
+    NOT_ILIKE,
+
+    @JsonProperty("_regex")
+    REGEX,
+
+    @JsonProperty("_nregex")
+    NOT_REGEX,
+
+    @JsonProperty("_iregex")
+    IREGEX,
+
+    @JsonProperty("_niregex")
+    NOT_IREGEX,
 
     @JsonProperty("_contains")
     CONTAINS,
@@ -228,8 +252,8 @@ sealed interface Expression {
     @JsonTypeName("unary_comparison_operator")
     data class ApplyUnaryComparison(
         val operator: ApplyUnaryComparisonOperator,
-        val column: ComparisonTarget
-    ) : Expression
+        override val column: ComparisonTarget
+    ) : Expression, ExpressionOnColumn
 
     @JsonTypeName("binary_comparison_operator")
     data class ApplyBinaryComparison(

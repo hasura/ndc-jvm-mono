@@ -1,0 +1,101 @@
+[
+  {
+    "rows": [
+      {
+        "track": "Fast As a Shark",
+        "AlbumId": 3,
+        "Album": {
+          "rows": [
+            {
+              "album": "Restless and Wild",
+              "Artist": {
+                "rows": [
+                  {
+                    "artist": "Accept",
+                    "ArtistId": 2
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "track": "Restless and Wild",
+        "AlbumId": 3,
+        "Album": {
+          "rows": [
+            {
+              "album": "Restless and Wild",
+              "Artist": {
+                "rows": [
+                  {
+                    "artist": "Accept",
+                    "ArtistId": 2
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "track": "Princess of the Dawn",
+        "AlbumId": 3,
+        "Album": {
+          "rows": [
+            {
+              "album": "Restless and Wild",
+              "Artist": {
+                "rows": [
+                  {
+                    "artist": "Accept",
+                    "ArtistId": 2
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "track": "Go Down",
+        "AlbumId": 4,
+        "Album": {
+          "rows": [
+            {
+              "album": "Let There Be Rock",
+              "Artist": {
+                "rows": [
+                  {
+                    "artist": "AC/DC",
+                    "ArtistId": 1
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "track": "Dog Eat Dog",
+        "AlbumId": 4,
+        "Album": {
+          "rows": [
+            {
+              "album": "Let There Be Rock",
+              "Artist": {
+                "rows": [
+                  {
+                    "artist": "AC/DC",
+                    "ArtistId": 1
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+]
