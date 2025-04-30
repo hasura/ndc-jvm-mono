@@ -14,7 +14,8 @@ object OracleConfigGenerator : IConfigGenerator {
 
     override fun getConfig(
         jdbcUrl: JdbcUrlConfig,
-        schemas: List<String>
+        schemas: List<String>,
+        fullyQualifyNames: Boolean,
     ): ConnectorConfiguration {
         val jdbcUrlString = when (jdbcUrl) {
             is JdbcUrlConfig.Literal -> jdbcUrl.value

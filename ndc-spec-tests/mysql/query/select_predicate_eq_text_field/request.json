@@ -1,0 +1,33 @@
+{
+  "collection": "Album",
+  "query": {
+    "limit": 5,
+    "fields": {
+      "AlbumId": {
+        "type": "column",
+        "column": "AlbumId",
+        "arguments": {}
+      },
+      "Title": {
+        "type": "column",
+        "column": "Title",
+        "arguments": {}
+      }
+    },
+    "predicate": {
+      "type": "binary_comparison_operator",
+      "column": {
+        "type": "column",
+        "name": "Title",
+        "path": []
+      },
+      "operator": "_eq",
+      "value": {
+        "type": "scalar",
+        "value": "Houses Of The Holy"
+      }
+    }
+  },
+  "arguments": {},
+  "collection_relationships": {}
+}

@@ -14,7 +14,8 @@ object MySQLConfigGenerator : IConfigGenerator {
 
     override fun getConfig(
         jdbcUrl: JdbcUrlConfig,
-        schemas: List<String>
+        schemas: List<String>,
+        fullyQualifyNames: Boolean,
     ): ConnectorConfiguration {
         val jdbcUrlString = when (jdbcUrl) {
             is JdbcUrlConfig.Literal -> jdbcUrl.value
@@ -26,7 +27,11 @@ object MySQLConfigGenerator : IConfigGenerator {
         //language=MySQL
         val sql = """
             SELECT
-                concat(tables.TABLE_SCHEMA, '.', tables.TABLE_NAME) AS TABLE_NAME,
+                ${if (fullyQualifyNames) {
+                    "concat(tables.TABLE_SCHEMA, '.', tables.TABLE_NAME) AS TABLE_NAME,"
+                } else {
+                    "tables.TABLE_NAME AS TABLE_NAME,"
+                }}
                 tables.TABLE_TYPE,
                 tables.table_COMMENT as DESCRIPTION,
                 cols.COLUMNS,

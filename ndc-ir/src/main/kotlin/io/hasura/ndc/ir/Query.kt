@@ -252,8 +252,8 @@ sealed interface Expression {
     @JsonTypeName("unary_comparison_operator")
     data class ApplyUnaryComparison(
         val operator: ApplyUnaryComparisonOperator,
-        val column: ComparisonTarget
-    ) : Expression
+        override val column: ComparisonTarget
+    ) : Expression, ExpressionOnColumn
 
     @JsonTypeName("binary_comparison_operator")
     data class ApplyBinaryComparison(

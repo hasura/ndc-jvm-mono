@@ -79,6 +79,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                 where = request.query.predicate!!,
                 collectionRelationships = request.collection_relationships
             )
+
             requiredJoinTables.forEach { relationshipInfo ->
                 val relationship = request.collection_relationships[relationshipInfo.relationshipName]
                     ?: error("Relationship ${relationshipInfo.relationshipName} not found")
@@ -93,6 +94,15 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                     )
                 )
             }
+
+            // If requiredJoinTables is non-empty, we must add the primary key of the parent table to GROUP BY
+            // to prevent duplicate rows
+            if (requiredJoinTables.isNotEmpty()) {
+                baseQuery.groupBy(
+                    getSelectOrderFields(request)
+                )
+            }
+
         }
         if (request.query.order_by != null) {
             baseQuery.orderBy(
@@ -273,7 +283,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
         }
 
         collectFromExpression(where)
-        return requiredRelationships
+        return requiredRelationships.distinctBy { it.relationshipName }.toSet()
     }
 
     private fun getAggregatejOOQFunction(aggregate: Aggregate) = when (aggregate) {
@@ -392,7 +402,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                     mkAggregateSubquery2(
                                         elem = orderByElement,
                                         relationship = relationship,
-                                        whereCondition = DSL.trueCondition(),
+                                        whereCondition = DSL.noCondition(),
                                         forwardJoinKeys = forwardJoinKeys,
                                     ).asTable(
                                         DSL.name(aggregateTableAlias)
@@ -410,14 +420,16 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                         }
 
                         // Add predicate condition for the path element
-                        select.where(
-                            expressionToCondition(
-                                pathElem.predicate,
-                                request.copy(
-                                    collection = relationship.target_collection,
+                        if (pathElem.predicate != Expression.And(emptyList())) {
+                            select.where(
+                                expressionToCondition(
+                                    pathElem.predicate,
+                                    request.copy(
+                                        collection = relationship.target_collection,
+                                    )
                                 )
                             )
-                        )
+                        }
                     }
 
                     val relationship = request.collection_relationships[relationshipName]

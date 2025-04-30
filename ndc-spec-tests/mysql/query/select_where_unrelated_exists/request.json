@@ -1,0 +1,68 @@
+{
+  "collection": "Album",
+  "query": {
+    "fields": {
+      "title": {
+        "type": "column",
+        "column": "Title",
+        "arguments": {}
+      }
+    },
+    "predicate": {
+      "type": "exists",
+      "in_collection": {
+        "type": "unrelated",
+        "arguments": {},
+        "collection": "Artist"
+      },
+      "predicate": {
+        "type": "and",
+        "expressions": [
+          {
+            "type": "binary_comparison_operator",
+            "column": {
+              "type": "column",
+              "name": "Name",
+              "path": []
+            },
+            "operator": "_eq",
+            "value": {
+              "type": "scalar",
+              "value": "Gilberto Gil"
+            }
+          },
+          {
+            "type": "binary_comparison_operator",
+            "column": {
+              "type": "root_collection_column",
+              "name": "ArtistId"
+            },
+            "operator": "_eq",
+            "value": {
+              "type": "column",
+              "column": {
+                "type": "column",
+                "name": "ArtistId",
+                "path": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    "order_by": {
+      "elements": [
+        {
+          "order_direction": "asc",
+          "target": {
+            "type": "column",
+            "name": "AlbumId",
+            "path": []
+          }
+        }
+      ]
+    }
+  },
+  "arguments": {},
+  "collection_relationships": {}
+}
