@@ -118,7 +118,7 @@ class CLI {
 
         val finalConfig = introspectedConfig.copy(
             jdbcUrl = jdbcUrlConfig,
-            nativeQueries = existingConfig?.nativeQueries ?: emptyMap()
+            nativeQueries = existingConfig?.nativeQueries ?: mutableMapOf()
         )
 
         try {

@@ -15,6 +15,17 @@ import java.nio.file.Path
 sealed class JdbcUrlConfig {
     data class Literal(@JsonValue val value: String) : JdbcUrlConfig()
     data class EnvVar(val variable: String) : JdbcUrlConfig()
+
+    fun resolve(): String =
+        when (this) {
+            is Literal -> value
+            is EnvVar -> System.getenv(variable)
+                            ?: throw IllegalStateException(
+                                    "Environment variable $variable not found",
+                            )
+
+        }
+
 }
 
 class JdbcUrlConfigDeserializer : JsonDeserializer<JdbcUrlConfig>() {
@@ -34,7 +45,7 @@ data class ConnectorConfiguration(
     val schemas: List<String> = emptyList(),
     val tables: List<TableSchemaRow> = emptyList(),
     val functions: List<FunctionSchemaRow> = emptyList(),
-    val nativeQueries: Map<String, NativeQueryInfo> = emptyMap()
+    val nativeQueries: MutableMap<String, NativeQueryInfo> = mutableMapOf()
 ) {
 
     object Loader {

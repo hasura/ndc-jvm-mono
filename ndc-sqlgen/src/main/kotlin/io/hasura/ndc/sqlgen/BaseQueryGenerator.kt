@@ -4,6 +4,7 @@ import io.hasura.ndc.common.ConnectorConfiguration
 import io.hasura.ndc.common.NativeQueryInfo
 import io.hasura.ndc.common.NativeQueryPart
 import io.hasura.ndc.common.NDCScalar
+import io.hasura.ndc.common.NativeQuerySql
 import io.hasura.ndc.ir.*
 import io.hasura.ndc.ir.extensions.isVariablesRequest
 import io.hasura.ndc.ir.Field as IRField
@@ -38,22 +39,22 @@ abstract class BaseQueryGenerator : BaseGenerator {
     protected fun findAllNativeQueries(request: QueryRequest): Set<String> {
         val nativeQueries = mutableSetOf<String>()
         val config = ConnectorConfiguration.Loader.config
-    
+
         // Helper function to check if a collection is a native query
         fun checkAndAddNativeQuery(collection: String) {
             if (config.nativeQueries.containsKey(collection)) {
                 nativeQueries.add(collection)
             }
         }
-    
+
         // Check main collection
         checkAndAddNativeQuery(request.collection)
-    
+
         // Check relationships
         request.collection_relationships.values.forEach { rel ->
             checkAndAddNativeQuery(rel.target_collection)
         }
-    
+
         // Recursive function to check predicates
         fun checkPredicates(expression: Expression?) {
             when (expression) {
@@ -78,17 +79,17 @@ abstract class BaseQueryGenerator : BaseGenerator {
                 else -> {} // Other expression types don't reference collections
             }
         }
-    
+
         // Check predicates in the main query
         checkPredicates(request.query.predicate)
-    
+
         // Check predicates in relationship fields
         request.query.fields?.values?.forEach { field ->
             if (field is IRField.RelationshipField) {
                 checkPredicates(field.query.predicate)
             }
         }
-    
+
         return nativeQueries
     }
 
@@ -107,8 +108,11 @@ abstract class BaseQueryGenerator : BaseGenerator {
             nativeQuery: NativeQueryInfo,
             arguments: Map<String, Argument>
         ): String {
-            val sql = nativeQuery.sql
-            val parts = sql.parts
+
+            val parts = when (val sql = nativeQuery.sql) {
+                is NativeQuerySql.Inline -> sql.getParts()
+                is NativeQuerySql.FromFile -> sql.getParts()
+            }
 
             return parts.joinToString("") { part ->
                 when (part) {
@@ -561,15 +565,15 @@ abstract class BaseQueryGenerator : BaseGenerator {
 
     fun castToSQLDataType(databaseType: DatabaseType, field: Field<*>, type: NDCScalar): Field<*> {
         return when (type) {
-            NDCScalar.INT64, NDCScalar.BIGINTEGER, NDCScalar.BIGDECIMAL -> 
+            NDCScalar.INT64, NDCScalar.BIGINTEGER, NDCScalar.BIGDECIMAL ->
                 field.cast(SQLDataType.VARCHAR)
-            NDCScalar.GEOMETRY, NDCScalar.GEOGRAPHY -> 
+            NDCScalar.GEOMETRY, NDCScalar.GEOGRAPHY ->
                 when(databaseType) {
                     DatabaseType.MYSQL -> DSL.cast(field, SQLDataType.JSON)
                     DatabaseType.SNOWFLAKE -> DSL.cast(DSL.field("ST_AsGeoJSON({0})", Any::class.java, field), SQLDataType.JSON)
                     else -> field
                 }
-            NDCScalar.VECTOR -> 
+            NDCScalar.VECTOR ->
                 DSL.cast(DSL.field("TO_ARRAY({0})", Any::class.java, field), SQLDataType.JSON)
             NDCScalar.BOOLEAN -> field.cast(SQLDataType.BOOLEAN)
             else -> field
@@ -579,40 +583,40 @@ abstract class BaseQueryGenerator : BaseGenerator {
     fun ndcScalarTypeToSQLDataType(scalarType: NDCScalar): DataType<out Any> = when (scalarType) {
         // Boolean
         NDCScalar.BOOLEAN -> SQLDataType.BOOLEAN
-    
+
         // Integer Types
         NDCScalar.INT8 -> SQLDataType.TINYINT
         NDCScalar.INT16 -> SQLDataType.SMALLINT
         NDCScalar.INT32 -> SQLDataType.INTEGER
         NDCScalar.INT64 -> SQLDataType.BIGINT
-    
+
         // Floating-Point Types
         NDCScalar.FLOAT32 -> SQLDataType.FLOAT
         NDCScalar.FLOAT64 -> SQLDataType.DOUBLE
-    
+
         // Arbitrary Precision Types
         NDCScalar.BIGINTEGER -> SQLDataType.NUMERIC
         NDCScalar.BIGDECIMAL -> SQLDataType.DECIMAL
-    
+
         // String Types
         NDCScalar.STRING -> SQLDataType.CLOB
         NDCScalar.UUID -> SQLDataType.VARCHAR(36) // UUIDs are typically stored as VARCHAR(36)
-    
+
         // Date and Time Types
         NDCScalar.DATE -> SQLDataType.DATE
         NDCScalar.TIMESTAMP -> SQLDataType.TIMESTAMP
         NDCScalar.TIMESTAMPTZ -> SQLDataType.TIMESTAMPWITHTIMEZONE
-    
+
         // GeoJSON Types
         NDCScalar.GEOGRAPHY -> SQLDataType.JSON
         NDCScalar.GEOMETRY -> SQLDataType.JSON
-    
+
         // Binary Types
         NDCScalar.BYTES -> SQLDataType.BLOB
-    
+
         // JSON Types
         NDCScalar.JSON -> SQLDataType.JSON
-    
+
         // Default Fallback
         else -> SQLDataType.CLOB
     }
