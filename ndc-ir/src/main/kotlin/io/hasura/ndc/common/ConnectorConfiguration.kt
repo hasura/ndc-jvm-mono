@@ -59,7 +59,8 @@ data class ConnectorConfiguration(
         val config: ConnectorConfiguration = loadConfigFile(getConfigFilePath())
 
         fun getConfigFilePath(): Path {
-            return Path.of(CONFIG_DIRECTORY, CONFIG_FILE_NAME)
+            val configDir = CONFIG_DIRECTORY
+            return Path.of(configDir, CONFIG_FILE_NAME)
         }
 
         fun loadConfigFile(path: Path): ConnectorConfiguration {

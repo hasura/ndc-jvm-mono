@@ -110,8 +110,8 @@ abstract class BaseQueryGenerator : BaseGenerator {
         ): String {
 
             val parts = when (val sql = nativeQuery.sql) {
-                is NativeQuerySql.Inline -> sql.getParts()
-                is NativeQuerySql.FromFile -> sql.getParts()
+                is NativeQuerySql.Inline -> sql.getParts(ConnectorConfiguration.Loader.CONFIG_DIRECTORY)
+                is NativeQuerySql.FromFile -> sql.getParts(ConnectorConfiguration.Loader.CONFIG_DIRECTORY)
             }
 
             return parts.joinToString("") { part ->

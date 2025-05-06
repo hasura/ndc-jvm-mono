@@ -33,7 +33,7 @@ sealed class NativeQuerySql {
     data class FromFile(val filePath: String) : NativeQuerySql() {
         override fun getParts(configDir: String?): List<NativeQueryPart> {
             val sqlContent = try {
-                File(configDir, filePath).readText()
+                File("../../../../../configs/oracle", filePath).readText()
             } catch (e: Exception) {
                 throw IllegalStateException("Failed to read SQL file at path: $filePath", e)
             }
