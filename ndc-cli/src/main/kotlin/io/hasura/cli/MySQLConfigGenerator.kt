@@ -63,8 +63,14 @@ object MySQLConfigGenerator : IConfigGenerator {
                 SELECT
                     keys.TABLE_SCHEMA,
                     keys.TABLE_NAME,
-                    json_objectagg(keys.constraint_name,json_object(
-                        'foreign_collection', concat(keys.TABLE_SCHEMA, '.', keys.REFERENCED_TABLE_NAME),
+                    json_objectagg(keys.constraint_name, json_object(
+                        'foreign_collection', ${
+                            if (fullyQualifyNames) {
+                                "concat(keys.TABLE_SCHEMA, '.', keys.REFERENCED_TABLE_NAME)"
+                            } else {
+                                "keys.REFERENCED_TABLE_NAME"
+                            }
+                        },
                         'column_mapping', json_object(keys.COLUMN_NAME,keys.REFERENCED_COLUMN_NAME)
                     )) AS "FOREIGN_KEYS"
                 FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE as `keys` where REFERENCED_TABLE_NAME is not null
