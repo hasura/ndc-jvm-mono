@@ -9,7 +9,7 @@ import org.jooq.impl.DSL
 
 object TrinoConfigGenerator : IConfigGenerator {
 
-    override fun getConfig(
+    override fun generateConfig(
         jdbcUrl: JdbcUrlConfig,
         schemas: List<String>,
         fullyQualifyNames: Boolean,

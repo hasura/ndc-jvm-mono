@@ -22,18 +22,18 @@ data class NativeQueryInfo(
     JsonSubTypes.Type(value = NativeQuerySql.FromFile::class, name = "file")
 )
 sealed class NativeQuerySql {
-    abstract fun getParts(): List<NativeQueryPart>
+    abstract fun getParts(configDir: String? = null): List<NativeQueryPart>
 
     @JsonTypeName("inline")
     data class Inline(val sql: String) : NativeQuerySql() {
-        override fun getParts(): List<NativeQueryPart> = parseSQL(sql)
+        override fun getParts(configDir: String?): List<NativeQueryPart> = parseSQL(sql)
     }
 
     @JsonTypeName("file")
     data class FromFile(val filePath: String) : NativeQuerySql() {
-        override fun getParts(): List<NativeQueryPart> {
+        override fun getParts(configDir: String?): List<NativeQueryPart> {
             val sqlContent = try {
-                File(filePath).readText()
+                File(configDir, filePath).readText()
             } catch (e: Exception) {
                 throw IllegalStateException("Failed to read SQL file at path: $filePath", e)
             }

@@ -76,16 +76,15 @@ data class SqlParsingResult(
 )
 
 /**
- * Parses a SQL query with parameters that are prefixed with ":" and returns:
+ * Parses a SQL query with parameters that are enclosed in double curly braces and returns:
  * - The original SQL
  * - A transformed SQL with ? placeholders
  * - A map of positions to parameter names
  */
-fun parseSqlWithColonParameters(sql: String): SqlParsingResult {
-    // Use regex to find all parameters with pattern :paramName
-    // The pattern matches a colon followed by word characters
-    // Negative lookbehind (?<!:) ensures we don't match :: in PostgreSQL cast operators
-    val pattern = Regex("(?<!:):([a-zA-Z0-9_]+)")
+fun parseSqlWithDoubleCurlyBraceParameters(sql: String): SqlParsingResult {
+    // Use regex to find all parameters with pattern {{paramName}}
+    // The pattern matches opening double curly braces, followed by word characters, followed by closing double curly braces
+    val pattern = Regex("\\{\\{([a-zA-Z0-9_]+)\\}\\}")
     val matches = pattern.findAll(sql)
 
     // Map to track position -> parameter name
@@ -144,7 +143,7 @@ fun createNativeQuery(
     val jdbcUrl = connectorConfig.jdbcUrl.resolve()
     val ctx = DSL.using(jdbcUrl)
 
-    val parsedResult = parseSqlWithColonParameters(originalSql)
+    val parsedResult = parseSqlWithDoubleCurlyBraceParameters(originalSql)
 
     var nativeQueryArgs: MutableMap<String, ArgumentInfo> = mutableMapOf()
     var nativeQueryColumns: MutableMap<String, Type> = mutableMapOf()
@@ -223,10 +222,10 @@ fun createNativeQuery(
                             val nativeOperationColumn =
                                 if (columnNullable) {
                                     Type.Nullable(Type.Named (
-                                                          name = columnType
+                                                          name = columnTypeName
                                                       ))
                                 } else {
-                                    Type.Named(name = columnType)
+                                    Type.Named(name = columnTypeName)
                                 }
 
                             nativeQueryColumns[columnName] = nativeOperationColumn
@@ -343,9 +342,9 @@ private fun processParameterMetadata(
                 )
 
                 val type = if (isNullable) {
-                    Type.Nullable(Type.Named(sqlType))
+                    Type.Nullable(Type.Named(jdbcTypeName))
                 } else {
-                    Type.Named(sqlType)
+                    Type.Named(jdbcTypeName)
                 }
 
                 if (paramName != null) {

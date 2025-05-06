@@ -12,7 +12,7 @@ import org.jooq.impl.DSL
 object MySQLConfigGenerator : IConfigGenerator {
     private val mapper = jacksonObjectMapper()
 
-    override fun getConfig(
+    override fun generateConfig(
         jdbcUrl: JdbcUrlConfig,
         schemas: List<String>,
         fullyQualifyNames: Boolean,
