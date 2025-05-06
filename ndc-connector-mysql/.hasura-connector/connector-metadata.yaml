@@ -12,7 +12,7 @@ supportedEnvironmentVariables:
 commands:
   update:
     type: Dockerized
-    dockerImage: ghcr.io/hasura/ndc-jvm-cli:v1.0.7
+    dockerImage: ghcr.io/hasura/ndc-jvm-cli:v1.0.8
     commandArgs: [update, --database, MYSQL, --schemas, $JDBC_SCHEMAS, --fully-qualify-names=$FULLY_QUALIFY_NAMES --outfile, /etc/connector/configuration.json]
 
 nativeToolchainDefinition:
