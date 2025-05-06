@@ -5,11 +5,13 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch:  # Allows manual triggering
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      JOOQ_PRO_EMAIL: ${{ secrets.JOOQ_PRO_EMAIL }}
+      JOOQ_PRO_LICENSE: ${{ secrets.JOOQ_PRO_LICENSE }}
 
     steps:
     - uses: actions/checkout@v4
