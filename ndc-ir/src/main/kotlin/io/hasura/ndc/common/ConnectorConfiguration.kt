@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.annotation.JsonValue
 import java.io.File
 import java.nio.file.Path
+import kotlin.system.exitProcess
 
 @JsonDeserialize(using = JdbcUrlConfigDeserializer::class)
 sealed class JdbcUrlConfig {

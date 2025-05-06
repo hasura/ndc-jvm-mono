@@ -187,13 +187,13 @@ fun createNativeQuery(
                         println("Query returns the following $columnCount columns:")
 
                         println(
-                            "|--------------------|-------------------|----------|----------|--------------------|",
+                            "|--------------------------------|--------------------------------|----------------|------------|--------------------------------|",
                         )
                         println(
-                            "| Column Name        | Type Name         | SQL Type | Nullable | Class name         |",
+                            "| Column Name                    | Type Name                      | SQL Type       | Nullable   | Class name                     |",
                         )
                         println(
-                            "|--------------------|-------------------|----------|----------|--------------------|",
+                            "|--------------------------------|--------------------------------|----------------|------------|--------------------------------|",
                         )
 
                         for (i in 1..columnCount) {
@@ -209,14 +209,14 @@ fun createNativeQuery(
                                     else -> true
                                 }
 
+                            val formattedColumnName = columnName.padEnd(30).substring(0, 30)
+                            val formattedTypeName = columnTypeName.padEnd(30).substring(0, 30)
+                            val formattedSqlType = columnType.padEnd(12).substring(0, 12)
+                            val formattedNullable = columnNullable.toString().padEnd(10).substring(0, 10)
+                            val formattedClassName = columnClassName.padEnd(30).substring(0, 30)
+
                             println(
-                                "| %-18s | %-17s | %-8s | %-8s | %-18s |".format(
-                                    columnName,
-                                    columnTypeName,
-                                    columnType,
-                                    columnNullable,
-                                    columnClassName,
-                                ),
+                                "| $formattedColumnName | $formattedTypeName | $formattedSqlType | $formattedNullable | $formattedClassName |",
                             )
 
                             val nativeOperationColumn =
@@ -232,7 +232,7 @@ fun createNativeQuery(
                         }
 
                         println(
-                            "|--------------------|-------------------|----------|----------|--------------------|",
+                            "|--------------------------------|--------------------------------|----------------|------------|--------------------------------|",
                         )
                     } else {
                         println("Unable to retrieve result set metadata for this query")
@@ -284,13 +284,13 @@ private fun processParameterMetadata(
 
     if (paramCount > 0) {
         println(
-            "|----------|-------------------|----------|----------|-------------------|--------------------------|",
+            "|------------|--------------------------------|----------------|------------|--------------------------------|----------------------------------------------|",
         )
         println(
-            "| Param #  | Parameter Name    | SQL Type | Nullable | Type Name         |   Class Name             |",
+            "| Param #    | Parameter Name                 | SQL Type       | Nullable   | Type Name                      | Class Name                                   |",
         )
         println(
-            "|----------|-------------------|----------|----------|-------------------|--------------------------|",
+            "|------------|--------------------------------|----------------|------------|--------------------------------|----------------------------------------------|",
         )
 
         for (i in 1..paramCount) {
@@ -330,15 +330,15 @@ private fun processParameterMetadata(
 
                 val paramName = parsedResult.parameterPositions[i]
 
+                val formattedParamNum = i.toString().padEnd(10).substring(0, 10)
+                val formattedParamName = (paramName ?: "").padEnd(30).substring(0, 30)
+                val formattedSqlType = sqlType.padEnd(12).substring(0, 12)
+                val formattedNullable = isNullable.toString().padEnd(10).substring(0, 10)
+                val formattedTypeName = jdbcTypeName.padEnd(30).substring(0, 30)
+                val formattedClassName = paramClassName.padEnd(44).substring(0, 44)
+
                 println(
-                    "| %-8d | %-17s | %-8s | %-8s | %-17s | %-24s |".format(
-                        i,
-                        paramName?.take(17),
-                        sqlType,
-                        isNullable,
-                        jdbcTypeName.take(17),
-                        paramClassName,
-                    ),
+                    "| $formattedParamNum | $formattedParamName | $formattedSqlType | $formattedNullable | $formattedTypeName | $formattedClassName |",
                 )
 
                 val type = if (isNullable) {
@@ -356,19 +356,12 @@ private fun processParameterMetadata(
                 e.printStackTrace()
 
                 println(
-                    "| %-8d | %-17s | %-8s | %-14s | %-8s | %-17s |".format(
-                        i,
-                        "ERROR",
-                        "ERROR",
-                        "ERROR",
-                        "ERROR",
-                        "ERROR",
-                    ),
+                    "| ${"ERROR".padEnd(10).substring(0, 10)} | ${"ERROR".padEnd(30).substring(0, 30)} | ${"ERROR".padEnd(12).substring(0, 12)} | ${"ERROR".padEnd(10).substring(0, 10)} | ${"ERROR".padEnd(30).substring(0, 30)} | ${"ERROR".padEnd(44).substring(0, 44)} |",
                 )
             }
         }
         println(
-            "|----------|-------------------|----------|----------|-------------------|--------------------------|",
+            "|------------|--------------------------------|----------------|------------|--------------------------------|----------------------------------------------|",
         )
     }
 }
@@ -385,31 +378,30 @@ private fun processParametersWithDefaults(
 
     if (parsedResult.parameterPositions.isNotEmpty()) {
         println(
-            "|----------|-------------------|----------------|----------------|----------|-------------------|",
+            "|------------|--------------------------------|----------------------|----------------------|------------|--------------------------------|",
         )
         println(
-            "| Param #  | Parameter Name    | SQL Type       | Class Name     | Nullable | Type Name         |",
+            "| Param #    | Parameter Name                 | SQL Type             | Class Name           | Nullable   | Type Name                      |",
         )
         println(
-            "|----------|-------------------|----------------|----------------|----------|-------------------|",
+            "|------------|--------------------------------|----------------------|----------------------|------------|--------------------------------|",
         )
 
         parsedResult.parameterPositions.forEach { (position, paramName) ->
             val defaultSqlType = "varchar"
 
+            val formattedPosition = position.toString().padEnd(10).substring(0, 10)
+            val formattedParamName = paramName.padEnd(30).substring(0, 30)
+            val formattedSqlType = "$defaultSqlType (DEFAULT)".padEnd(20).substring(0, 20)
+            val formattedClassName = "java.lang.String".padEnd(20).substring(0, 20)
+            val formattedNullable = "true".padEnd(10).substring(0, 10)
+            val formattedTypeName = "VARCHAR (DEFAULT)".padEnd(30).substring(0, 30)
+
             println(
-                "| %-8d | %-17s | %-14s | %-14s | %-8s | %-17s |".format(
-                    position,
-                    paramName.take(17),
-                    "$defaultSqlType (DEFAULT)",
-                    "java.lang.String",
-                    true,
-                    "VARCHAR (DEFAULT)",
-                ),
+                "| $formattedPosition | $formattedParamName | $formattedSqlType | $formattedClassName | $formattedNullable | $formattedTypeName |",
             )
 
             val type = Type.Named(name = defaultSqlType)
-
 
             val nativeOperationArgument =
                 ArgumentInfo(
@@ -419,7 +411,7 @@ private fun processParametersWithDefaults(
             nativeQueryArgs[paramName] = nativeOperationArgument
         }
         println(
-            "|----------|-------------------|----------------|----------------|----------|-------------------|",
+            "|------------|--------------------------------|----------------------|----------------------|------------|--------------------------------|",
         )
     }
 }
