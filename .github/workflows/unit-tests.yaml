@@ -12,6 +12,7 @@ jobs:
     env:
       JOOQ_PRO_EMAIL: ${{ secrets.JOOQ_PRO_EMAIL }}
       JOOQ_PRO_LICENSE: ${{ secrets.JOOQ_PRO_LICENSE }}
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs='-Xmx4g -XX:MaxMetaspaceSize=1g'"
 
     steps:
     - uses: actions/checkout@v4
@@ -22,14 +23,18 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
 
+    - name: Create gradle.properties with memory settings
+      run: |
+        mkdir -p ~/.gradle
+        echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g" >> ~/.gradle/gradle.properties
+        echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
+
     - name: Grant execute permission for gradlew
       run: chmod +x ./gradlew
 
     - name: Build with Gradle
-      run: ./gradlew build
-
-    - name: Run tests
-      run: ./gradlew test
+      run: |
+        ./gradlew --no-daemon -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=1g" build test
 
     - name: Upload test reports
       if: always()  # Run even if previous steps fail
