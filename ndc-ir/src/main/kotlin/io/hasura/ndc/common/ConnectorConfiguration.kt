@@ -10,11 +10,23 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.annotation.JsonValue
 import java.io.File
 import java.nio.file.Path
+import kotlin.system.exitProcess
 
 @JsonDeserialize(using = JdbcUrlConfigDeserializer::class)
 sealed class JdbcUrlConfig {
     data class Literal(@JsonValue val value: String) : JdbcUrlConfig()
     data class EnvVar(val variable: String) : JdbcUrlConfig()
+
+    fun resolve(): String =
+        when (this) {
+            is Literal -> value
+            is EnvVar -> System.getenv(variable)
+                            ?: throw IllegalStateException(
+                                    "Environment variable $variable not found",
+                            )
+
+        }
+
 }
 
 class JdbcUrlConfigDeserializer : JsonDeserializer<JdbcUrlConfig>() {
@@ -34,7 +46,7 @@ data class ConnectorConfiguration(
     val schemas: List<String> = emptyList(),
     val tables: List<TableSchemaRow> = emptyList(),
     val functions: List<FunctionSchemaRow> = emptyList(),
-    val nativeQueries: Map<String, NativeQueryInfo> = emptyMap()
+    val nativeQueries: MutableMap<String, NativeQueryInfo> = mutableMapOf()
 ) {
 
     object Loader {
@@ -47,7 +59,8 @@ data class ConnectorConfiguration(
         val config: ConnectorConfiguration = loadConfigFile(getConfigFilePath())
 
         fun getConfigFilePath(): Path {
-            return Path.of(CONFIG_DIRECTORY, CONFIG_FILE_NAME)
+            val configDir = CONFIG_DIRECTORY
+            return Path.of(configDir, CONFIG_FILE_NAME)
         }
 
         fun loadConfigFile(path: Path): ConnectorConfiguration {

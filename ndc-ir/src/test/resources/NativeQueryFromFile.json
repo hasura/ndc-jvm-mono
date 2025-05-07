@@ -1,0 +1,30 @@
+{
+  "EmployeeById": {
+    "sql": {
+      "type": "file",
+      "filePath": "native-queries/employees-by-id.sql"
+    },
+    "columns": {
+      "ArtistId": {
+        "type": "named",
+        "name": "INT"
+      },
+      "Name": {
+        "type": "nullable",
+        "underlying_type": {
+          "type": "named",
+          "name": "STRING"
+        }
+      }
+    },
+    "arguments": {
+      "id": {
+        "type": {
+          "type": "named",
+          "name": "INT"
+        }
+      }
+    },
+    "description": null
+  }
+}

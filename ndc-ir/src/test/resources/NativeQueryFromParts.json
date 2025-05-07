@@ -1,0 +1,24 @@
+{
+  "oracle_native_query_inline": {
+    "sql": {
+      "parts": [
+        {
+          "type": "text",
+          "value": "SELECT * FROM CHINOOK.ARTIST WHERE ARTISTID = "
+        },
+        {
+          "type": "parameter",
+          "value": "ARTISTID"
+        }
+      ]
+    },
+    "columns": {
+      "result": {
+        "type": "named",
+        "name": "INT"
+      }
+    },
+    "arguments": {},
+    "description": ""
+  }
+}
