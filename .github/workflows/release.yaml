@@ -220,7 +220,7 @@ jobs:
           cat > connector-packaging.json << EOF
           {
             "version": "v${{ steps.version.outputs.version }}",
-            "uri": "https://github.com/hasura/ndc-jvm-mono/releases/download/${{ steps.version.outputs.connector }}%2F${{ steps.version.outputs.version }}/${{ steps.version.outputs.connector }}-connector-${{ steps.version.outputs.version }}.tar.gz",
+            "uri": "https://github.com/hasura/ndc-jvm-mono/releases/download/${{ steps.version.outputs.connector }}%2Fv${{ steps.version.outputs.version }}/${{ steps.version.outputs.connector }}-connector-v${{ steps.version.outputs.version }}.tar.gz",
             "checksum": {
               "type": "sha256",
               "value": "${{ steps.checksum.outputs.checksum }}"
