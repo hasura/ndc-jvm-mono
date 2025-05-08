@@ -76,7 +76,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./Dockerfile.cli
+          file: ./ndc-cli.dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ghcr.io/hasura/ndc-jvm-cli:v${{ steps.version.outputs.version }}-${{ steps.version.outputs.connector }}
