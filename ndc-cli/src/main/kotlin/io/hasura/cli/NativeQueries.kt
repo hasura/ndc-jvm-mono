@@ -1,5 +1,8 @@
 package io.hasura.cli
 
+import com.jakewharton.picnic.BorderStyle
+import com.jakewharton.picnic.TextAlignment
+import com.jakewharton.picnic.table
 import org.jooq.impl.DSL
 import java.io.File
 import java.sql.ParameterMetaData
@@ -9,6 +12,8 @@ import io.hasura.ndc.common.NativeQuerySql
 import io.hasura.ndc.common.NativeQueryInfo
 import io.hasura.ndc.ir.ArgumentInfo
 import io.hasura.ndc.ir.Type
+
+const val DEFAULT_SQL_TYPE="VARCHAR"
 
 fun readNativeQuerySQL(
     configurationDir: String,
@@ -118,9 +123,21 @@ fun prettyPrintSQL(sql: String) {
 
 fun prettyPrintParameters(paramNames: List<String>) {
     if (paramNames.isNotEmpty()) {
-        println("\n=== Named Parameters ===")
-        paramNames.forEachIndexed { index, name -> println("Parameter ${index + 1}: $name") }
-        println("=======================\n")
+        val paramTable = table {
+            header {
+                row {
+                    cell("=== Named Parameters ===") {
+                        columnSpan = 2
+                    }
+                }
+                row("Parameter #", "Name")
+            }
+
+            paramNames.forEachIndexed { index, name ->
+                row(index + 1, name)
+            }
+        }
+        println(paramTable)
     } else {
         println("\n=== No Named Parameters Found ===\n")
     }
@@ -186,54 +203,45 @@ fun createNativeQuery(
                         val columnCount = resultSetMetaData.columnCount
                         println("Query returns the following $columnCount columns:")
 
-                        println(
-                            "|--------------------------------|--------------------------------|----------------|------------|--------------------------------|",
-                        )
-                        println(
-                            "| Column Name                    | Type Name                      | SQL Type       | Nullable   | Class name                     |",
-                        )
-                        println(
-                            "|--------------------------------|--------------------------------|----------------|------------|--------------------------------|",
-                        )
+                        // Create a table using Picnic
+                        val columnsTable = table {
+                            cellStyle {
+                                border = true
+                                paddingLeft = 1
+                                paddingRight = 1
+                            }
 
-                        for (i in 1..columnCount) {
-                            val columnName = resultSetMetaData.getColumnName(i)
-                            val columnTypeName = resultSetMetaData.getColumnTypeName(i)
-                            val columnClassName = resultSetMetaData.getColumnClassName(i)
-                            val columnType = getJavaSQLTypeName(resultSetMetaData.getColumnType(i))
-                            val columnNullable =
-                                when (resultSetMetaData.isNullable(i)) {
-                                    ResultSetMetaData.columnNoNulls -> false
-                                    ResultSetMetaData.columnNullable -> true
-                                    ResultSetMetaData.columnNullableUnknown -> true
-                                    else -> true
-                                }
+                            header {
+                                row("Column Name", "Type Name", "SQL Type", "Nullable", "Class name")
+                            }
 
-                            val formattedColumnName = columnName.padEnd(30).substring(0, 30)
-                            val formattedTypeName = columnTypeName.padEnd(30).substring(0, 30)
-                            val formattedSqlType = columnType.padEnd(12).substring(0, 12)
-                            val formattedNullable = columnNullable.toString().padEnd(10).substring(0, 10)
-                            val formattedClassName = columnClassName.padEnd(30).substring(0, 30)
+                            for (i in 1..columnCount) {
+                                val columnName = resultSetMetaData.getColumnName(i)
+                                val columnTypeName = resultSetMetaData.getColumnTypeName(i)
+                                val columnClassName = resultSetMetaData.getColumnClassName(i)
+                                val columnType = getJavaSQLTypeName(resultSetMetaData.getColumnType(i))
+                                val columnNullable =
+                                    when (resultSetMetaData.isNullable(i)) {
+                                        ResultSetMetaData.columnNoNulls -> false
+                                        ResultSetMetaData.columnNullable -> true
+                                        ResultSetMetaData.columnNullableUnknown -> true
+                                        else -> true
+                                    }
 
-                            println(
-                                "| $formattedColumnName | $formattedTypeName | $formattedSqlType | $formattedNullable | $formattedClassName |",
-                            )
+                                row(columnName, columnTypeName, columnType, columnNullable.toString(), columnClassName)
 
-                            val nativeOperationColumn =
-                                if (columnNullable) {
-                                    Type.Nullable(Type.Named (
-                                                          name = columnTypeName
-                                                      ))
-                                } else {
-                                    Type.Named(name = columnTypeName)
-                                }
+                                val nativeOperationColumn =
+                                    if (columnNullable) {
+                                        Type.Nullable(Type.Named(name = columnTypeName))
+                                    } else {
+                                        Type.Named(name = columnTypeName)
+                                    }
 
-                            nativeQueryColumns[columnName] = nativeOperationColumn
+                                nativeQueryColumns[columnName] = nativeOperationColumn
+                            }
                         }
 
-                        println(
-                            "|--------------------------------|--------------------------------|----------------|------------|--------------------------------|",
-                        )
+                        println(columnsTable)
                     } else {
                         println("Unable to retrieve result set metadata for this query")
                     }
@@ -283,86 +291,79 @@ private fun processParameterMetadata(
     println("Query has $paramCount parameters:")
 
     if (paramCount > 0) {
-        println(
-            "|------------|--------------------------------|----------------|------------|--------------------------------|----------------------------------------------|",
-        )
-        println(
-            "| Param #    | Parameter Name                 | SQL Type       | Nullable   | Type Name                      | Class Name                                   |",
-        )
-        println(
-            "|------------|--------------------------------|----------------|------------|--------------------------------|----------------------------------------------|",
-        )
+        try {
+            // Test if we can access the metadata properly by trying to get the first parameter's type name
+            // This will throw an exception if the driver doesn't support parameter metadata properly
+            paramMetadata.getParameterTypeName(1)
 
-        for (i in 1..paramCount) {
-            try {
-                val jdbcTypeName =
-                    try {
-                        paramMetadata.getParameterTypeName(i)
-                    } catch (e: Exception) {
-                        "UNKNOWN"
-                    }
+            // Create a table using Picnic
+            val paramTable = table {
+                cellStyle {
+                    border = true
+                    paddingLeft = 1
+                    paddingRight = 1
+                }
 
-                val sqlType =
-                    try {
-                        getJavaSQLTypeName(paramMetadata.getParameterType(i))
-                    } catch (e: Exception) {
-                        "UNKNOWN"
-                    }
+                header {
+                    row("Param #", "Parameter Name", "SQL Type", "Nullable", "Type Name", "Class Name")
+                }
 
-                val paramClassName =
+                for (i in 1..paramCount) {
                     try {
-                        paramMetadata.getParameterClassName(i)
-                    } catch (e: Exception) {
-                        "UNKNOWN"
-                    }
-
-                val isNullable =
-                    try {
-                        when (paramMetadata.isNullable(i)) {
+                        val jdbcTypeName = paramMetadata.getParameterTypeName(i)
+                        val sqlType = getJavaSQLTypeName(paramMetadata.getParameterType(i))
+                        val paramClassName = paramMetadata.getParameterClassName(i)
+                        val isNullable = when (paramMetadata.isNullable(i)) {
                             ParameterMetaData.parameterNoNulls -> false
                             ParameterMetaData.parameterNullable -> true
                             ParameterMetaData.parameterNullableUnknown -> true
                             else -> true
                         }
+
+                        val paramName = parsedResult.parameterPositions[i]
+
+                        row(i, paramName ?: "", sqlType, isNullable.toString(), jdbcTypeName, paramClassName)
+
+                        val type = if (isNullable) {
+                            Type.Nullable(Type.Named(jdbcTypeName))
+                        } else {
+                            Type.Named(jdbcTypeName)
+                        }
+
+                        if (paramName != null) {
+                            val nativeOperationArgument = ArgumentInfo(argument_type = type)
+                            nativeQueryArgs[paramName] = nativeOperationArgument
+                        }
                     } catch (e: Exception) {
-                        true
+                        // If we encounter an exception for a specific parameter, fall back to defaults for this parameter
+                        println("Error getting metadata for parameter $i: ${e.message}")
+                        println("Falling back to default for this parameter")
+
+                        val paramName = parsedResult.parameterPositions[i]
+                        if (paramName != null) {
+                            row(i, paramName, "$DEFAULT_SQL_TYPE (DEFAULT)", "true", "$DEFAULT_SQL_TYPE (DEFAULT)", "java.lang.String")
+
+                            val type =
+                                Type.Nullable(
+                                    underlying_type =
+                                        Type.Named(name = DEFAULT_SQL_TYPE))
+                            val nativeOperationArgument = ArgumentInfo(
+                                argument_type = type,
+                                description = "Auto-detected parameter, type defaulted to varchar"
+                            )
+                            nativeQueryArgs[paramName] = nativeOperationArgument
+                        }
                     }
-
-                val paramName = parsedResult.parameterPositions[i]
-
-                val formattedParamNum = i.toString().padEnd(10).substring(0, 10)
-                val formattedParamName = (paramName ?: "").padEnd(30).substring(0, 30)
-                val formattedSqlType = sqlType.padEnd(12).substring(0, 12)
-                val formattedNullable = isNullable.toString().padEnd(10).substring(0, 10)
-                val formattedTypeName = jdbcTypeName.padEnd(30).substring(0, 30)
-                val formattedClassName = paramClassName.padEnd(44).substring(0, 44)
-
-                println(
-                    "| $formattedParamNum | $formattedParamName | $formattedSqlType | $formattedNullable | $formattedTypeName | $formattedClassName |",
-                )
-
-                val type = if (isNullable) {
-                    Type.Nullable(Type.Named(jdbcTypeName))
-                } else {
-                    Type.Named(jdbcTypeName)
                 }
-
-                if (paramName != null) {
-                    val nativeOperationArgument =
-                        ArgumentInfo(argument_type = type)
-                    nativeQueryArgs[paramName] = nativeOperationArgument
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-
-                println(
-                    "| ${"ERROR".padEnd(10).substring(0, 10)} | ${"ERROR".padEnd(30).substring(0, 30)} | ${"ERROR".padEnd(12).substring(0, 12)} | ${"ERROR".padEnd(10).substring(0, 10)} | ${"ERROR".padEnd(30).substring(0, 30)} | ${"ERROR".padEnd(44).substring(0, 44)} |",
-                )
             }
+
+            println(paramTable)
+        } catch (e: Exception) {
+            // If we encounter an exception while testing metadata access, fall back to defaults for all parameters
+            println("Parameter metadata not supported by this JDBC driver: ${e.message}")
+            println("Falling back to defaults for all parameters")
+            processParametersWithDefaults(parsedResult, nativeQueryArgs)
         }
-        println(
-            "|------------|--------------------------------|----------------|------------|--------------------------------|----------------------------------------------|",
-        )
     }
 }
 
@@ -373,45 +374,44 @@ private fun processParametersWithDefaults(
 ) {
     println("Query has ${parsedResult.parameterPositions.size} parameters:")
     println("\n⚠️  WARNING: Parameter metadata not available or skipped")
-    println("⚠️  Defaulting all parameters to VARCHAR type")
+    println("⚠️  Defaulting all parameters to $DEFAULT_SQL_TYPE type")
     println("⚠️  You may need to manually correct the parameter types after generation\n")
 
     if (parsedResult.parameterPositions.isNotEmpty()) {
-        println(
-            "|------------|--------------------------------|----------------------|----------------------|------------|--------------------------------|",
-        )
-        println(
-            "| Param #    | Parameter Name                 | SQL Type             | Class Name           | Nullable   | Type Name                      |",
-        )
-        println(
-            "|------------|--------------------------------|----------------------|----------------------|------------|--------------------------------|",
-        )
+        // Create a table using Picnic
+        val defaultParamTable = table {
 
-        parsedResult.parameterPositions.forEach { (position, paramName) ->
-            val defaultSqlType = "varchar"
+            cellStyle {
+                border = true
+                paddingLeft = 1
+                paddingRight = 1
+            }
 
-            val formattedPosition = position.toString().padEnd(10).substring(0, 10)
-            val formattedParamName = paramName.padEnd(30).substring(0, 30)
-            val formattedSqlType = "$defaultSqlType (DEFAULT)".padEnd(20).substring(0, 20)
-            val formattedClassName = "java.lang.String".padEnd(20).substring(0, 20)
-            val formattedNullable = "true".padEnd(10).substring(0, 10)
-            val formattedTypeName = "VARCHAR (DEFAULT)".padEnd(30).substring(0, 30)
+            header {
+                row("Param #", "Parameter Name", "SQL Type", "Class Name", "Nullable", "Type Name")
+            }
 
-            println(
-                "| $formattedPosition | $formattedParamName | $formattedSqlType | $formattedClassName | $formattedNullable | $formattedTypeName |",
-            )
-
-            val type = Type.Named(name = defaultSqlType)
-
-            val nativeOperationArgument =
-                ArgumentInfo(
-                    argument_type = type,
-                    description = "Auto-detected parameter, type defaulted to varchar",
+            parsedResult.parameterPositions.forEach { (position, paramName) ->
+                row(
+                    position,
+                    paramName,
+                    "$DEFAULT_SQL_TYPE (DEFAULT)",
+                    "java.lang.String",
+                    "true",
+                    "$DEFAULT_SQL_TYPE (DEFAULT)"
                 )
-            nativeQueryArgs[paramName] = nativeOperationArgument
+
+                val type = Type.Nullable (underlying_type = Type.Named(name = DEFAULT_SQL_TYPE))
+
+                val nativeOperationArgument =
+                    ArgumentInfo(
+                        argument_type = type,
+                        description = "Auto-detected parameter, type defaulted to varchar",
+                    )
+                nativeQueryArgs[paramName] = nativeOperationArgument
+            }
         }
-        println(
-            "|------------|--------------------------------|----------------------|----------------------|------------|--------------------------------|",
-        )
+
+        println(defaultParamTable)
     }
 }

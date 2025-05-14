@@ -25,6 +25,7 @@ dependencies {
     implementation("com.mysql:mysql-connector-j:9.2.0")
     implementation("net.snowflake:snowflake-jdbc:3.23.1")
     implementation("io.trino:trino-jdbc:466")
+    implementation("com.jakewharton.picnic:picnic:0.6.0")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
