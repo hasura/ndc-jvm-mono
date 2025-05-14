@@ -208,9 +208,9 @@ class NativeQueriesCreateCommand : Runnable {
     @Option(
             names = ["-c", "--configuration-dir"],
             description = ["Directory containing the configuration files"],
-            defaultValue = "/etc/connector"
     )
-    lateinit var configurationDir: String
+    var configurationDir: String = System.getenv("HASURA_PLUGIN_CONNECTOR_CONTEXT_PATH") ?: "/etc/connector"
+
 
     @Option(
         names = ["--operation-path"],

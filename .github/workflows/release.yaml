@@ -199,6 +199,10 @@ jobs:
                   powershell: |
                     Write-Output "Watch is not supported for this connector"
                     exit 1
+              cliPluginEntrypoint:
+                type: ShellScript
+                bash: 'set -e -o pipefail; "\$HASURA_DDN_NATIVE_CONNECTOR_PLUGIN_DIR/entrypoint.sh"'
+                powershell: '\$ErrorActionPreference = "Stop"; & "\$env:HASURA_DDN_NATIVE_CONNECTOR_PLUGIN_DIR/entrypoint.bat"'
             EOF
 
             # Create tarball
