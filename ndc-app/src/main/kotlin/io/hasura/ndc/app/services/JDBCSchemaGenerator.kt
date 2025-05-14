@@ -63,7 +63,20 @@ abstract class JDBCSchemaGenerator(
         return CollectionInfo(
             name = name,
             type = name,
-            arguments = nativeQuery.arguments,
+            arguments = nativeQuery.arguments.map { (argumentName, argumentInfo) ->
+                val baseTypeName = Type.extractBaseType(argumentInfo.argument_type)
+                val ndcScalarTypeName = mapScalarType(baseTypeName, null, null).name
+                val scalarType =
+                    if (Type.isNullable(argumentInfo.argument_type)) {
+                            Type.Nullable(underlying_type = Type.Named(name = ndcScalarTypeName))
+                        } else {
+                            Type.Named(name = ndcScalarTypeName)
+                        }
+                argumentName to ArgumentInfo(
+                    description = argumentInfo.description,
+                    argument_type = scalarType
+                )
+            }.toMap(),
             deletable = false,
             uniqueness_constraints = emptyMap(),
             foreign_keys = emptyMap()
@@ -73,13 +86,21 @@ abstract class JDBCSchemaGenerator(
     private fun mapNativeQueryToObjectType(name: String, nativeQuery: NativeQueryInfo): Pair<String, ObjectType> {
         return name to ObjectType(
             fields = nativeQuery.columns.map { (colName, type) ->
+                val baseTypeName = Type.extractBaseType(type)
+                val ndcScalarTypeName = mapScalarType(baseTypeName, null, null).name
+                val scalarType = if (Type.isNullable(type)) {
+                    Type.Nullable(underlying_type = Type.Named(name = ndcScalarTypeName))
+                } else {
+                    Type.Named(name = ndcScalarTypeName)
+                }
                 colName to ObjectField(
                     arguments = emptyMap(),
-                    type = type
+                    type = scalarType
                 )
             }.toMap()
         )
     }
+
 
     private fun mapFunctionSchemaRowToFunctionInfo(function: FunctionSchemaRow): FunctionInfo {
         return FunctionInfo(
