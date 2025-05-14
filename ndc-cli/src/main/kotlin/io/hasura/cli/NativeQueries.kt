@@ -13,7 +13,7 @@ import io.hasura.ndc.common.NativeQueryInfo
 import io.hasura.ndc.ir.ArgumentInfo
 import io.hasura.ndc.ir.Type
 
-const val DEFAULT_SQL_TYPE="VARCHAR"
+const val DEFAULT_SQL_TYPE="STRING"
 
 fun readNativeQuerySQL(
     configurationDir: String,
@@ -349,7 +349,7 @@ private fun processParameterMetadata(
                                         Type.Named(name = DEFAULT_SQL_TYPE))
                             val nativeOperationArgument = ArgumentInfo(
                                 argument_type = type,
-                                description = "Auto-detected parameter, type defaulted to varchar"
+                                description = "Auto-detected parameter, type defaulted to STRING"
                             )
                             nativeQueryArgs[paramName] = nativeOperationArgument
                         }
@@ -406,7 +406,7 @@ private fun processParametersWithDefaults(
                 val nativeOperationArgument =
                     ArgumentInfo(
                         argument_type = type,
-                        description = "Auto-detected parameter, type defaulted to varchar",
+                        description = "Auto-detected parameter, type defaulted to STRING",
                     )
                 nativeQueryArgs[paramName] = nativeOperationArgument
             }
