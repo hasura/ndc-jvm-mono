@@ -11,6 +11,34 @@ import io.hasura.ndc.ir.Type
 object OracleJDBCSchemaGenerator : JDBCSchemaGenerator() {
 
     override fun getScalars(): Map<String, ScalarType> {
+        val stringScalarType =
+             ScalarType(
+               representation = ScalarRepresentation(NDCScalar.STRING),
+               comparison_operators =
+                       mapOf(
+                               "_eq" to ComparisonOperatorDefinition.Equal,
+                               "_contains" to
+                                       ComparisonOperatorDefinition.Custom(
+                                               argument_type = Type.Named(NDCScalar.STRING.name)
+                                       ),
+                               "_like" to
+                                       ComparisonOperatorDefinition.Custom(
+                                               argument_type = Type.Named(NDCScalar.STRING.name)
+                                       ),
+                               "_in" to ComparisonOperatorDefinition.In
+                       ),
+               aggregate_functions =
+                       mapOf(
+                               "min" to
+                                       AggregateFunctionDefinition(
+                                               result_type = Type.Named(NDCScalar.STRING.name)
+                                       ),
+                               "max" to
+                                       AggregateFunctionDefinition(
+                                               result_type = Type.Named(NDCScalar.STRING.name)
+                                       )
+                       ));
+
         return mapOf(
             NDCScalar.BOOLEAN.name to ScalarType(
                 representation = ScalarRepresentation(NDCScalar.BOOLEAN),
@@ -19,19 +47,8 @@ object OracleJDBCSchemaGenerator : JDBCSchemaGenerator() {
                 ),
                 aggregate_functions = emptyMap()
             ),
-            NDCScalar.STRING.name to ScalarType(
-                representation = ScalarRepresentation(NDCScalar.STRING),
-                comparison_operators = mapOf(
-                    "_eq" to ComparisonOperatorDefinition.Equal,
-                    "_contains" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.STRING.name)),
-                    "_like" to ComparisonOperatorDefinition.Custom(argument_type = Type.Named(NDCScalar.STRING.name)),
-                    "_in" to ComparisonOperatorDefinition.In
-                ),
-                aggregate_functions = mapOf(
-                    "min" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.STRING.name)),
-                    "max" to AggregateFunctionDefinition(result_type = Type.Named(NDCScalar.STRING.name))
-                )
-            ),
+            NDCScalar.STRING.name to stringScalarType,
+            "varchar" to stringScalarType,
             NDCScalar.INT8.name to ScalarType(
                 representation = ScalarRepresentation(NDCScalar.INT8),
                 comparison_operators = mapOf(

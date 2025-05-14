@@ -64,6 +64,13 @@ sealed interface Type {
                 is Type.Named -> type.name
             }
         }
+
+        fun isNullable(type: Type): Boolean {
+            return when (type) {
+                is Type.Nullable -> true
+                else -> false
+            }
+        }
     }
 }
 
