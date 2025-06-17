@@ -8,7 +8,8 @@ import io.hasura.ndc.common.TableType
 import org.jooq.impl.DSL
 
 fun debug(message: String) {
-    if (System.getenv("PROMPTQL_DEBUG") == "true") {
+    val logLevel = System.getenv("HASURA_LOG_LEVEL") ?: "info"
+    if (logLevel.lowercase() == "debug") {
         println(message)
     }
 }
