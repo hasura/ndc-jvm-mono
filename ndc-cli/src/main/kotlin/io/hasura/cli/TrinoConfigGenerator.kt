@@ -7,6 +7,13 @@ import io.hasura.ndc.common.TableSchemaRow
 import io.hasura.ndc.common.TableType
 import org.jooq.impl.DSL
 
+fun debug(message: String) {
+    if (System.getenv("PROMPTQL_DEBUG") == "true") {
+        println(message)
+    }
+}
+
+
 object TrinoConfigGenerator : IConfigGenerator {
 
     override fun generateConfig(
@@ -66,10 +73,10 @@ object TrinoConfigGenerator : IConfigGenerator {
             FROM $catalog.information_schema.columns
             ${
                 if (catalogSchemas.isNotEmpty()) {
-                    println("Filtering schemas for catalog $catalog: $catalogSchemas")
+                    debug("Filtering schemas for catalog $catalog: $catalogSchemas")
                     "WHERE table_schema IN (${catalogSchemas.joinToString(",") { "'$it'" }})"
                 } else {
-                    println("No specific schemas for catalog $catalog, including all schemas")
+                    debug("No specific schemas for catalog $catalog, including all schemas")
                     ""
                 }
             }
@@ -94,9 +101,9 @@ object TrinoConfigGenerator : IConfigGenerator {
         }
 
         // fetch every column, use jOOQ's fetchGroups to group them by (catalog, schema, table)
-        println("Executing query to fetch table and column information...")
+        debug("Executing query to fetch table and column information...")
         query.lines().forEach { line ->
-            println("    $line")
+            debug("    $line")
         }
 
         val tables = DSL.using(jdbcUrlString)
