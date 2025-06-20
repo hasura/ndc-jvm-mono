@@ -11,7 +11,6 @@ import jakarta.enterprise.inject.Alternative
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.jooq.SQLDialect
-import org.jooq.conf.RenderQuotedNames
 
 
 @Singleton
@@ -44,24 +43,31 @@ class OracleDataConnectorService @Inject constructor(
 
     override fun handleQuery(request: QueryRequest): List<RowSet> {
         val dslCtx = mkDSLCtx()
-        val query = JsonQueryGenerator.queryRequestToSQL(request)
+
+        // Check whether the QueryRequest has predicates referencing variables, and if so, that variables are provided
+        // This case is checked in the test "select_where_with_no_variable_values"
+        val hasVariables = objectMapper.writeValueAsString(request).contains("\"type\":\"variable\"")
+        if (hasVariables && request.variables.isNullOrEmpty()) {
+            return emptyList()
+        }
+
+        val query = if (!request.variables.isNullOrEmpty()) {
+            JsonQueryGenerator.forEachQueryRequestToSQL(request)
+        } else {
+            JsonQueryGenerator.queryRequestToSQL(request)
+        }
 
         println(dslCtx.renderInlined(query))
 
         val rows = executeDbQuery(query, dslCtx)
         val json = rows.getValue(0, 0).toString()
-        val rowset = objectMapper.readValue<List<RowSet>?>(json)
 
-        return if (rowset.isNullOrEmpty()) {
-            listOf(RowSet(rows = emptyList(), aggregates = emptyMap()))
-        } else {
-            rowset
-        }
+        val rowsets = objectMapper.readValue<List<RowSet>>(json)
+        return rowsets
     }
 
     override val jooqDialect = SQLDialect.ORACLE21C
-    override val jooqSettings =
-        commonDSLContextSettings.withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_UNQUOTED)
+    override val jooqSettings = commonDSLContextSettings
     override val sqlGenerator = JsonQueryGenerator
     override val mutationTranslator = MutationTranslator
 }
