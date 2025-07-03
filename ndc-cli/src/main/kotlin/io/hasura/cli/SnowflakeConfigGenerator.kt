@@ -96,9 +96,9 @@ object SnowflakeConfigGenerator : IConfigGenerator {
                         object_construct(
                             'foreign_collection', ${
                 if (fullyQualifyNames)
-                    """array_construct(foreign_keys."fk_database_name", foreign_keys."fk_schema_name", foreign_keys."fk_table_name")"""
+                    """array_construct(foreign_keys."pk_database_name", foreign_keys."pk_schema_name", foreign_keys."pk_table_name")"""
                 else
-                    """array_construct(foreign_keys."fk_table_name")"""
+                    """array_construct(foreign_keys."pk_table_name")"""
             },
                             'column_mapping', object_agg(foreign_keys."fk_column_name", to_variant(foreign_keys."pk_column_name"))
                         ) AS "constraint"
