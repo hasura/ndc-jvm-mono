@@ -19,13 +19,14 @@ class DataConnectorResource @Inject constructor(
     @Path("/health")
     @WithSpan
     fun health(): Response {
-        val canConnectToDB = dataConnectorService.runHealthCheckQuery()
-        if (canConnectToDB) {
-            return Response
-                .status(Response.Status.OK)
-                .build()
-        } else {
-            throw RuntimeException("Unable to connect to DB")
+        // Phil: "I think we decided /health should only indicate readiness to serve e.g. /schema and /capabilities,
+        // and should not require the DB to be available, when we worked on introspection."
+        return try {
+            dataConnectorService.getSchema()
+            dataConnectorService.getCapabilities()
+            Response.status(Response.Status.OK).build()
+        } catch (e: Exception) {
+            Response.status(Response.Status.SERVICE_UNAVAILABLE).build()
         }
     }
 
