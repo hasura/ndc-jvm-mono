@@ -16,6 +16,13 @@ services:
       - 8080:8080
     volumes:
       - ./ndc-connector-oracle/configuration.json:/etc/connector/configuration.json
+    environment:
+      # OpenTelemetry Configuration (optional)
+      # Uncomment and configure these to enable telemetry export
+      # OTEL_SERVICE_NAME: "ndc-oracle"
+      # OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4317"
+      # OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      # OTEL_TRACES_EXPORTER: "otlp"
 
   ndc-connector-mysql:
     image: ghcr.io/hasura/ndc-jvm-mysql:${IMAGE_TAG_MYSQL}
@@ -26,6 +33,12 @@ services:
         - 8082:8080
     volumes:
       - ./ndc-connector-mysql/configuration.json:/etc/connector/configuration.json
+    environment:
+      # OpenTelemetry Configuration (optional)
+      # OTEL_SERVICE_NAME: "ndc-mysql"
+      # OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4317"
+      # OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      # OTEL_TRACES_EXPORTER: "otlp"
 
   ndc-connector-snowflake:
     image: ghcr.io/hasura/ndc-jvm-snowflake:${IMAGE_TAG_SNOWFLAKE}
@@ -39,6 +52,12 @@ services:
         - 8083:8080
     volumes:
       - ./ndc-connector-snowflake/configuration.json:/etc/connector/configuration.json
+    environment:
+      # OpenTelemetry Configuration (optional)
+      # OTEL_SERVICE_NAME: "ndc-snowflake"
+      # OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4317"
+      # OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      # OTEL_TRACES_EXPORTER: "otlp"
 
   ##################
   ### Databases
@@ -72,3 +91,25 @@ services:
             - "8090:8080"
         volumes:
           - ./docker/trino/catalog:/etc/trino/catalog
+
+  ##################
+  ### Observability (Optional)
+  ##################
+  # Uncomment this service to enable OpenTelemetry trace collection
+  # jaeger:
+  #   image: jaegertracing/all-in-one:1.60
+  #   restart: always
+  #   ports:
+  #     - "16686:16686"  # Jaeger UI
+  #     - "14250:14250"  # gRPC OTLP receiver
+  #     - "4317:4317"    # gRPC OTLP receiver (alternative port)
+  #     - "4318:4318"    # HTTP OTLP receiver
+  #   environment:
+  #     - COLLECTOR_OTLP_ENABLED=true
+  #     - LOG_LEVEL=debug
+  #   # To use this with the connectors, uncomment the OTEL_* environment variables
+  #   # in the connector services above and set:
+  #   # OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4317" (for gRPC)
+  #   # OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4318" (for HTTP)
+  #   # OTEL_EXPORTER_OTLP_PROTOCOL: "grpc" or "http/protobuf"
+  #   # OTEL_TRACES_EXPORTER: "otlp"

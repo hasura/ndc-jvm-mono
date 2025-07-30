@@ -52,6 +52,8 @@ dependencies {
     testImplementation("io.rest-assured:rest-assured")
     testImplementation("io.rest-assured:kotlin-extensions")
     implementation(kotlin("stdlib-jdk8"))
+
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }
 
 allOpen {
