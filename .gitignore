@@ -36,6 +36,7 @@ nb-configuration.xml
 .env
 .envrc
 kls_database.db
+.direnv
 
 # Local configuration files
 configs

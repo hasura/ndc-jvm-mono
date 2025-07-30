@@ -1,6 +1,19 @@
 packagingDefinition:
   type: PrebuiltDockerImage
-  dockerImage: "ghcr.io/hasura/ndc-jvm-oracle:v1.0.13"
+  dockerImage: "ghcr.io/hasura/ndc-jvm-oracle:v1.1.2"
+
+supportedEnvironmentVariables:
+  - name: JDBC_URL
+    description: "The JDBC URL to connect to the database"
+  - name: JDBC_SCHEMAS
+    description: "A comma-separated list of schemas to include in the metadata"
+
+commands:
+  update:
+    type: Dockerized
+    dockerImage: ghcr.io/hasura/ndc-jvm-cli:v1.1.2-oracle
+    commandArgs: [update, --database, ORACLE, --schemas, $JDBC_SCHEMAS, --outfile, /etc/connector/configuration.json]
+
 nativeToolchainDefinition:
   commands:
     start:
@@ -43,13 +56,3 @@ nativeToolchainDefinition:
       powershell: |
         Write-Output "Watch is not supported for this connector"
         exit 1
-supportedEnvironmentVariables:
-  - name: JDBC_URL
-    description: "The JDBC URL to connect to the database"
-  - name: JDBC_SCHEMAS
-    description: "A comma-separated list of schemas to include in the metadata"
-commands:
-  update:
-    type: Dockerized
-    dockerImage: ghcr.io/hasura/ndc-jvm-cli:v1.0.6
-    commandArgs: [update, --database, ORACLE, --schemas, $JDBC_SCHEMAS, --outfile, /etc/connector/configuration.json]
