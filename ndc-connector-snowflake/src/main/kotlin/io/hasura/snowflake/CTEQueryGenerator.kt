@@ -316,7 +316,7 @@ object CTEQueryGenerator : BaseQueryGenerator() {
                 is Expression.Not -> getVars(e.expression)
                 is Expression.ApplyBinaryComparison ->
                     if (e.value is ComparisonValue.VariableComp)
-                        listOf(DSL.field(DSL.name(e.column.name)))
+                        listOf(DSL.field(DSL.name(listOf(genCTEName(request.collection), e.column.name))))
                     else emptyList()
 
                 else -> emptyList()
@@ -337,24 +337,37 @@ object CTEQueryGenerator : BaseQueryGenerator() {
 
         return Pair(
             request,
-            DSL.selectDistinct(
-                listOf(
-                    buildOuterStructure(
-                        request,
-                        if (request.isVariablesRequest()) CTEQueryGenerator::buildVariableRows else CTEQueryGenerator::buildRows
-                    ).`as`(ROWS_AND_AGGREGATES)
+            run {
+                val rowsBuilder: (QueryRequest) -> Field<*> =
+                    if (request.isVariablesRequest()) {
+                        val idxField: Field<*> = DSL.field(DSL.name(listOf(genCTEName(request.collection), INDEX)))
+                        val partitionFields: List<Field<*>> = joinFields.map { it as Field<*> } + idxField
+                        { _: QueryRequest ->
+                            DSL.arrayAgg(buildRow(request))
+                                .over(DSL.partitionBy(*partitionFields.toTypedArray()))
+                        }
+                    } else {
+                        CTEQueryGenerator::buildRows
+                    }
+
+                DSL.selectDistinct(
+                    listOf(
+                        buildOuterStructure(
+                            request,
+                            rowsBuilder
+                        ).`as`(ROWS_AND_AGGREGATES)
+                    ) + if (request.isVariablesRequest())
+                        (getVarCols(request) + listOf(DSL.field(DSL.name(listOf(genCTEName(request.collection), INDEX)))))
+                    else emptyList()
                 )
-                        + if (request.isVariablesRequest())
-                    (getVarCols(request) + listOf(DSL.field(DSL.name(INDEX))))
-                else emptyList()
-            )
-                .apply {
-                    this.select(joinFields)
-                }
-                .from(DSL.name(genCTEName(request.collection)))
-                .apply {
-                    if (joinFields.isNotEmpty()) groupBy(joinFields)
-                }
+                    .apply {
+                        this.select(joinFields)
+                    }
+                    .from(DSL.name(genCTEName(request.collection)))
+                    .apply {
+                        if (joinFields.isNotEmpty() && !request.isVariablesRequest()) groupBy(joinFields)
+                    }
+            }
         )
     }
 
