@@ -266,12 +266,11 @@ object CTEQueryGenerator : BaseQueryGenerator() {
         val selects = forEachQueryLevelRecursively(request, CTEQueryGenerator::buildSelect)
 
         // this is a non-relational query so just return the single select
-        if (selects.size == 1) return selects.first().second
+        if (selects.size == 1) return selects.first().third
 
-
-        selects.forEachIndexed() { idx, (request, select) ->
-            val relationships = getQueryRelationFields(request.query.fields).values.map {
-                val rel = request.collection_relationships[it.relationship]!!
+        selects.forEachIndexed { idx, (currentRequest, relSource, currentSelect) ->
+            val relationships = getQueryRelationFields(currentRequest.query.fields).values.map {
+                val rel = currentRequest.collection_relationships[it.relationship]!!
                 val args = if (rel.arguments.isEmpty() && rel.column_mapping.isEmpty() && it.arguments.isNotEmpty()) {
                     it.arguments
                 } else rel.arguments
@@ -280,32 +279,43 @@ object CTEQueryGenerator : BaseQueryGenerator() {
 
             val distinctRelationships = relationships.distinctBy { it.target_collection }
             distinctRelationships.forEach { relationship ->
+                // Find the nearest matching child select that appears AFTER the current index
+                var chosenIndex: Int? = null
+                var chosenTriple: Triple<QueryRequest, String?, SelectJoinStep<*>>? = null
+                var j = idx + 1
+                while (j < selects.size) {
+                    val cand = selects[j]
+                    if (cand.first.collection == relationship.target_collection && cand.second == currentRequest.collection) {
+                        chosenIndex = j
+                        chosenTriple = cand
+                        break
+                    }
+                    j++
+                }
 
-                val innerSelects =
-                    selects.minus(selects[idx]).filter { it.first.collection == relationship.target_collection }
-
-                innerSelects.forEach { (innerRequest, innerSelect) ->
+                if (chosenIndex != null && chosenTriple != null) {
+                    val (innerRequest, _, innerSelect) = chosenTriple!!
+                    // Use the canonical alias expected by buildRow() references
                     val innerAlias = createAlias(
-                        innerRequest.collection, isAggregateOnlyRequest(innerRequest)
+                        innerRequest.collection,
+                        isAggregateOnlyRequest(innerRequest)
                     )
 
-                    run {
-                        select
-                            .leftJoin(
-                                innerSelect.asTable(innerAlias)
+                    currentSelect
+                        .leftJoin(
+                            innerSelect.asTable(innerAlias)
+                        )
+                        .on(
+                            mkSQLJoin(
+                                relationship,
+                                sourceCollection = genCTEName(currentRequest.collection),
+                                targetTableNameTransform = { innerAlias }
                             )
-                            .on(
-                                mkSQLJoin(
-                                    relationship,
-                                    sourceCollection = genCTEName(request.collection),
-                                    targetTableNameTransform = { innerAlias }
-                                )
-                            )
-                    }
+                        )
                 }
             }
         }
-        return selects.first().second
+        return selects.first().third
     }
 
     private fun getVarCols(request: QueryRequest): List<Field<*>> {
@@ -330,13 +340,14 @@ object CTEQueryGenerator : BaseQueryGenerator() {
         request: QueryRequest,
         relationship: Relationship? = null,
         relSource: String? = null
-    ): Pair<QueryRequest, SelectJoinStep<*>> {
+    ): Triple<QueryRequest, String?, SelectJoinStep<*>> {
         val joinFields = if (relationship != null)
             mkJoinKeyFields(relationship, genCTEName(relationship.target_collection))
         else emptyList()
 
-        return Pair(
+        return Triple(
             request,
+            relSource,
             run {
                 val rowsBuilder: (QueryRequest) -> Field<*> =
                     if (request.isVariablesRequest()) {
