@@ -351,7 +351,8 @@ abstract class BaseQueryGenerator : BaseGenerator {
 
                             val orderByWhereCondition = expressionToCondition(
                                 e = predicate,
-                                request
+                                request,
+                                relationship.target_collection
                             )
 
                             when (relationship.relationship_type) {
