@@ -430,19 +430,28 @@ abstract class BaseQueryGenerator : BaseGenerator {
         buildRows: (request: QueryRequest) -> Field<*>,
         buildAggregates: (request: QueryRequest) -> Field<*> = ::buildAggregates
     ): Field<*> {
-        return DSL.jsonObject(
-            if (isAggregateOnlyRequest(request)) {
-                DSL.jsonEntry(
-                    "aggregates",
-                    getAggregates(request, buildAggregates)
-                )
-            } else {
-                DSL.jsonEntry(
-                    "rows",
-                    getRows(request, buildRows)
+        val hasFields = !(request.query.fields.isNullOrEmpty())
+        val hasAggregates = getAggregateFields(request).isNotEmpty()
+
+        val entries = buildList {
+            if (hasFields) {
+                add(
+                    DSL.jsonEntry(
+                        "rows",
+                        getRows(request, buildRows)
+                    )
                 )
             }
-        )
+            if (hasAggregates) {
+                add(
+                    DSL.jsonEntry(
+                        "aggregates",
+                        getAggregates(request, buildAggregates)
+                    )
+                )
+            }
+        }
+        return DSL.jsonObject(entries)
     }
 
     private fun getRows(
