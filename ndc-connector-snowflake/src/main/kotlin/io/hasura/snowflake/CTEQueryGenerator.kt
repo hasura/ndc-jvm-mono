@@ -60,12 +60,60 @@ object CTEQueryGenerator : BaseQueryGenerator() {
     private fun getCollectionAsjOOQName(collection: String): Name {
         return DSL.name(collection.split("."))
     }
+    private fun rewritePathComparisonsToExists(expression: Expression?): Expression? {
+        fun rewrite(e: Expression): Expression {
+            return when (e) {
+                is Expression.And -> Expression.And(e.expressions.map { rewrite(it) })
+                is Expression.Or -> Expression.Or(e.expressions.map { rewrite(it) })
+                is Expression.Not -> Expression.Not(rewrite(e.expression))
+                is Expression.ApplyUnaryComparison -> e
+                is Expression.Exists -> Expression.Exists(
+                    e.in_collection,
+                    rewrite(e.predicate)
+                )
+                is Expression.ApplyBinaryComparison -> {
+                    val col = e.column
+                    if (col is ComparisonTarget.Column && col.path.isNotEmpty()) {
+                        val baseComp = Expression.ApplyBinaryComparison(
+                            operator = e.operator,
+                            column = ComparisonTarget.Column(
+                                name = col.name,
+                                path = emptyList(),
+                                field_path = col.field_path
+                            ),
+                            value = e.value
+                        )
+                        col.path.asReversed().fold(baseComp as Expression) { acc, pe ->
+                            val pePred = rewrite(pe.predicate)
+                            val combined = if (pePred is Expression.And && pePred.expressions.isEmpty()) acc else Expression.And(listOf(pePred, acc))
+                            Expression.Exists(
+                                in_collection = ExistsInCollection.Related(
+                                    relationship = pe.relationship,
+                                    arguments = pe.arguments
+                                ),
+                                predicate = combined
+                            )
+                        }
+                    } else {
+                        e
+                    }
+                }
+            }
+        }
+        return expression?.let { rewrite(it) }
+    }
 
     private fun buildCTE(
         request: QueryRequest,
         relationship: Relationship?,
         relSource: String?
     ): CommonTableExpression<*> {
+        val predRewrittenRequest = request.copy(
+            query = request.query.copy(
+                predicate = rewritePathComparisonsToExists(request.query.predicate)
+            )
+        )
+
         return DSL.name(genCTEName(request.collection)).`as`(
             DSL.select(DSL.asterisk())
                 .from(
@@ -125,11 +173,11 @@ object CTEQueryGenerator : BaseQueryGenerator() {
                         }
                         .apply {
                             addJoinsRequiredForPredicate(
-                                request,
+                                predRewrittenRequest,
                                 this as SelectJoinStep<*>
                             )
                         }
-                        .where(getWhereConditions(request))
+                        .where(getWhereConditions(predRewrittenRequest))
                         .asTable(request.collection.split(".").joinToString("_"))
                 ).where(mkOffsetLimit(request, DSL.field(DSL.name(getRNName(request.collection)))))
         )
