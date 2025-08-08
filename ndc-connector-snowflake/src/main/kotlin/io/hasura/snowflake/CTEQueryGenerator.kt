@@ -7,6 +7,7 @@ import io.hasura.ndc.ir.extensions.isVariablesRequest
 import io.hasura.ndc.ir.Field as IRField
 import io.hasura.ndc.ir.Field.ColumnField
 import io.hasura.ndc.sqlgen.BaseQueryGenerator
+import io.hasura.ndc.sqlgen.BaseGenerator
 import io.hasura.ndc.sqlgen.BaseQueryGenerator.Companion.INDEX
 import io.hasura.ndc.sqlgen.BaseQueryGenerator.Companion.ROWS_AND_AGGREGATES
 import io.hasura.ndc.sqlgen.DatabaseType.SNOWFLAKE
@@ -101,6 +102,33 @@ object CTEQueryGenerator : BaseQueryGenerator() {
             }
         }
         return expression?.let { rewrite(it) }
+    }
+
+    override fun buildComparison(
+        col: Field<Any>,
+        operator: ApplyBinaryComparisonOperator,
+        listVal: List<Field<Any>>,
+        columnType: NDCScalar?
+    ): Condition {
+        return when (operator) {
+            ApplyBinaryComparisonOperator.REGEX -> {
+                val v = listVal.firstOrNull() ?: return DSL.falseCondition()
+                DSL.condition("regexp_like(?, ?)", col as Field<String>, v as Field<String>)
+            }
+            ApplyBinaryComparisonOperator.NOT_REGEX -> {
+                val v = listVal.firstOrNull() ?: return DSL.falseCondition()
+                DSL.not(DSL.condition("regexp_like(?, ?)", col as Field<String>, v as Field<String>))
+            }
+            ApplyBinaryComparisonOperator.IREGEX -> {
+                val v = listVal.firstOrNull() ?: return DSL.falseCondition()
+                DSL.condition("regexp_like(?, ?, 'i')", col as Field<String>, v as Field<String>)
+            }
+            ApplyBinaryComparisonOperator.NOT_IREGEX -> {
+                val v = listVal.firstOrNull() ?: return DSL.falseCondition()
+                DSL.not(DSL.condition("regexp_like(?, ?, 'i')", col as Field<String>, v as Field<String>))
+            }
+            else -> super.buildComparison(col, operator, listVal, columnType)
+        }
     }
 
     private fun buildCTE(
