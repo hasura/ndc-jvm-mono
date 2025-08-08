@@ -326,63 +326,73 @@ abstract class BaseQueryGenerator : BaseGenerator {
         request: QueryRequest,
         sourceCollection: String = request.collection
     ) {
-        // Add the JOIN's required by any ORDER BY fields referencing other tables
-        //
-        // Make a SET to hold seen tables so we don't add the same JOIN twice
-        // When we are mapping through each of the ORDER BY elements, we will
-        // check if the "relEdges" for the target path have been seen before
-        // If so, we don't want to add the JOIN again, because it will cause
-        // a SQL error
-        val seenRelations = mutableSetOf<String>()
-        request.query.order_by?.let { orderBy ->
-            // FOR EACH ORDER BY:
-            orderBy.elements.forEach { orderByElement ->
-                if (orderByElement.target.path.isNotEmpty()) {
-                    val relationshipNames = orderByElement.target.path.map { it.relationship to it.predicate }.toMap()
+        // Add the JOINs required by any ORDER BY fields referencing other tables
+        // Walk each path sequentially, carrying forward the current table alias
+        // so that chained relationships join to the previous hop rather than the root.
+        val seenRelationChains = mutableSetOf<List<String>>()
+        request.query.order_by?.elements?.forEach { orderByElement ->
+            if (orderByElement.target.path.isNotEmpty()) {
+                var currentTableName = sourceCollection
 
-                    // FOR EACH RELATIONSHIP EDGE:
-                    relationshipNames
-                        .minus(seenRelations) // Only add JOINs for unseen relationships
-                        .forEach { (relationshipName, predicate) ->
-                            seenRelations.add(relationshipName)
+                orderByElement.target.path.forEach { pathElem ->
+                    val relationshipName = pathElem.relationship
+                    val relChain = listOf(currentTableName, relationshipName)
 
-                            val relationship = request.collection_relationships[relationshipName]
-                                ?: throw Exception("Relationship not found")
+                    if (!seenRelationChains.contains(relChain)) {
+                        seenRelationChains.add(relChain)
 
-                            val orderByWhereCondition = expressionToCondition(
-                                e = predicate,
-                                request,
-                                relationship.target_collection
-                            )
+                        val relationship = request.collection_relationships[relationshipName]
+                            ?: throw Exception("Relationship not found")
 
-                            when (relationship.relationship_type) {
-                                RelationshipType.Object -> {
-                                    select.leftJoin(
-                                        DSL.table(DSL.name(relationship.target_collection))
-                                    ).on(
-                                        mkSQLJoin(relationship, sourceCollection).and(orderByWhereCondition)
+                        val orderByWhereCondition = expressionToCondition(
+                            e = pathElem.predicate,
+                            request,
+                            relationship.target_collection
+                        )
+
+                        when (relationship.relationship_type) {
+                            RelationshipType.Object -> {
+                                select.leftJoin(
+                                    DSL.table(DSL.name(relationship.target_collection))
+                                ).on(
+                                    mkSQLJoin(
+                                        relationship,
+                                        currentTableName
+                                    ).and(orderByWhereCondition)
+                                )
+                                // Next hop joins from this target table
+                                currentTableName = relationship.target_collection
+                            }
+                            RelationshipType.Array -> {
+                                val aggregateAlias = "${relationshipName}_aggregate"
+                                select.leftJoin(
+                                    mkAggregateSubquery(
+                                        elem = orderByElement,
+                                        relationship = relationship,
+                                        whereCondition = orderByWhereCondition,
+                                    ).asTable(
+                                        DSL.name(aggregateAlias)
                                     )
-                                }
-                                // It's an aggregate relationship, so we need to join to the aggregation subquery
-                                RelationshipType.Array -> {
-                                    select.leftJoin(
-                                        mkAggregateSubquery(
-                                            elem = orderByElement,
-                                            relationship = relationship,
-                                            whereCondition = orderByWhereCondition,
-                                        ).asTable(
-                                            DSL.name(relationshipName + "_aggregate")
-                                        )
-                                    ).on(
-                                        mkSQLJoin(
-                                            relationship,
-                                            sourceCollection,
-                                            targetTableNameTransform = { _ -> "${relationshipName}_aggregate" }
-                                        )
+                                ).on(
+                                    mkSQLJoin(
+                                        relationship,
+                                        currentTableName,
+                                        targetTableNameTransform = { _ -> aggregateAlias }
                                     )
-                                }
+                                )
+                                // Next hop joins from the aggregate alias
+                                currentTableName = aggregateAlias
                             }
                         }
+                    } else {
+                        // Even if the join already exists, advance the current table
+                        val relationship = request.collection_relationships[relationshipName]
+                            ?: throw Exception("Relationship not found")
+                        currentTableName = when (relationship.relationship_type) {
+                            RelationshipType.Object -> relationship.target_collection
+                            RelationshipType.Array -> "${relationshipName}_aggregate"
+                        }
+                    }
                 }
             }
         }
