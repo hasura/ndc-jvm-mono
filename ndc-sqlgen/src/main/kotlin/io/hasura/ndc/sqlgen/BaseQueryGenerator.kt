@@ -278,22 +278,38 @@ abstract class BaseQueryGenerator : BaseGenerator {
         request: QueryRequest,
         select: SelectJoinStep<*>,
         expression: Expression? = request.query.predicate,
-        seenRelations: MutableSet<String> = mutableSetOf()
+        seenRelationChains: MutableSet<List<String>> = mutableSetOf(),
+        sourceCollection: String = request.collection
     ) {
-        fun addForColumn(column: ComparisonTarget) {
+        fun addForColumn(column: ComparisonTarget, fromTable: String) {
             if (column is ComparisonTarget.Column) {
-                column.path.forEach {
-                    if (!seenRelations.contains(it.relationship)) {
-                        val r = request.collection_relationships[it.relationship]!!
-                        val rel = r.copy(arguments = it.arguments + r.arguments)
+                var currentTableName = fromTable
+                column.path.forEach { pathElem ->
+                    val baseRel = request.collection_relationships[pathElem.relationship]
+                        ?: throw Exception("Relationship ${'$'}{pathElem.relationship} not found")
+                    val rel = baseRel.copy(arguments = pathElem.arguments + baseRel.arguments)
+
+                    val relChain = listOf(currentTableName, pathElem.relationship)
+                    if (!seenRelationChains.contains(relChain)) {
                         select.leftJoin(
                             DSL.table(DSL.name(rel.target_collection))
                         ).on(
-                            mkSQLJoin(rel, request.collection )
+                            mkSQLJoin(rel, currentTableName)
                         )
-                        seenRelations.add(it.relationship)
+                        seenRelationChains.add(relChain)
                     }
-                    addJoinsRequiredForPredicate(request, select, it.predicate, seenRelations)
+
+                    if (pathElem.predicate != Expression.And(emptyList())) {
+                        addJoinsRequiredForPredicate(
+                            request = request,
+                            select = select,
+                            expression = pathElem.predicate,
+                            seenRelationChains = seenRelationChains,
+                            sourceCollection = rel.target_collection
+                        )
+                    }
+
+                    currentTableName = rel.target_collection
                 }
             }
         }
@@ -301,21 +317,23 @@ abstract class BaseQueryGenerator : BaseGenerator {
         expression?.let { where ->
             when (where) {
                 is Expression.And ->
-                    where.expressions.forEach { addJoinsRequiredForPredicate(request, select, it, seenRelations) }
+                    where.expressions.forEach { addJoinsRequiredForPredicate(request, select, it, seenRelationChains, sourceCollection) }
 
                 is Expression.Or ->
-                    where.expressions.forEach { addJoinsRequiredForPredicate(request, select, it, seenRelations) }
+                    where.expressions.forEach { addJoinsRequiredForPredicate(request, select, it, seenRelationChains, sourceCollection) }
 
-                is Expression.Not -> addJoinsRequiredForPredicate(request, select, where.expression, seenRelations)
+                is Expression.Not -> addJoinsRequiredForPredicate(request, select, where.expression, seenRelationChains, sourceCollection)
                 is Expression.ApplyBinaryComparison -> {
-                    addForColumn(where.column)
+                    addForColumn(where.column, sourceCollection)
                     if (where.value is ComparisonValue.ColumnComp) {
-                        addForColumn((where.value as ComparisonValue.ColumnComp).column)
+                        addForColumn((where.value as ComparisonValue.ColumnComp).column, sourceCollection)
                     }
                 }
 
-                is Expression.ApplyUnaryComparison -> {} // no-op
-                is Expression.Exists -> addJoinsRequiredForPredicate(request, select, where.predicate, seenRelations)
+                is Expression.ApplyUnaryComparison -> { /* no-op */ }
+                is Expression.Exists -> {
+                    addJoinsRequiredForPredicate(request, select, where.predicate, seenRelationChains, sourceCollection)
+                }
             }
         }
 
