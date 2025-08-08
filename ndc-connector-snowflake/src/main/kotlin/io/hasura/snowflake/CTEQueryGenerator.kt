@@ -394,24 +394,6 @@ object CTEQueryGenerator : BaseQueryGenerator() {
         return selects.first().third
     }
 
-    private fun getVarCols(request: QueryRequest): List<Field<*>> {
-        fun getVars(e: Expression): List<Field<*>> {
-            return when (e) {
-                is Expression.And -> e.expressions.flatMap { getVars(it) }
-                is Expression.Or -> e.expressions.flatMap { getVars(it) }
-                is Expression.Not -> getVars(e.expression)
-                is Expression.ApplyBinaryComparison ->
-                    if (e.value is ComparisonValue.VariableComp)
-                        listOf(DSL.field(DSL.name(listOf(genCTEName(request.collection), e.column.name))))
-                    else emptyList()
-
-                else -> emptyList()
-            }
-        }
-
-        return request.query.predicate?.let { getVars(it) } ?: emptyList()
-    }
-
     private fun buildSelect(
         request: QueryRequest,
         relationship: Relationship? = null,
@@ -444,7 +426,7 @@ object CTEQueryGenerator : BaseQueryGenerator() {
                             rowsBuilder
                         ).`as`(ROWS_AND_AGGREGATES)
                     ) + if (request.isVariablesRequest())
-                        (getVarCols(request) + listOf(DSL.field(DSL.name(listOf(genCTEName(request.collection), INDEX)))))
+                        listOf(DSL.field(DSL.name(listOf(genCTEName(request.collection), INDEX))))
                     else emptyList()
                 )
                     .apply {
