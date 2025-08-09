@@ -61,6 +61,7 @@ object CTEQueryGenerator : BaseQueryGenerator() {
     private fun getCollectionAsjOOQName(collection: String): Name {
         return DSL.name(collection.split("."))
     }
+
     private fun rewritePathComparisonsToExists(expression: Expression?): Expression? {
         fun rewrite(e: Expression): Expression {
             return when (e) {
@@ -341,7 +342,6 @@ object CTEQueryGenerator : BaseQueryGenerator() {
     private fun buildSelections(request: QueryRequest): Select<*> {
         val selects = forEachQueryLevelRecursively(request, CTEQueryGenerator::buildSelect)
 
-        // this is a non-relational query so just return the single select
         if (selects.size == 1) return selects.first().third
 
         selects.forEachIndexed { idx, (currentRequest, relSource, currentSelect) ->
@@ -355,7 +355,6 @@ object CTEQueryGenerator : BaseQueryGenerator() {
 
             val distinctRelationships = relationships.distinctBy { it.target_collection }
             distinctRelationships.forEach { relationship ->
-                // Find the nearest matching child select that appears AFTER the current index
                 var chosenIndex: Int? = null
                 var chosenTriple: Triple<QueryRequest, String?, SelectJoinStep<*>>? = null
                 var j = idx + 1
@@ -371,7 +370,6 @@ object CTEQueryGenerator : BaseQueryGenerator() {
 
                 if (chosenIndex != null && chosenTriple != null) {
                     val (innerRequest, _, innerSelect) = chosenTriple!!
-                    // Use the canonical alias expected by buildRow() references
                     val innerAlias = createAlias(
                         innerRequest.collection,
                         isAggregateOnlyRequest(innerRequest)

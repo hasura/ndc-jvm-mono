@@ -417,7 +417,6 @@ abstract class BaseQueryGenerator : BaseGenerator {
         request: QueryRequest,
         sourceCollection: String = request.collection
     ) {
-        // Add the JOINs required by any ORDER BY fields referencing other tables
         val seenRelationChains = mutableSetOf<List<String>>()
         val seenAggregateAliases = mutableSetOf<String>()
 
