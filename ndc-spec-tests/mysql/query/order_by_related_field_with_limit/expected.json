@@ -2,26 +2,6 @@
   {
     "rows": [
       {
-        "Name": "For Those About To Rock We Salute You",
-        "Artist": {
-          "rows": [
-            {
-              "Name": "AC/DC"
-            }
-          ]
-        }
-      },
-      {
-        "Name": "Let There Be Rock",
-        "Artist": {
-          "rows": [
-            {
-              "Name": "AC/DC"
-            }
-          ]
-        }
-      },
-      {
         "Name": "A Copland Celebration, Vol. I",
         "Artist": {
           "rows": [
@@ -37,6 +17,26 @@
           "rows": [
             {
               "Name": "Aaron Goldberg"
+            }
+          ]
+        }
+      },
+      {
+        "Name": "For Those About To Rock We Salute You",
+        "Artist": {
+          "rows": [
+            {
+              "Name": "AC/DC"
+            }
+          ]
+        }
+      },
+      {
+        "Name": "Let There Be Rock",
+        "Artist": {
+          "rows": [
+            {
+              "Name": "AC/DC"
             }
           ]
         }
