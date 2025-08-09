@@ -20,12 +20,12 @@ jdbc:trino://localhost:8090?user=trino \
 --fully-qualify-names=true"
 
 run-snowflake-cli-introspection:
-ifndef SNOWFLAKE_JDBC_URL
-	$(error SNOWFLAKE_JDBC_URL is not set)
+ifndef JDBC_URL
+	$(error JDBC_URL is not set)
 endif
 	HASURA_CONFIGURATION_DIRECTORY=./configs/snowflake \
 	./gradlew :ndc-cli:run --args="\
-update $(SNOWFLAKE_JDBC_URL) \
+update $(JDBC_URL) \
 --fully-qualify-names=false \
 --outfile '../configs/snowflake/configuration.json' \
 --database=SNOWFLAKE"
