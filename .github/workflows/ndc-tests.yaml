@@ -1,0 +1,213 @@
+name: NDC tests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate-test-cases:
+    runs-on: ubuntu-latest
+    strategy:
+      # Don't stop testing other connectors if one fails
+      fail-fast: false
+      matrix:
+        # connector: [ snowflake, mysql ]
+        connector: [ snowflake ]
+        include:
+          - connector: snowflake
+            jdbc_url_env: SNOWFLAKE_JDBC_URL
+            config_command: make run-snowflake-cli-introspection
+            run_command: make run-snowflake
+            test_dir: ndc-spec-tests/snowflake
+            port: 8081
+            native_query_tests: true
+            relational_tests: true
+          # - connector: mysql
+          #   jdbc_url_env: MYSQL_JDBC_URL
+          #   config_command: make run-mysql-introspection
+          #   run_command: make run-mysql
+          #   test_dir: ndc-tests/mysql
+          #   port: 8088
+          #   relational_tests: true
+          #   native_query_tests: true
+
+    # services:
+    #   mysql:
+    #     image: mysql:8.4
+    #     env:
+    #       MYSQL_ROOT_PASSWORD: Password123
+    #     ports:
+    #       - 3306:3306
+    #     options: >-
+    #       --health-cmd="mysqladmin ping -h localhost -u root -pPassword123"
+    #       --health-interval=5s
+    #       --health-timeout=10s
+    #       --health-retries=10
+    #       --health-start-period=20s
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: "21"
+          distribution: "temurin"
+
+      - name: Download and Setup NDC Test
+        run: |
+          curl -L --fail -o ndc-test https://github.com/hasura/ndc-spec/releases/download/v0.1.6/ndc-test-x86_64-unknown-linux-gnu
+          chmod +x ndc-test
+          sudo mv ndc-test /usr/local/bin/
+
+      # - name: Install MySQL client
+      #   if: matrix.connector == 'mysql'
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install -y mysql-client
+
+      # - name: Initialize MySQL with Chinook database
+      #   if: matrix.connector == 'mysql'
+      #   run: |
+      #     echo "Waiting for MySQL to be fully initialized..."
+
+      #     # Wait for MySQL to be ready using TCP connection (not socket)
+      #     timeout 120 bash -c 'until mysql -h 127.0.0.1 -P 3306 -u root -pPassword123 -e "SELECT 1"; do sleep 2; done'
+
+      #     # Import Chinook database using TCP connection
+      #     mysql -h 127.0.0.1 -P 3306 -u root -pPassword123 < ${{ github.workspace }}/docker/mysql/chinook.sql
+
+      #     # Verify Chinook database is accessible
+      #     mysql -h 127.0.0.1 -P 3306 -u root -pPassword123 -e "SHOW DATABASES;" | grep -q Chinook
+      #     echo "MySQL is ready with Chinook database."
+
+      - name: Set JDBC_URL
+        run: |
+          # if [[ "${{ matrix.connector }}" == "mysql" ]]; then
+          #   # Set MySQL JDBC URL to use the MySQL service
+          #   echo "JDBC_URL=jdbc:mysql://localhost:3306/Chinook?user=root&password=Password123" >> $GITHUB_ENV
+          # else
+          #   # Keep JDBC_URL the same for other connectors
+          #   echo "JDBC_URL=${{ secrets[matrix.jdbc_url_env] }}" >> $GITHUB_ENV
+          # fi
+          echo "JDBC_URL=${{ secrets[matrix.jdbc_url_env] }}" >> $GITHUB_ENV
+
+      - name: Generate introspection
+        env:
+          JDBC_URL: ${{ env.JDBC_URL }}
+          JOOQ_PRO_EMAIL: ${{ secrets.JOOQ_PRO_EMAIL }}
+          JOOQ_PRO_LICENSE: ${{ secrets.JOOQ_PRO_LICENSE }}
+          GITHUB_USERNAME: ${{ secrets.GPR_USERNAME }}
+          GITHUB_TOKEN: ${{ secrets.GPR_TOKEN }}
+        run: |
+          mkdir -p configs/${{ matrix.connector }}
+          chmod +x dev-setup.sh
+          ./dev-setup.sh ${{ matrix.connector }} --with-introspection --no-run
+
+      - name: Get the connector up and running
+        env:
+          JDBC_URL: ${{ env.JDBC_URL }}
+          JOOQ_PRO_EMAIL: ${{ secrets.JOOQ_PRO_EMAIL }}
+          JOOQ_PRO_LICENSE: ${{ secrets.JOOQ_PRO_LICENSE }}
+          GITHUB_USERNAME: ${{ secrets.GPR_USERNAME }}
+          GITHUB_TOKEN: ${{ secrets.GPR_TOKEN }}
+        run: |
+          mkdir -p configs/${{ matrix.connector }}
+          chmod +x dev-setup.sh
+          ./dev-setup.sh ${{ matrix.connector }} > dev-setup-connector.log 2>&1 & echo "DEV_SETUP_PID=$!" >> "$GITHUB_ENV"
+
+          # Wait for port to be available
+          timeout 210 bash -c 'while ! nc -z localhost ${{ matrix.port }}; do sleep 1; done' || {
+             echo "Port check failed. Last 50 lines of log:"
+             tail -n 50 dev-setup.log
+             exit 1
+           }
+
+           # Additional health check (if connector has health endpoint)
+           timeout 30 bash -c 'while ! curl -sf http://localhost:${{ matrix.port }}/health >/dev/null 2>&1; do sleep 1; done' || {
+             echo "Health check failed. Connector may not be fully ready."
+           }
+
+      - name: Run Schema Validation Test
+        id: run_schema_test
+        run: |
+          echo "Running Schema validation test for ${{ matrix.connector }}..."
+
+          # Fetch the actual schema from the connector
+          curl -s -f http://localhost:${{ matrix.port }}/schema > actual_schema.json || {
+            echo "Failed to fetch schema from connector"
+            echo "Connector may not be responding properly"
+            exit 1
+          }
+
+          # Define expected schema file path
+          expected_schema_file="${{ matrix.test_dir }}/expected_schema.json"
+
+          # Check if expected schema file exists
+          if [ ! -f "$expected_schema_file" ]; then
+            echo "Expected schema file not found: $expected_schema_file"
+            exit 1
+          fi
+
+          # Install jq if not available
+          which jq > /dev/null || {
+            sudo apt-get update && sudo apt-get install -y jq
+          }
+
+          # Run the schema validation using existing validator
+          python3 tests/schema-validator.py "$expected_schema_file" actual_schema.json 2>&1 | tee schema-validation-output.log
+          validation_exit_code=${PIPESTATUS[0]}
+
+          if [ $validation_exit_code -eq 0 ]; then
+            echo "✅ Schema validation passed for ${{ matrix.connector }}"
+          else
+            echo "❌ Schema validation failed for ${{ matrix.connector }}"
+            echo "Expected schema file: $expected_schema_file"
+            echo "Actual schema saved to: actual_schema.json"
+            echo ""
+            exit 1
+          fi
+
+      - name: Run NDC Tests
+        id: run_ndc_tests
+        run: |
+          set -o pipefail  # This ensures pipe failures are propagated
+          echo "Running NDC tests..."
+          ndc-test replay --endpoint http://localhost:${{ matrix.port }} --snapshots-dir ${{ matrix.test_dir }} 2>&1 | tee test-ndc-output.log
+          exit_code=$?
+          if [ $exit_code -eq 1 ]; then
+            echo "Tests failed with exit code $exit_code"
+            exit 1
+          fi
+
+      - name: Stop Connector
+        if: always()
+        run: |
+          if [ ! -z "${{ env.DEV_SETUP_PID }}" ]; then
+            kill ${{ env.DEV_SETUP_PID }} || true
+            sleep 2
+            kill -9 ${{ env.DEV_SETUP_PID }} || true
+          fi
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.connector }}-logs
+          path: |
+            config-generation.log
+            connector.log
+            test-ndc-output.log
+            actual_schema.json
+            dev-setup*.log
+          retention-days: 5
+
+      - name: Exit with test status
+        if: steps.run_ndc_tests.outcome == 'failure' || steps.run_relational_tests.outcome == 'failure'
+        run: exit 1
+
+permissions:
+  contents: write
+  pull-requests: write
