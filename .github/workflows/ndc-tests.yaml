@@ -21,16 +21,12 @@ jobs:
             run_command: make run-snowflake
             test_dir: ndc-spec-tests/snowflake
             port: 8080
-            native_query_tests: true
-            relational_tests: true
           # - connector: mysql
           #   jdbc_url_env: MYSQL_JDBC_URL
           #   config_command: make run-mysql-introspection
           #   run_command: make run-mysql
           #   test_dir: ndc-tests/mysql
           #   port: 8088
-          #   relational_tests: true
-          #   native_query_tests: true
 
     # services:
     #   mysql:
@@ -157,7 +153,7 @@ jobs:
           }
 
           # Run the schema validation using existing validator
-          python3 tests/schema-validator.py "$expected_schema_file" actual_schema.json 2>&1 | tee schema-validation-output.log
+          python3 ndc-spec-tests/schema-validator.py "$expected_schema_file" actual_schema.json 2>&1 | tee schema-validation-output.log
           validation_exit_code=${PIPESTATUS[0]}
 
           if [ $validation_exit_code -eq 0 ]; then
