@@ -339,76 +339,161 @@ abstract class BaseQueryGenerator : BaseGenerator {
 
     }
 
+    private fun mkAggregateSubqueryAcrossPath(
+        elem: OrderByElement,
+        request: QueryRequest
+    ): SelectHavingStep<Record> {
+        val path = elem.target.path
+        require(path.isNotEmpty()) { "Aggregate ORDER BY path must be non-empty" }
+
+        val relationships = request.collection_relationships
+        val firstRel = relationships[path.first().relationship]
+            ?: error("Relationship ${path.first().relationship} not found")
+        val lastRel = relationships[path.last().relationship]
+            ?: error("Relationship ${path.last().relationship} not found")
+
+        val orderElem: List<SelectField<*>> = when (val target = elem.target) {
+            is OrderByTarget.OrderByStarCountAggregate -> listOf(DSL.count().`as`(DSL.name("aggregate_field")))
+            is OrderByTarget.OrderBySingleColumnAggregate -> {
+                val aggregate = Aggregate.SingleColumn(target.column, target.function)
+                listOf(translateIRAggregateField(aggregate).`as`(DSL.name("aggregate_field")))
+            }
+            else -> emptyList()
+        }
+        val groupCols = mkJoinKeyFields(firstRel, firstRel.target_collection)
+
+        var selectStep: SelectJoinStep<Record> = DSL
+            .select(orderElem + groupCols)
+            .from(DSL.table(DSL.name(lastRel.target_collection)))
+
+        val whereConditions = mutableListOf<Condition>()
+
+        for (i in path.size - 1 downTo 1) {
+            val currRelName = path[i].relationship
+            val prevRelName = path[i - 1].relationship
+            val currRel = relationships[currRelName] ?: error("Relationship $currRelName not found")
+            val prevRel = relationships[prevRelName] ?: error("Relationship $prevRelName not found")
+
+            selectStep = selectStep
+                .join(DSL.table(DSL.name(prevRel.target_collection)))
+                .on(
+                    mkSQLJoin(
+                        currRel,
+                        prevRel.target_collection
+                    )
+                )
+
+            val pred = path[i].predicate
+            if (pred !is Expression.And || pred.expressions.isNotEmpty()) {
+                whereConditions.add(
+                    expressionToCondition(
+                        e = pred,
+                        request = request,
+                        overrideCollection = currRel.target_collection
+                    )
+                )
+            }
+        }
+
+        val firstPred = path.first().predicate
+        if (firstPred !is Expression.And || firstPred.expressions.isNotEmpty()) {
+            whereConditions.add(
+                expressionToCondition(
+                    e = firstPred,
+                    request = request,
+                    overrideCollection = firstRel.target_collection
+                )
+            )
+        }
+
+        return if (whereConditions.isNotEmpty())
+            selectStep.where(DSL.and(whereConditions)).groupBy(groupCols)
+        else
+            (selectStep as SelectWhereStep<Record>).groupBy(groupCols)
+    }
+
     protected fun addJoinsRequiredForOrderByFields(
         select: SelectJoinStep<*>,
         request: QueryRequest,
         sourceCollection: String = request.collection
     ) {
         // Add the JOINs required by any ORDER BY fields referencing other tables
-        // Walk each path sequentially, carrying forward the current table alias
-        // so that chained relationships join to the previous hop rather than the root.
         val seenRelationChains = mutableSetOf<List<String>>()
+        val seenAggregateAliases = mutableSetOf<String>()
+
         request.query.order_by?.elements?.forEach { orderByElement ->
-            if (orderByElement.target.path.isNotEmpty()) {
-                var currentTableName = sourceCollection
+            when (orderByElement.target) {
+                is OrderByTarget.OrderByStarCountAggregate, is OrderByTarget.OrderBySingleColumnAggregate -> {
+                    if (orderByElement.target.path.isNotEmpty()) {
+                        val firstRelName = orderByElement.target.path.first().relationship
+                        val lastRelName = orderByElement.target.path.last().relationship
+                        val aggregateAlias = "${lastRelName}_aggregate"
+                        if (!seenAggregateAliases.contains(aggregateAlias)) {
+                            val relationships = request.collection_relationships
+                            val firstRel = relationships[firstRelName] ?: error("Relationship not found")
 
-                orderByElement.target.path.forEach { pathElem ->
-                    val relationshipName = pathElem.relationship
-                    val relChain = listOf(currentTableName, relationshipName)
-
-                    if (!seenRelationChains.contains(relChain)) {
-                        seenRelationChains.add(relChain)
-
-                        val relationship = request.collection_relationships[relationshipName]
-                            ?: throw Exception("Relationship not found")
-
-                        val orderByWhereCondition = expressionToCondition(
-                            e = pathElem.predicate,
-                            request,
-                            relationship.target_collection
-                        )
-
-                        when (relationship.relationship_type) {
-                            RelationshipType.Object -> {
-                                select.leftJoin(
-                                    DSL.table(DSL.name(relationship.target_collection))
-                                ).on(
-                                    mkSQLJoin(
-                                        relationship,
-                                        currentTableName
-                                    ).and(orderByWhereCondition)
+                            select.leftJoin(
+                                mkAggregateSubqueryAcrossPath(orderByElement, request)
+                                    .asTable(DSL.name(aggregateAlias))
+                            ).on(
+                                mkSQLJoin(
+                                    firstRel,
+                                    sourceCollection,
+                                    targetTableNameTransform = { _ -> aggregateAlias }
                                 )
-                                // Next hop joins from this target table
+                            )
+                            seenAggregateAliases.add(aggregateAlias)
+                        }
+                    }
+                }
+                is OrderByTarget.OrderByColumn -> {
+                    if (orderByElement.target.path.isNotEmpty()) {
+                        var currentTableName = sourceCollection
+                        orderByElement.target.path.forEach { pathElem ->
+                            val relationshipName = pathElem.relationship
+                            val relChain = listOf(currentTableName, relationshipName)
+
+                            if (!seenRelationChains.contains(relChain)) {
+                                seenRelationChains.add(relChain)
+
+                                val relationship = request.collection_relationships[relationshipName]
+                                    ?: throw Exception("Relationship not found")
+
+                                val orderByWhereCondition = expressionToCondition(
+                                    e = pathElem.predicate,
+                                    request,
+                                    relationship.target_collection
+                                )
+
+                                when (relationship.relationship_type) {
+                                    RelationshipType.Object -> {
+                                        select.leftJoin(
+                                            DSL.table(DSL.name(relationship.target_collection))
+                                        ).on(
+                                            mkSQLJoin(
+                                                relationship,
+                                                currentTableName
+                                            ).and(orderByWhereCondition)
+                                        )
+                                        currentTableName = relationship.target_collection
+                                    }
+                                    RelationshipType.Array -> {
+                                        select.leftJoin(
+                                            DSL.table(DSL.name(relationship.target_collection))
+                                        ).on(
+                                            mkSQLJoin(
+                                                relationship,
+                                                currentTableName
+                                            ).and(orderByWhereCondition)
+                                        )
+                                        currentTableName = relationship.target_collection
+                                    }
+                                }
+                            } else {
+                                val relationship = request.collection_relationships[relationshipName]
+                                    ?: throw Exception("Relationship not found")
                                 currentTableName = relationship.target_collection
                             }
-                            RelationshipType.Array -> {
-                                val aggregateAlias = "${relationshipName}_aggregate"
-                                select.leftJoin(
-                                    mkAggregateSubquery(
-                                        elem = orderByElement,
-                                        relationship = relationship,
-                                        whereCondition = orderByWhereCondition,
-                                    ).asTable(
-                                        DSL.name(aggregateAlias)
-                                    )
-                                ).on(
-                                    mkSQLJoin(
-                                        relationship,
-                                        currentTableName,
-                                        targetTableNameTransform = { _ -> aggregateAlias }
-                                    )
-                                )
-                                // Next hop joins from the aggregate alias
-                                currentTableName = aggregateAlias
-                            }
-                        }
-                    } else {
-                        // Even if the join already exists, advance the current table
-                        val relationship = request.collection_relationships[relationshipName]
-                            ?: throw Exception("Relationship not found")
-                        currentTableName = when (relationship.relationship_type) {
-                            RelationshipType.Object -> relationship.target_collection
-                            RelationshipType.Array -> "${relationshipName}_aggregate"
                         }
                     }
                 }
