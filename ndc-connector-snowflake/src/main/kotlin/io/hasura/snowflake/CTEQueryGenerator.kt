@@ -17,11 +17,23 @@ import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 
 
+/**
+ * Snowflake-specific helpers not covered by stock jOOQ DSL.
+ */
 object SnowflakeDSL {
+    /**
+     * Build an RLIKE condition in Snowflake.
+     */
     fun rlike(col: Field<Any>, field: Field<String>): Condition = DSL.condition("? rlike(?)", col, field)
 }
 
+/**
+ * Snowflake query generator using CTEs to structure nested selections and aggregates.
+ */
 object CTEQueryGenerator : BaseQueryGenerator() {
+    /**
+     * Build the top-level SELECT for a single request, aggregating ROWS_AND_AGGREGATES to a JSON array.
+     */
     override fun queryRequestToSQL(
         request: QueryRequest
     ): Select<*> {
@@ -30,7 +42,9 @@ object CTEQueryGenerator : BaseQueryGenerator() {
                 .from(buildSelections(request).asTable("data"))
     }
 
-
+    /**
+     * Build the foreach/variables version of the top-level SELECT, ordered by the VARS index.
+     */
     override fun forEachQueryRequestToSQL(request: QueryRequest): Select<*> {
         return buildCTEs(request, listOf(buildVarsCTE(request)))
             .select(
@@ -50,6 +64,9 @@ object CTEQueryGenerator : BaseQueryGenerator() {
             )
     }
 
+    /**
+     * Assemble the WITH clause including native query CTEs, variable CTE, and per-level CTEs.
+     */
     private fun buildCTEs(request: QueryRequest, varCTE: List<CommonTableExpression<*>> = emptyList()): WithStep {
         val withStep = mkNativeQueryCTEs(request)
             .with(varCTE)
@@ -58,10 +75,16 @@ object CTEQueryGenerator : BaseQueryGenerator() {
         return withStep
     }
 
+    /**
+     * Convert a dotted collection name into a jOOQ Name.
+     */
     private fun getCollectionAsjOOQName(collection: String): Name {
         return DSL.name(collection.split("."))
     }
 
+    /**
+     * Rewrites path-based column comparisons into nested EXISTS predicates for Snowflake-amenable SQL.
+     */
     private fun rewritePathComparisonsToExists(expression: Expression?): Expression? {
         fun rewrite(e: Expression): Expression {
             return when (e) {
@@ -105,6 +128,9 @@ object CTEQueryGenerator : BaseQueryGenerator() {
         return expression?.let { rewrite(it) }
     }
 
+    /**
+     * Snowflake overrides for REGEX/IREGEX comparisons; defers to base for others.
+     */
     override fun buildComparison(
         col: Field<Any>,
         operator: ApplyBinaryComparisonOperator,
@@ -132,6 +158,9 @@ object CTEQueryGenerator : BaseQueryGenerator() {
         }
     }
 
+    /**
+     * Build a single collection-level CTE: computes row_number for pagination, joins, filters, and optional VARS.
+     */
     private fun buildCTE(
         request: QueryRequest,
         relationship: Relationship?,
@@ -212,6 +241,9 @@ object CTEQueryGenerator : BaseQueryGenerator() {
         )
     }
 
+    /**
+     * DFS over the request tree, invoking elementFn at each level (root and related selections).
+     */
     private fun <T> forEachQueryLevelRecursively(
         request: QueryRequest,
         elementFn: (request: QueryRequest, rel: Relationship?, relSource: String?) -> T
@@ -245,10 +277,19 @@ object CTEQueryGenerator : BaseQueryGenerator() {
         return recur(request, null)
     }
 
-
+    /**
+     * Deterministic CTE name for a collection (dots replaced with underscores).
+     */
     private fun genCTEName(collection: String) = "${collection}_CTE".split(".").joinToString("_")
+
+    /**
+     * Deterministic row_number alias for a collection (dots replaced with underscores).
+     */
     private fun getRNName(collection: String) = "${collection}_RN".split(".").joinToString("_")
 
+    /**
+     * Build the JSON array of rows for the current request, honoring distinctness for object targets.
+     */
     private fun buildRows(request: QueryRequest): Field<*> {
         val isObjectTarget = isTargetOfObjRel(request)
         val agg = if (isObjectTarget) DSL::jsonArrayAggDistinct else DSL::jsonArrayAgg
@@ -261,11 +302,17 @@ object CTEQueryGenerator : BaseQueryGenerator() {
         )
     }
 
+    /**
+     * Build the per-variable array of rows using windowed array_agg partitioned by join keys and index.
+     */
     private fun buildVariableRows(request: QueryRequest): Field<*> {
         return DSL.arrayAgg(buildRow(request))
             .over(DSL.partitionBy(DSL.field(DSL.name(listOf(genCTEName(request.collection), INDEX)))))
     }
 
+    /**
+     * Build a single row JSON object, casting scalar columns as needed and embedding related selections.
+     */
     private fun buildRow(request: QueryRequest): Field<*> {
         return DSL.jsonObject(
             (request.query.fields?.map { (alias, field) ->
@@ -308,12 +355,18 @@ object CTEQueryGenerator : BaseQueryGenerator() {
         )
     }
 
+    /**
+     * True if the current collection is the target of an object relationship (affects distinctness/order).
+     */
     private fun isTargetOfObjRel(request: QueryRequest): Boolean {
         return request.collection_relationships.values.find {
             it.target_collection == request.collection && it.relationship_type == RelationshipType.Object
         } != null
     }
 
+    /**
+     * Default JSON for relationship fields when rows/aggregates are absent, to keep response shape stable.
+     */
     private fun setRelFieldDefaults(field: IRField.RelationshipField): Field<*> {
         return if (isAggOnlyRelationField(field))
             DSL.jsonObject("aggregates", setAggregateDefaults(field))
@@ -326,19 +379,34 @@ object CTEQueryGenerator : BaseQueryGenerator() {
     }
 
 
+    /**
+     * Whether the relationship selection requests any aggregates.
+     */
     private fun isAggRelationField(field: IRField.RelationshipField) = !field.query.aggregates.isNullOrEmpty()
 
+    /**
+     * Whether the relationship selection requests only aggregates (no fields).
+     */
     private fun isAggOnlyRelationField(field: IRField.RelationshipField) =
         field.query.fields == null && isAggRelationField(field)
 
+    /**
+     * Build default aggregate entries for a relationship when not present in the result set.
+     */
     private fun setAggregateDefaults(field: IRField.RelationshipField): Field<*> =
         getDefaultAggregateJsonEntries(field.query.aggregates)
 
+    /**
+     * Choose ORDER BY fields for rows aggregation; typically row_number unless object relationship.
+     */
     private fun setOrderBy(request: QueryRequest, isObjectTarget: Boolean): List<Field<*>> {
         return if (isObjectTarget /* || request.isNativeQuery() */) emptyList()
         else listOf(DSL.field(DSL.name(getRNName(request.collection))) as Field<*>)
     }
 
+    /**
+     * Construct the tree of SELECTs for each collection level and stitch them together via JOINs.
+     */
     private fun buildSelections(request: QueryRequest): Select<*> {
         val selects = forEachQueryLevelRecursively(request, CTEQueryGenerator::buildSelect)
 
@@ -392,6 +460,9 @@ object CTEQueryGenerator : BaseQueryGenerator() {
         return selects.first().third
     }
 
+    /**
+     * Build a single level SELECT that emits the JSON structure and join keys for that level.
+     */
     private fun buildSelect(
         request: QueryRequest,
         relationship: Relationship? = null,
@@ -438,6 +509,9 @@ object CTEQueryGenerator : BaseQueryGenerator() {
         )
     }
 
+    /**
+     * Helper to alias inner SELECTs based on collection and whether they are aggregate-only.
+     */
     private fun createAlias(collection: String, isAggregateOnly: Boolean): String {
         return "$collection${if (isAggregateOnly) "_AGG" else ""}".replace(".", "_")
     }

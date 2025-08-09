@@ -15,6 +15,9 @@ import org.jooq.Field
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 
+/**
+ * Supported database backends used to drive dialect-specific SQL and type handling.
+ */
 enum class DatabaseType {
     ORACLE,
     MYSQL,
@@ -22,20 +25,36 @@ enum class DatabaseType {
     TRINO
 }
 
+/**
+ * Base utilities for translating NDC IR requests into jOOQ SQL.
+ * Provides helpers for CTEs, joins, predicates, ordering, pagination, aggregates, and type mapping.
+ */
 abstract class BaseQueryGenerator : BaseGenerator {
 
+    /**
+     * Entry-point: routes variables/foreach requests to forEachQueryRequestToSQL, otherwise to queryRequestToSQL.
+     */
     fun handleRequest(request: QueryRequest): Select<*> {
         return if(request.isVariablesRequest())
             this.forEachQueryRequestToSQL(request)
         else this.queryRequestToSQL(request)
     }
 
+    /**
+     * Convert a single NDC QueryRequest to a jOOQ Select representing the result.
+     */
     abstract fun queryRequestToSQL(request: QueryRequest): Select<*>
 
+    /**
+     * Default mutation generator; connectors that support mutations should override.
+     */
     open fun mutationQueryRequestToSQL(request: QueryRequest): Select<*> {
         throw NotImplementedError("Mutation not supported for this data source")
     }
 
+    /**
+     * Scans the request (collections, relationships, predicates) to collect all collections backed by Native Queries.
+     */
     protected fun findAllNativeQueries(request: QueryRequest): Set<String> {
         val nativeQueries = mutableSetOf<String>()
         val config = ConnectorConfiguration.Loader.config
@@ -93,6 +112,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         return nativeQueries
     }
 
+    /**
+     * Builds a WITH clause materializing configured Native Queries as CTEs, parameterizing with literal arguments.
+     */
     fun mkNativeQueryCTEs(
         request: QueryRequest
     ): org.jooq.WithStep {
@@ -142,12 +164,18 @@ abstract class BaseQueryGenerator : BaseGenerator {
         return withStep
     }
 
+    /**
+     * Returns only ColumnField entries from the provided field map.
+     */
     fun getQueryColumnFields(fields: Map<String, IRField>): Map<String, IRField.ColumnField> {
         return fields
             .filterValues { it is IRField.ColumnField }
             .mapValues { it.value as IRField.ColumnField }
     }
 
+    /**
+     * Returns only RelationshipField entries from the provided field map.
+     */
     protected fun getQueryRelationFields(fields: Map<String, IRField>?): Map<String, IRField.RelationshipField> {
         return fields
             ?.filterValues { it is IRField.RelationshipField }
@@ -155,10 +183,16 @@ abstract class BaseQueryGenerator : BaseGenerator {
             ?: emptyMap()
     }
 
+    /**
+     * Extracts requested aggregate selections from the query.
+     */
     protected fun getAggregateFields(request: QueryRequest): Map<String, Aggregate> {
         return (request.query.aggregates ?: emptyMap())
     }
 
+    /**
+     * Builds join key fields for a relationship using the current collection name string.
+     */
     protected fun mkJoinKeyFields(
         rel: Relationship?,
         currentCollection: String,
@@ -171,6 +205,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         else emptyList()
     }
 
+    /**
+     * Builds join key fields for a relationship using a jOOQ Name for the current collection.
+     */
     protected fun mkJoinKeyFields(
         rel: Relationship?,
         currentCollection: org.jooq.Name,
@@ -186,6 +223,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         else emptyList()
     }
 
+    /**
+     * Creates a grouped subquery selecting the aggregate target and join keys for ORDER BY over aggregates.
+     */
     fun mkAggregateSubquery(
         elem: OrderByElement,
         relationship: Relationship,
@@ -223,6 +263,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         )
     }
 
+    /**
+     * Convenience overload that resolves order_by from the request and current collection.
+     */
     protected fun translateIROrderByField(
         request: QueryRequest,
         currentCollection: String = request.collection
@@ -234,6 +277,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
     // This method requires that order-by target fields which reference other tables
     // have been JOIN'ed to the main query table, aliased as their Relationship table name
     // TODO: Does this break if custom table names are used?
+    /**
+     * Translates IR order_by into jOOQ SortFields; supports column and aggregate targets across relationships.
+     */
     protected fun translateIROrderByField(
         orderBy: OrderBy?,
         currentCollection: String,
@@ -274,6 +320,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         } ?: emptyList()
     }
 
+    /**
+     * Ensures all JOINs needed by the predicate are present by walking column paths in comparisons/exists.
+     */
     protected fun addJoinsRequiredForPredicate(
         request: QueryRequest,
         select: SelectJoinStep<*>,
@@ -339,6 +388,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
 
     }
 
+    /**
+     * Builds an aggregate subquery for ORDER BY when the aggregate target is reached via a path of relationships.
+     */
     private fun mkAggregateSubqueryAcrossPath(
         elem: OrderByElement,
         request: QueryRequest
@@ -412,6 +464,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
             (selectStep as SelectWhereStep<Record>).groupBy(groupCols)
     }
 
+    /**
+     * Adds JOINs (including aggregate CTE joins) required by ORDER BY elements that reference related collections.
+     */
     protected fun addJoinsRequiredForOrderByFields(
         select: SelectJoinStep<*>,
         request: QueryRequest,
@@ -500,6 +555,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         }
     }
 
+    /**
+     * Converts an IR Aggregate into the corresponding jOOQ aggregate function.
+     */
     protected fun translateIRAggregateField(field: Aggregate): AggregateFunction<*> {
         return when (field) {
             is Aggregate.StarCount -> DSL.count()
@@ -527,16 +585,25 @@ abstract class BaseQueryGenerator : BaseGenerator {
         }
     }
 
+    /**
+     * Converts a map of aggregates into aliased jOOQ fields.
+     */
     protected fun translateIRAggregateFields(fields: Map<String, Aggregate>): List<Field<*>> {
         return fields.map { (alias, field) ->
             translateIRAggregateField(field).`as`(alias)
         }
     }
 
+    /**
+     * Returns true when only aggregates are requested (no row fields).
+     */
     protected fun isAggregateOnlyRequest(request: QueryRequest) =
         getQueryColumnFields(request.query.fields ?: emptyMap()).isEmpty() &&
                 getAggregateFields(request).isNotEmpty()
 
+    /**
+     * Builds the outer JSON object with optional "rows" and/or "aggregates" depending on the request.
+     */
     protected fun buildOuterStructure(
         request: QueryRequest,
         buildRows: (request: QueryRequest) -> Field<*>,
@@ -566,6 +633,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         return DSL.jsonObject(entries)
     }
 
+    /**
+     * Helper to produce the rows payload using the provided builder.
+     */
     private fun getRows(
         request: QueryRequest,
         buildRows: (request: QueryRequest) -> Field<*>
@@ -573,6 +643,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         return buildRows(request)
     }
 
+    /**
+     * Helper to produce the aggregates payload using the provided builder.
+     */
     private fun getAggregates(
         request: QueryRequest,
         buildAggregates: (request: QueryRequest) -> Field<*>
@@ -582,6 +655,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         }
     }
 
+    /**
+     * Default JSON object for aggregates: maps alias to corresponding jOOQ aggregate function.
+     */
     protected open fun buildAggregates(request: QueryRequest): Field<*> {
         return DSL.jsonObject(
             getAggregateFields(request).map { (alias, aggregate) ->
@@ -593,6 +669,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         )
     }
 
+    /**
+     * Produces a condition that filters a windowed row_number() for limit/offset semantics.
+     */
     protected fun mkOffsetLimit(
         request: QueryRequest,
         rowNumber: Field<Any> = DSL.field(DSL.name("rn"))
@@ -619,6 +698,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         }
     }
 
+    /**
+     * Builds a VARS CTE from the request.variables for foreach/variables requests.
+     */
     protected fun buildVarsCTE(request: QueryRequest, suffix: String = ""): CommonTableExpression<*> {
         if (request.variables.isNullOrEmpty()) throw Exception("No variables found")
 
@@ -643,8 +725,14 @@ abstract class BaseQueryGenerator : BaseGenerator {
     }
 
     //
+    /**
+     * Convert a foreach/variables QueryRequest into a jOOQ Select that yields one result per variable set.
+     */
     abstract fun forEachQueryRequestToSQL(request: QueryRequest): Select<*>
 
+    /**
+     * Builds the effective WHERE by combining root arguments (only at root) and the request predicate.
+     */
     protected fun getWhereConditions(
         request: QueryRequest,
         collection: String = request.collection,
@@ -662,6 +750,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
             } ?: DSL.noCondition()))
     }
 
+    /**
+     * Produces default aggregate JSON entries used when related selections are absent to keep shape stable.
+     */
     protected fun getDefaultAggregateJsonEntries(aggregates: Map<String, Aggregate>?): Field<*> {
         val defaults = aggregates?.map { (alias, agg) ->
             DSL.jsonEntry(
@@ -685,6 +776,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         const val ROWS_AND_AGGREGATES = "rows_and_aggregates"
     }
 
+    /**
+     * Casts a field to a driver-appropriate SQL type for the given NDC scalar (dialect-specific where needed).
+     */
     fun castToSQLDataType(databaseType: DatabaseType, field: Field<*>, type: NDCScalar): Field<*> {
         return when (type) {
             NDCScalar.INT64, NDCScalar.BIGINTEGER, NDCScalar.BIGDECIMAL ->
@@ -702,6 +796,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         }
     }
 
+    /**
+     * Maps NDCScalar to the closest jOOQ DataType for SQL casting/parameters.
+     */
     fun ndcScalarTypeToSQLDataType(scalarType: NDCScalar): DataType<out Any> = when (scalarType) {
         // Boolean
         NDCScalar.BOOLEAN -> SQLDataType.BOOLEAN
@@ -743,6 +840,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         else -> SQLDataType.CLOB
     }
 
+    /**
+     * Resolves a column's NDC scalar type (from tables or native queries) and returns both jOOQ DataType and NDCScalar.
+     */
     fun columnTypeTojOOQType(mapScalarType: (String, Int?, Int?) -> NDCScalar, collection: String, field: ColumnField): Pair<org.jooq.DataType<out Any>, NDCScalar> {
         val connectorConfig = ConnectorConfiguration.Loader.config
 
