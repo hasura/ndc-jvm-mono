@@ -123,7 +123,7 @@ if [ "$NO_RUN" = true ]; then
     echo "Skipping connector execution (--no-run flag used)"
     echo "$CONNECTOR setup complete! (connector not started)"
 else
-    echo "Running make run-$CONNECTOR from root directory..."
-    make "run-$CONNECTOR" || { echo "make run-$CONNECTOR failed"; exit 1; }
+    echo "Running make run-$CONNECTOR-connector from root directory..."
+    make "run-$CONNECTOR"-connector || { echo "make run-$CONNECTOR-connector failed"; exit 1; }
     echo "$CONNECTOR setup complete!"
 fi
