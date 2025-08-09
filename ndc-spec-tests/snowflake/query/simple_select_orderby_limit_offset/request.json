@@ -1,0 +1,28 @@
+{
+  "collection": "ALBUM",
+  "query": {
+    "fields": {
+      "Title": {
+        "type": "column",
+        "column": "TITLE",
+        "arguments": {}
+      }
+    },
+    "order_by": {
+      "elements": [
+        {
+          "order_direction": "asc",
+          "target": {
+            "type": "column",
+            "name": "ALBUMID",
+            "path": []
+          }
+        }
+      ]
+    },
+    "limit": 5,
+    "offset": 3
+  },
+  "arguments": {},
+  "collection_relationships": {}
+}
