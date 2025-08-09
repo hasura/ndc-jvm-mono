@@ -12,8 +12,7 @@ jobs:
       # Don't stop testing other connectors if one fails
       fail-fast: false
       matrix:
-        # connector: [ snowflake, mysql ]
-        connector: [ snowflake ]
+        connector: [ snowflake, mysql ]
         include:
           - connector: snowflake
             jdbc_url_env: SNOWFLAKE_JDBC_URL
