@@ -46,7 +46,6 @@ class SnowflakeDataConnectorService @Inject constructor(
     override fun handleQuery(request: QueryRequest): List<RowSet> {
         val dslCtx = mkDSLCtx()
 
-        // If the query references variables but no variable values are supplied, return empty results
         val hasVariables = objectMapper.writeValueAsString(request).contains("\"type\":\"variable\"")
         if (hasVariables && request.variables.isNullOrEmpty()) {
             return emptyList()
