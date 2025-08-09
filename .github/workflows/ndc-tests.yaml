@@ -12,35 +12,34 @@ jobs:
       # Don't stop testing other connectors if one fails
       fail-fast: false
       matrix:
-        # connector: [ snowflake, mysql ]
-        connector: [ snowflake ]
+        connector: [ snowflake, mysql ]
         include:
           - connector: snowflake
             jdbc_url_env: SNOWFLAKE_JDBC_URL
             config_command: make run-snowflake-cli-introspection
-            run_command: make run-snowflake
+            run_command: make run-snowflake-connector
             test_dir: ndc-spec-tests/snowflake
             port: 8080
-          # - connector: mysql
-          #   jdbc_url_env: MYSQL_JDBC_URL
-          #   config_command: make run-mysql-introspection
-          #   run_command: make run-mysql
-          #   test_dir: ndc-tests/mysql
-          #   port: 8088
+          - connector: mysql
+            jdbc_url_env: MYSQL_JDBC_URL
+            config_command: make run-mysql-cli-introspection
+            run_command: make run-mysql-connector
+            test_dir: ndc-spec-tests/mysql
+            port: 8080
 
-    # services:
-    #   mysql:
-    #     image: mysql:8.4
-    #     env:
-    #       MYSQL_ROOT_PASSWORD: Password123
-    #     ports:
-    #       - 3306:3306
-    #     options: >-
-    #       --health-cmd="mysqladmin ping -h localhost -u root -pPassword123"
-    #       --health-interval=5s
-    #       --health-timeout=10s
-    #       --health-retries=10
-    #       --health-start-period=20s
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: Password123
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -u root -pPassword123"
+          --health-interval=5s
+          --health-timeout=10s
+          --health-retries=10
+          --health-start-period=20s
 
     steps:
       - name: Checkout repo
@@ -58,37 +57,36 @@ jobs:
           chmod +x ndc-test
           sudo mv ndc-test /usr/local/bin/
 
-      # - name: Install MySQL client
-      #   if: matrix.connector == 'mysql'
-      #   run: |
-      #     sudo apt-get update
-      #     sudo apt-get install -y mysql-client
+      - name: Install MySQL client
+        if: matrix.connector == 'mysql'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
 
-      # - name: Initialize MySQL with Chinook database
-      #   if: matrix.connector == 'mysql'
-      #   run: |
-      #     echo "Waiting for MySQL to be fully initialized..."
+      - name: Initialize MySQL with Chinook database
+        if: matrix.connector == 'mysql'
+        run: |
+          echo "Waiting for MySQL to be fully initialized..."
 
-      #     # Wait for MySQL to be ready using TCP connection (not socket)
-      #     timeout 120 bash -c 'until mysql -h 127.0.0.1 -P 3306 -u root -pPassword123 -e "SELECT 1"; do sleep 2; done'
+          # Wait for MySQL to be ready using TCP connection (not socket)
+          timeout 120 bash -c 'until mysql -h 127.0.0.1 -P 3306 -u root -pPassword123 -e "SELECT 1"; do sleep 2; done'
 
-      #     # Import Chinook database using TCP connection
-      #     mysql -h 127.0.0.1 -P 3306 -u root -pPassword123 < ${{ github.workspace }}/docker/mysql/chinook.sql
+          # Import Chinook database using TCP connection
+          mysql -h 127.0.0.1 -P 3306 -u root -pPassword123 < ${{ github.workspace }}/ndc-spec-tests/mysql/chinook.sql
 
-      #     # Verify Chinook database is accessible
-      #     mysql -h 127.0.0.1 -P 3306 -u root -pPassword123 -e "SHOW DATABASES;" | grep -q Chinook
-      #     echo "MySQL is ready with Chinook database."
+          # Verify Chinook database is accessible
+          mysql -h 127.0.0.1 -P 3306 -u root -pPassword123 -e "SHOW DATABASES;" | grep -q Chinook
+          echo "MySQL is ready with Chinook database."
 
       - name: Set JDBC_URL
         run: |
-          # if [[ "${{ matrix.connector }}" == "mysql" ]]; then
-          #   # Set MySQL JDBC URL to use the MySQL service
-          #   echo "JDBC_URL=jdbc:mysql://localhost:3306/Chinook?user=root&password=Password123" >> $GITHUB_ENV
-          # else
-          #   # Keep JDBC_URL the same for other connectors
-          #   echo "JDBC_URL=${{ secrets[matrix.jdbc_url_env] }}" >> $GITHUB_ENV
-          # fi
-          echo "JDBC_URL=${{ secrets[matrix.jdbc_url_env] }}" >> $GITHUB_ENV
+          if [[ "${{ matrix.connector }}" == "mysql" ]]; then
+            # Set MySQL JDBC URL to use the MySQL service
+            echo "JDBC_URL=jdbc:mysql://localhost:3306/Chinook?user=root&password=Password123" >> $GITHUB_ENV
+          else
+            # Keep JDBC_URL the same for other connectors
+            echo "JDBC_URL=${{ secrets[matrix.jdbc_url_env] }}" >> $GITHUB_ENV
+          fi
 
       - name: Generate introspection
         env:

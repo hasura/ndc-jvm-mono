@@ -398,11 +398,17 @@ object JsonQueryGenerator : BaseQueryGenerator() {
 
                             RelationshipType.Array -> {
                                 val aggregateTableAlias = "${relationshipName}_aggregate"
+                                val orderByWhereCondition = expressionToCondition(
+                                    pathElem.predicate,
+                                    request.copy(
+                                        collection = relationship.target_collection,
+                                    )
+                                )
                                 select.leftJoin(
                                     mkAggregateSubquery2(
                                         elem = orderByElement,
                                         relationship = relationship,
-                                        whereCondition = DSL.noCondition(),
+                                        whereCondition = orderByWhereCondition,
                                         forwardJoinKeys = forwardJoinKeys,
                                     ).asTable(
                                         DSL.name(aggregateTableAlias)
@@ -419,8 +425,8 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                             }
                         }
 
-                        // Add predicate condition for the path element
-                        if (pathElem.predicate != Expression.And(emptyList())) {
+                        // Add predicate condition for the path element only for object relationships; for aggregates it's handled inside the subquery
+                        if (pathElem.predicate != Expression.And(emptyList()) && relationship.relationship_type == RelationshipType.Object) {
                             select.where(
                                 expressionToCondition(
                                     pathElem.predicate,

@@ -1,0 +1,1709 @@
+{
+  "scalar_types": {
+    "BOOLEAN": {
+      "representation": {
+        "type": "boolean"
+      },
+      "aggregate_functions": {},
+      "comparison_operators": {
+        "_eq": {
+          "type": "equal"
+        }
+      }
+    },
+    "STRING": {
+      "representation": {
+        "type": "string"
+      },
+      "aggregate_functions": {
+        "min": {
+          "result_type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "max": {
+          "result_type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        }
+      },
+      "comparison_operators": {
+        "_eq": {
+          "type": "equal"
+        },
+        "_contains": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "_like": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "INT8": {
+      "representation": {
+        "type": "int8"
+      },
+      "aggregate_functions": {
+        "avg": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "sum": {
+          "result_type": {
+            "type": "named",
+            "name": "INT64"
+          }
+        },
+        "min": {
+          "result_type": {
+            "type": "named",
+            "name": "INT8"
+          }
+        },
+        "max": {
+          "result_type": {
+            "type": "named",
+            "name": "INT8"
+          }
+        }
+      },
+      "comparison_operators": {
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT8"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT8"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT8"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT8"
+          }
+        },
+        "_eq": {
+          "type": "equal"
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "INT16": {
+      "representation": {
+        "type": "int16"
+      },
+      "aggregate_functions": {
+        "avg": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "sum": {
+          "result_type": {
+            "type": "named",
+            "name": "INT64"
+          }
+        },
+        "min": {
+          "result_type": {
+            "type": "named",
+            "name": "INT16"
+          }
+        },
+        "max": {
+          "result_type": {
+            "type": "named",
+            "name": "INT16"
+          }
+        }
+      },
+      "comparison_operators": {
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT16"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT16"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT16"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT16"
+          }
+        },
+        "_eq": {
+          "type": "equal"
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "INT32": {
+      "representation": {
+        "type": "int32"
+      },
+      "aggregate_functions": {
+        "avg": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "sum": {
+          "result_type": {
+            "type": "named",
+            "name": "INT64"
+          }
+        },
+        "min": {
+          "result_type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "max": {
+          "result_type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        }
+      },
+      "comparison_operators": {
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "_eq": {
+          "type": "equal"
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "INT64": {
+      "representation": {
+        "type": "int64"
+      },
+      "aggregate_functions": {
+        "avg": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "sum": {
+          "result_type": {
+            "type": "named",
+            "name": "INT64"
+          }
+        },
+        "min": {
+          "result_type": {
+            "type": "named",
+            "name": "INT64"
+          }
+        },
+        "max": {
+          "result_type": {
+            "type": "named",
+            "name": "INT64"
+          }
+        }
+      },
+      "comparison_operators": {
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT64"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT64"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT64"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT64"
+          }
+        },
+        "_eq": {
+          "type": "equal"
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "FLOAT32": {
+      "representation": {
+        "type": "float32"
+      },
+      "aggregate_functions": {
+        "avg": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "sum": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT32"
+          }
+        },
+        "min": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT32"
+          }
+        },
+        "max": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT32"
+          }
+        }
+      },
+      "comparison_operators": {
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "FLOAT32"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "FLOAT32"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "FLOAT32"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "FLOAT32"
+          }
+        },
+        "_eq": {
+          "type": "equal"
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "FLOAT64": {
+      "representation": {
+        "type": "float64"
+      },
+      "aggregate_functions": {
+        "avg": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "sum": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "min": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "max": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        }
+      },
+      "comparison_operators": {
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "_eq": {
+          "type": "equal"
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "BIGINTEGER": {
+      "representation": {
+        "type": "biginteger"
+      },
+      "aggregate_functions": {
+        "avg": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "sum": {
+          "result_type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "min": {
+          "result_type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "max": {
+          "result_type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        }
+      },
+      "comparison_operators": {
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "_eq": {
+          "type": "equal"
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "BIGDECIMAL": {
+      "representation": {
+        "type": "bigdecimal"
+      },
+      "aggregate_functions": {
+        "avg": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "sum": {
+          "result_type": {
+            "type": "named",
+            "name": "BIGDECIMAL"
+          }
+        },
+        "min": {
+          "result_type": {
+            "type": "named",
+            "name": "BIGDECIMAL"
+          }
+        },
+        "max": {
+          "result_type": {
+            "type": "named",
+            "name": "BIGDECIMAL"
+          }
+        }
+      },
+      "comparison_operators": {
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "BIGDECIMAL"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "BIGDECIMAL"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "BIGDECIMAL"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "BIGDECIMAL"
+          }
+        },
+        "_eq": {
+          "type": "equal"
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "UUID": {
+      "representation": {
+        "type": "uuid"
+      },
+      "aggregate_functions": {},
+      "comparison_operators": {
+        "_eq": {
+          "type": "equal"
+        }
+      }
+    },
+    "DATE": {
+      "representation": {
+        "type": "date"
+      },
+      "aggregate_functions": {},
+      "comparison_operators": {
+        "_eq": {
+          "type": "equal"
+        },
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "DATE"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "DATE"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "DATE"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "DATE"
+          }
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "TIMESTAMP": {
+      "representation": {
+        "type": "timestamp"
+      },
+      "aggregate_functions": {},
+      "comparison_operators": {
+        "_eq": {
+          "type": "equal"
+        },
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "TIMESTAMP"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "TIMESTAMP"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "TIMESTAMP"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "TIMESTAMP"
+          }
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "TIMESTAMPTZ": {
+      "representation": {
+        "type": "timestamptz"
+      },
+      "aggregate_functions": {},
+      "comparison_operators": {
+        "_eq": {
+          "type": "equal"
+        },
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "TIMESTAMPTZ"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "TIMESTAMPTZ"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "TIMESTAMPTZ"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "TIMESTAMPTZ"
+          }
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "GEOGRAPHY": {
+      "representation": {
+        "type": "geography"
+      },
+      "aggregate_functions": {},
+      "comparison_operators": {
+        "_eq": {
+          "type": "equal"
+        }
+      }
+    },
+    "GEOMETRY": {
+      "representation": {
+        "type": "geometry"
+      },
+      "aggregate_functions": {},
+      "comparison_operators": {
+        "_eq": {
+          "type": "equal"
+        }
+      }
+    },
+    "BYTES": {
+      "representation": {
+        "type": "bytes"
+      },
+      "aggregate_functions": {},
+      "comparison_operators": {
+        "_eq": {
+          "type": "equal"
+        }
+      }
+    },
+    "JSON": {
+      "representation": {
+        "type": "json"
+      },
+      "aggregate_functions": {},
+      "comparison_operators": {
+        "_eq": {
+          "type": "equal"
+        }
+      }
+    }
+  },
+  "object_types": {
+    "Album": {
+      "description": "",
+      "fields": {
+        "AlbumId": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "ArtistId": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "Title": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        }
+      }
+    },
+    "Artist": {
+      "description": "",
+      "fields": {
+        "ArtistId": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "Name": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "Customer": {
+      "description": "",
+      "fields": {
+        "Address": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "City": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "Company": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "Country": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "CustomerId": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "Email": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "Fax": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "FirstName": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "LastName": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "Phone": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "PostalCode": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "State": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "SupportRepId": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "INT32"
+            }
+          }
+        }
+      }
+    },
+    "Employee": {
+      "description": "",
+      "fields": {
+        "Address": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "BirthDate": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "TIMESTAMP"
+            }
+          }
+        },
+        "City": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "Country": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "Email": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "EmployeeId": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "Fax": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "FirstName": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "HireDate": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "TIMESTAMP"
+            }
+          }
+        },
+        "LastName": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "Phone": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "PostalCode": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "ReportsTo": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "INT32"
+            }
+          }
+        },
+        "State": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "Title": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "Genre": {
+      "description": "",
+      "fields": {
+        "GenreId": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "Name": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "Invoice": {
+      "description": "",
+      "fields": {
+        "BillingAddress": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "BillingCity": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "BillingCountry": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "BillingPostalCode": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "BillingState": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "CustomerId": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "InvoiceDate": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "TIMESTAMP"
+          }
+        },
+        "InvoiceId": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "Total": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGDECIMAL"
+          }
+        }
+      }
+    },
+    "InvoiceLine": {
+      "description": "",
+      "fields": {
+        "InvoiceId": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "InvoiceLineId": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "Quantity": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "TrackId": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "UnitPrice": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGDECIMAL"
+          }
+        }
+      }
+    },
+    "MediaType": {
+      "description": "",
+      "fields": {
+        "MediaTypeId": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "Name": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "Playlist": {
+      "description": "",
+      "fields": {
+        "Name": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "PlaylistId": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        }
+      }
+    },
+    "PlaylistTrack": {
+      "description": "",
+      "fields": {
+        "PlaylistId": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "TrackId": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        }
+      }
+    },
+    "Track": {
+      "description": "",
+      "fields": {
+        "AlbumId": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "INT32"
+            }
+          }
+        },
+        "Bytes": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "INT32"
+            }
+          }
+        },
+        "Composer": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "GenreId": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "INT32"
+            }
+          }
+        },
+        "MediaTypeId": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "Milliseconds": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "Name": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "TrackId": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "UnitPrice": {
+          "description": "",
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGDECIMAL"
+          }
+        }
+      }
+    }
+  },
+  "collections": [
+    {
+      "name": "Album",
+      "description": "",
+      "arguments": {},
+      "type": "Album",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "Album_PK": {
+          "unique_columns": [
+            "AlbumId"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_AlbumArtistId": {
+          "column_mapping": {
+            "ArtistId": "ArtistId"
+          },
+          "foreign_collection": "Artist"
+        }
+      }
+    },
+    {
+      "name": "Artist",
+      "description": "",
+      "arguments": {},
+      "type": "Artist",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "Artist_PK": {
+          "unique_columns": [
+            "ArtistId"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "Customer",
+      "description": "",
+      "arguments": {},
+      "type": "Customer",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "Customer_PK": {
+          "unique_columns": [
+            "CustomerId"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_CustomerSupportRepId": {
+          "column_mapping": {
+            "SupportRepId": "EmployeeId"
+          },
+          "foreign_collection": "Employee"
+        }
+      }
+    },
+    {
+      "name": "Employee",
+      "description": "",
+      "arguments": {},
+      "type": "Employee",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "Employee_PK": {
+          "unique_columns": [
+            "EmployeeId"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_EmployeeReportsTo": {
+          "column_mapping": {
+            "ReportsTo": "EmployeeId"
+          },
+          "foreign_collection": "Employee"
+        }
+      }
+    },
+    {
+      "name": "Genre",
+      "description": "",
+      "arguments": {},
+      "type": "Genre",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "Genre_PK": {
+          "unique_columns": [
+            "GenreId"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "Invoice",
+      "description": "",
+      "arguments": {},
+      "type": "Invoice",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "Invoice_PK": {
+          "unique_columns": [
+            "InvoiceId"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_InvoiceCustomerId": {
+          "column_mapping": {
+            "CustomerId": "CustomerId"
+          },
+          "foreign_collection": "Customer"
+        }
+      }
+    },
+    {
+      "name": "InvoiceLine",
+      "description": "",
+      "arguments": {},
+      "type": "InvoiceLine",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "InvoiceLine_PK": {
+          "unique_columns": [
+            "InvoiceLineId"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_InvoiceLineTrackId": {
+          "column_mapping": {
+            "TrackId": "TrackId"
+          },
+          "foreign_collection": "Track"
+        },
+        "FK_InvoiceLineInvoiceId": {
+          "column_mapping": {
+            "InvoiceId": "InvoiceId"
+          },
+          "foreign_collection": "Invoice"
+        }
+      }
+    },
+    {
+      "name": "MediaType",
+      "description": "",
+      "arguments": {},
+      "type": "MediaType",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "MediaType_PK": {
+          "unique_columns": [
+            "MediaTypeId"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "Playlist",
+      "description": "",
+      "arguments": {},
+      "type": "Playlist",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "Playlist_PK": {
+          "unique_columns": [
+            "PlaylistId"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "PlaylistTrack",
+      "description": "",
+      "arguments": {},
+      "type": "PlaylistTrack",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "PlaylistTrack_PK": {
+          "unique_columns": [
+            "PlaylistId",
+            "TrackId"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_PlaylistTrackTrackId": {
+          "column_mapping": {
+            "TrackId": "TrackId"
+          },
+          "foreign_collection": "Track"
+        },
+        "FK_PlaylistTrackPlaylistId": {
+          "column_mapping": {
+            "PlaylistId": "PlaylistId"
+          },
+          "foreign_collection": "Playlist"
+        }
+      }
+    },
+    {
+      "name": "Track",
+      "description": "",
+      "arguments": {},
+      "type": "Track",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "Track_PK": {
+          "unique_columns": [
+            "TrackId"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_TrackAlbumId": {
+          "column_mapping": {
+            "AlbumId": "AlbumId"
+          },
+          "foreign_collection": "Album"
+        },
+        "FK_TrackGenreId": {
+          "column_mapping": {
+            "GenreId": "GenreId"
+          },
+          "foreign_collection": "Genre"
+        },
+        "FK_TrackMediaTypeId": {
+          "column_mapping": {
+            "MediaTypeId": "MediaTypeId"
+          },
+          "foreign_collection": "MediaType"
+        }
+      }
+    }
+  ],
+  "functions": [],
+  "procedures": []
+}
