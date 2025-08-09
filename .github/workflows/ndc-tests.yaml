@@ -20,7 +20,7 @@ jobs:
             config_command: make run-snowflake-cli-introspection
             run_command: make run-snowflake
             test_dir: ndc-spec-tests/snowflake
-            port: 8081
+            port: 8080
             native_query_tests: true
             relational_tests: true
           # - connector: mysql
