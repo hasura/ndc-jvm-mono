@@ -1,0 +1,101 @@
+{
+  "collection": "ARTIST",
+  "query": {
+    "fields": {
+      "Name": {
+        "type": "column",
+        "column": "NAME",
+        "arguments": {}
+      }
+    },
+    "predicate": {
+      "type": "or",
+      "expressions": [
+        {
+          "type": "binary_comparison_operator",
+          "column": {
+            "type": "column",
+            "name": "NAME",
+            "path": [
+              {
+                "relationship": "Artist_Albums",
+                "arguments": {},
+                "predicate": {
+                  "type": "and",
+                  "expressions": []
+                }
+              },
+              {
+                "relationship": "Albums_Tracks",
+                "arguments": {},
+                "predicate": {
+                  "type": "and",
+                  "expressions": []
+                }
+              }
+            ]
+          },
+          "operator": "_like",
+          "value": {
+            "type": "scalar",
+            "value": "%e%"
+          }
+        },
+        {
+          "type": "binary_comparison_operator",
+          "column": {
+            "type": "column",
+            "name": "TITLE",
+            "path": [
+              {
+                "relationship": "Artist_Albums",
+                "arguments": {},
+                "predicate": {
+                  "type": "and",
+                  "expressions": []
+                }
+              }
+            ]
+          },
+          "operator": "_like",
+          "value": {
+            "type": "scalar",
+            "value": "%e%"
+          }
+        }
+      ]
+    },
+    "order_by": {
+      "elements": [
+        {
+          "order_direction": "asc",
+          "target": {
+            "type": "column",
+            "name": "ARTISTID",
+            "path": []
+          }
+        }
+      ]
+    },
+    "limit": 5
+  },
+  "arguments": {},
+  "collection_relationships": {
+    "Artist_Albums": {
+      "arguments": {},
+      "column_mapping": {
+        "ARTISTID": "ARTISTID"
+      },
+      "relationship_type": "array",
+      "target_collection": "ALBUM"
+    },
+    "Albums_Tracks": {
+      "arguments": {},
+      "column_mapping": {
+        "ALBUMID": "ALBUMID"
+      },
+      "relationship_type": "array",
+      "target_collection": "TRACK"
+    }
+  }
+}

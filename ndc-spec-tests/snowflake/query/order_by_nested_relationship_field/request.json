@@ -1,0 +1,69 @@
+{
+  "collection": "TRACK",
+  "query": {
+    "fields": {
+      "Name": {
+        "type": "column",
+        "column": "NAME",
+        "arguments": {}
+      }
+    },
+    "limit": 5,
+    "order_by": {
+      "elements": [
+        {
+          "order_direction": "asc",
+          "target": {
+            "type": "column",
+            "name": "NAME",
+            "path": [
+              {
+                "relationship": "TrackAlbum",
+                "arguments": {},
+                "predicate": {
+                  "type": "and",
+                  "expressions": []
+                }
+              },
+              {
+                "relationship": "AlbumArtist",
+                "arguments": {},
+                "predicate": {
+                  "type": "and",
+                  "expressions": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "order_direction": "asc",
+          "target": {
+            "type": "column",
+            "name": "NAME",
+            "path": []
+          }
+        }
+      ]
+    }
+  },
+  "arguments": {},
+  "collection_relationships": {
+    "AlbumArtist": {
+      "column_mapping": {
+        "ARTISTID": "ARTISTID"
+      },
+      "relationship_type": "object",
+      "target_collection": "ARTIST",
+      "arguments": {}
+    },
+    "TrackAlbum": {
+      "column_mapping": {
+        "ALBUMID": "ALBUMID"
+      },
+      "relationship_type": "object",
+      "target_collection": "ALBUM",
+      "arguments": {}
+    }
+  }
+}

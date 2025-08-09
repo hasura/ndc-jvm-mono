@@ -6,7 +6,6 @@ run-mysql-tests:
 	cd ../ndc-spec && \
 	cargo run --bin ndc-test replay --endpoint http://localhost:8080 --snapshots-dir ../ndc-jvm-mono/ndc-spec-tests/mysql
 
-
 run-trino-connector:
 	export HASURA_CONFIGURATION_DIRECTORY=$(shell pwd)/ndc-connector-trino && \
 	./gradlew :ndc-connector-trino:quarkusDev --console=plain
@@ -21,16 +20,19 @@ jdbc:trino://localhost:8090?user=trino \
 --fully-qualify-names=true"
 
 run-snowflake-cli-introspection:
-ifndef SNOWFLAKE_JDBC_URL
-	$(error SNOWFLAKE_JDBC_URL is not set)
+ifndef JDBC_URL
+	$(error JDBC_URL is not set)
 endif
-	HASURA_CONFIGURATION_DIRECTORY=/home/user/projects/ndc-jvm-mono/ndc-connector-snowflake \
+	HASURA_CONFIGURATION_DIRECTORY=./configs/snowflake \
 	./gradlew :ndc-cli:run --args="\
-update \
-$(SNOWFLAKE_JDBC_URL) \
---database=SNOWFLAKE \
---schemas=PUBLIC \
---fully-qualify-names=false"
+update $(JDBC_URL) \
+--fully-qualify-names=false \
+--outfile '../configs/snowflake/configuration.json' \
+--database=SNOWFLAKE"
+
+run-snowflake-connector:
+	export HASURA_CONFIGURATION_DIRECTORY=$(shell pwd)/configs/snowflake && \
+	./gradlew :ndc-connector-snowflake:quarkusDev --console=plain
 
 run-oracle-connector:
 	export HASURA_CONFIGURATION_DIRECTORY=$(shell pwd)/ndc-connector-oracle && \

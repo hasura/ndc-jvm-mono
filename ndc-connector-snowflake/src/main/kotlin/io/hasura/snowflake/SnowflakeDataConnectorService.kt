@@ -46,7 +46,11 @@ class SnowflakeDataConnectorService @Inject constructor(
     override fun handleQuery(request: QueryRequest): List<RowSet> {
         val dslCtx = mkDSLCtx()
 
-        val query = if (!request.variables.isNullOrEmpty()) {
+        if (request.variables?.isEmpty() == true) {
+            return emptyList()
+        }
+
+        val query = if (request.variables?.isNotEmpty() == true) {
             CTEQueryGenerator.forEachQueryRequestToSQL(request)
         } else {
             CTEQueryGenerator.queryRequestToSQL(request)

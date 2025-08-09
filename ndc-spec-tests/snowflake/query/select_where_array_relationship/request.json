@@ -1,0 +1,83 @@
+{
+  "collection": "ARTIST",
+  "query": {
+    "fields": {
+      "title": {
+        "type": "column",
+        "column": "NAME",
+        "arguments": {}
+      },
+      "albums": {
+        "type": "relationship",
+        "relationship": "Artist_Albums",
+        "arguments": {},
+        "query": {
+          "fields": {
+            "title": {
+              "type": "column",
+              "column": "TITLE",
+              "arguments": {}
+            }
+          },
+          "order_by": {
+            "elements": [
+              {
+                "order_direction": "asc",
+                "target": {
+                  "type": "column",
+                  "name": "ALBUMID",
+                  "path": []
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "predicate": {
+      "type": "binary_comparison_operator",
+      "column": {
+        "type": "column",
+        "name": "TITLE",
+        "path": [
+          {
+            "relationship": "Artist_Albums",
+            "arguments": {},
+            "predicate": {
+              "type": "and",
+              "expressions": []
+            }
+          }
+        ]
+      },
+      "operator": "_like",
+      "value": {
+        "type": "scalar",
+        "value": "Supernatural"
+      }
+    },
+    "order_by": {
+      "elements": [
+        {
+          "order_direction": "asc",
+          "target": {
+            "type": "column",
+            "name": "ARTISTID",
+            "path": []
+          }
+        }
+      ]
+    }
+  },
+  "arguments": {},
+  "collection_relationships": {
+    "Artist_Albums": {
+      "arguments": {},
+      "column_mapping": {
+        "ARTISTID": "ARTISTID"
+      },
+      "relationship_type": "array",
+      "target_collection": "ALBUM"
+    }
+  }
+}

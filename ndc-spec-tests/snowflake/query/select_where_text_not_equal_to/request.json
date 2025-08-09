@@ -1,0 +1,46 @@
+{
+  "collection": "ALBUM",
+  "query": {
+    "fields": {
+      "AlbumId": {
+        "type": "column",
+        "column": "ALBUMID",
+        "arguments": {}
+      },
+      "Title": {
+        "type": "column",
+        "column": "TITLE",
+        "arguments": {}
+      }
+    },
+    "predicate": {
+      "type": "binary_comparison_operator",
+      "column": {
+        "type": "column",
+        "name": "TITLE",
+        "path": []
+      },
+      "operator": "_neq",
+      "value": {
+        "type": "scalar",
+        "value": "Houses Of The Holy"
+      }
+    },
+    "order_by": {
+      "elements": [
+        {
+          "order_direction": "asc",
+          "target": {
+            "type": "column",
+            "name": "ALBUMID",
+            "path": []
+          }
+        }
+      ]
+    },
+    "limit": 5,
+    "offset": 125
+  },
+  "arguments": {},
+  "collection_relationships": {}
+}

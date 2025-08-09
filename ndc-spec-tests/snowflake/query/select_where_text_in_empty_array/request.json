@@ -1,0 +1,32 @@
+{
+  "collection": "ALBUM",
+  "query": {
+    "fields": {
+      "AlbumId": {
+        "type": "column",
+        "column": "ALBUMID",
+        "arguments": {}
+      },
+      "Title": {
+        "type": "column",
+        "column": "TITLE",
+        "arguments": {}
+      }
+    },
+    "predicate": {
+      "type": "binary_comparison_operator",
+      "column": {
+        "type": "column",
+        "name": "TITLE",
+        "path": []
+      },
+      "operator": "_in",
+      "value": {
+        "type": "scalar",
+        "value": []
+      }
+    }
+  },
+  "arguments": {},
+  "collection_relationships": {}
+}

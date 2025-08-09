@@ -1,0 +1,12 @@
+[
+  {
+    "rows": [
+      {
+        "Name": "AC/DC"
+      }
+    ],
+    "aggregates": {
+      "how_many_artists_with_id_1": 1
+    }
+  }
+]

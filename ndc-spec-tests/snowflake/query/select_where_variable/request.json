@@ -1,0 +1,56 @@
+{
+  "collection": "ALBUM",
+  "query": {
+    "fields": {
+      "Title": {
+        "type": "column",
+        "column": "TITLE",
+        "arguments": {}
+      }
+    },
+    "predicate": {
+      "type": "binary_comparison_operator",
+      "column": {
+        "type": "column",
+        "name": "TITLE",
+        "path": []
+      },
+      "operator": "_like",
+      "value": {
+        "type": "variable",
+        "name": "search"
+      }
+    },
+    "order_by": {
+      "elements": [
+        {
+          "order_direction": "asc",
+          "target": {
+            "type": "column",
+            "name": "ALBUMID",
+            "path": []
+          }
+        }
+      ]
+    }
+  },
+  "arguments": {},
+  "collection_relationships": {},
+  "variables": [
+    {
+      "search": "%Quest%"
+    },
+    {
+      "search": "Amazing"
+    },
+    {
+      "search": "%Rio%"
+    },
+    {
+      "search": "%Garage%"
+    },
+    {
+      "search": "%Good%"
+    }
+  ]
+}
