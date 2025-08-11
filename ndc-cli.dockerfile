@@ -1,5 +1,5 @@
 # Build stage
-FROM registry.access.redhat.com/ubi9/openjdk-21:1.20-2 AS build
+FROM registry.access.redhat.com/ubi9/openjdk-21:1.22 AS build
 
 ARG JOOQ_PRO_EMAIL
 ARG JOOQ_PRO_LICENSE
@@ -17,7 +17,7 @@ USER root
 RUN ./gradlew :ndc-cli:installDist --no-daemon --console=plain -x test
 
 # Final stage
-FROM registry.access.redhat.com/ubi9/openjdk-21:1.20-2
+FROM registry.access.redhat.com/ubi9/openjdk-21:1.22
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en'
 WORKDIR /app
