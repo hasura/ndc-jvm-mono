@@ -1,0 +1,4111 @@
+{
+  "scalar_types": {
+    "BOOLEAN": {
+      "representation": {
+        "type": "boolean"
+      },
+      "aggregate_functions": {},
+      "comparison_operators": {
+        "_eq": {
+          "type": "equal"
+        }
+      }
+    },
+    "STRING": {
+      "representation": {
+        "type": "string"
+      },
+      "aggregate_functions": {
+        "min": {
+          "result_type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "max": {
+          "result_type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        }
+      },
+      "comparison_operators": {
+        "_eq": {
+          "type": "equal"
+        },
+        "_contains": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "_like": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "INT8": {
+      "representation": {
+        "type": "int8"
+      },
+      "aggregate_functions": {
+        "avg": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "sum": {
+          "result_type": {
+            "type": "named",
+            "name": "INT64"
+          }
+        },
+        "min": {
+          "result_type": {
+            "type": "named",
+            "name": "INT8"
+          }
+        },
+        "max": {
+          "result_type": {
+            "type": "named",
+            "name": "INT8"
+          }
+        }
+      },
+      "comparison_operators": {
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT8"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT8"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT8"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT8"
+          }
+        },
+        "_eq": {
+          "type": "equal"
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "INT16": {
+      "representation": {
+        "type": "int16"
+      },
+      "aggregate_functions": {
+        "avg": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "sum": {
+          "result_type": {
+            "type": "named",
+            "name": "INT64"
+          }
+        },
+        "min": {
+          "result_type": {
+            "type": "named",
+            "name": "INT16"
+          }
+        },
+        "max": {
+          "result_type": {
+            "type": "named",
+            "name": "INT16"
+          }
+        }
+      },
+      "comparison_operators": {
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT16"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT16"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT16"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT16"
+          }
+        },
+        "_eq": {
+          "type": "equal"
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "INT32": {
+      "representation": {
+        "type": "int32"
+      },
+      "aggregate_functions": {
+        "avg": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "sum": {
+          "result_type": {
+            "type": "named",
+            "name": "INT64"
+          }
+        },
+        "min": {
+          "result_type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "max": {
+          "result_type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        }
+      },
+      "comparison_operators": {
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT32"
+          }
+        },
+        "_eq": {
+          "type": "equal"
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "INT64": {
+      "representation": {
+        "type": "int64"
+      },
+      "aggregate_functions": {
+        "avg": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "sum": {
+          "result_type": {
+            "type": "named",
+            "name": "INT64"
+          }
+        },
+        "min": {
+          "result_type": {
+            "type": "named",
+            "name": "INT64"
+          }
+        },
+        "max": {
+          "result_type": {
+            "type": "named",
+            "name": "INT64"
+          }
+        }
+      },
+      "comparison_operators": {
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT64"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT64"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT64"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "INT64"
+          }
+        },
+        "_eq": {
+          "type": "equal"
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "FLOAT32": {
+      "representation": {
+        "type": "float32"
+      },
+      "aggregate_functions": {
+        "avg": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "sum": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT32"
+          }
+        },
+        "min": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT32"
+          }
+        },
+        "max": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT32"
+          }
+        }
+      },
+      "comparison_operators": {
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "FLOAT32"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "FLOAT32"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "FLOAT32"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "FLOAT32"
+          }
+        },
+        "_eq": {
+          "type": "equal"
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "FLOAT64": {
+      "representation": {
+        "type": "float64"
+      },
+      "aggregate_functions": {
+        "avg": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "sum": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "min": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "max": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        }
+      },
+      "comparison_operators": {
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "_eq": {
+          "type": "equal"
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "BIGINTEGER": {
+      "representation": {
+        "type": "biginteger"
+      },
+      "aggregate_functions": {
+        "avg": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "sum": {
+          "result_type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "min": {
+          "result_type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "max": {
+          "result_type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        }
+      },
+      "comparison_operators": {
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "_eq": {
+          "type": "equal"
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "BIGDECIMAL": {
+      "representation": {
+        "type": "bigdecimal"
+      },
+      "aggregate_functions": {
+        "avg": {
+          "result_type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "sum": {
+          "result_type": {
+            "type": "named",
+            "name": "BIGDECIMAL"
+          }
+        },
+        "min": {
+          "result_type": {
+            "type": "named",
+            "name": "BIGDECIMAL"
+          }
+        },
+        "max": {
+          "result_type": {
+            "type": "named",
+            "name": "BIGDECIMAL"
+          }
+        }
+      },
+      "comparison_operators": {
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "BIGDECIMAL"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "BIGDECIMAL"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "BIGDECIMAL"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "BIGDECIMAL"
+          }
+        },
+        "_eq": {
+          "type": "equal"
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "UUID": {
+      "representation": {
+        "type": "uuid"
+      },
+      "aggregate_functions": {},
+      "comparison_operators": {
+        "_eq": {
+          "type": "equal"
+        }
+      }
+    },
+    "DATE": {
+      "representation": {
+        "type": "date"
+      },
+      "aggregate_functions": {},
+      "comparison_operators": {
+        "_eq": {
+          "type": "equal"
+        },
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "DATE"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "DATE"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "DATE"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "DATE"
+          }
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "TIMESTAMP": {
+      "representation": {
+        "type": "timestamp"
+      },
+      "aggregate_functions": {},
+      "comparison_operators": {
+        "_eq": {
+          "type": "equal"
+        },
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "TIMESTAMP"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "TIMESTAMP"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "TIMESTAMP"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "TIMESTAMP"
+          }
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "TIMESTAMPTZ": {
+      "representation": {
+        "type": "timestamptz"
+      },
+      "aggregate_functions": {},
+      "comparison_operators": {
+        "_eq": {
+          "type": "equal"
+        },
+        "_gt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "TIMESTAMPTZ"
+          }
+        },
+        "_lt": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "TIMESTAMPTZ"
+          }
+        },
+        "_gte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "TIMESTAMPTZ"
+          }
+        },
+        "_lte": {
+          "type": "custom",
+          "argument_type": {
+            "type": "named",
+            "name": "TIMESTAMPTZ"
+          }
+        },
+        "_in": {
+          "type": "in"
+        }
+      }
+    },
+    "GEOGRAPHY": {
+      "representation": {
+        "type": "geography"
+      },
+      "aggregate_functions": {},
+      "comparison_operators": {
+        "_eq": {
+          "type": "equal"
+        }
+      }
+    },
+    "GEOMETRY": {
+      "representation": {
+        "type": "geometry"
+      },
+      "aggregate_functions": {},
+      "comparison_operators": {
+        "_eq": {
+          "type": "equal"
+        }
+      }
+    },
+    "BYTES": {
+      "representation": {
+        "type": "bytes"
+      },
+      "aggregate_functions": {},
+      "comparison_operators": {
+        "_eq": {
+          "type": "equal"
+        }
+      }
+    },
+    "VECTOR": {
+      "representation": {
+        "type": "json"
+      },
+      "aggregate_functions": {},
+      "comparison_operators": {
+        "_eq": {
+          "type": "equal"
+        }
+      }
+    },
+    "JSON": {
+      "representation": {
+        "type": "json"
+      },
+      "aggregate_functions": {},
+      "comparison_operators": {
+        "_eq": {
+          "type": "equal"
+        }
+      }
+    }
+  },
+  "object_types": {
+    "NUMBERS_TABLE": {
+      "description": null,
+      "fields": {
+        "ID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "INT64"
+            }
+          }
+        },
+        "NUMBER_VALUE": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "INT64"
+            }
+          }
+        }
+      }
+    },
+    "ALBUM": {
+      "description": null,
+      "fields": {
+        "ARTISTID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "BIGINTEGER"
+            }
+          }
+        },
+        "TITLE": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "ALBUMID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "BIGINTEGER"
+            }
+          }
+        }
+      }
+    },
+    "EMPLOYEE": {
+      "description": null,
+      "fields": {
+        "CITY": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "FAX": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "REPORTSTO": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "BIGINTEGER"
+            }
+          }
+        },
+        "ADDRESS": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "PHONE": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "COUNTRY": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "BIRTHDATE": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "DATE"
+            }
+          }
+        },
+        "EMPLOYEEID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "POSTALCODE": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "STATE": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "FIRSTNAME": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "LASTNAME": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "TITLE": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "HIREDATE": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "DATE"
+            }
+          }
+        },
+        "EMAIL": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "CUSTOMER": {
+      "description": null,
+      "fields": {
+        "EMAIL": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "FAX": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "ADDRESS": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "POSTALCODE": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "PHONE": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "SUPPORTREPID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "BIGINTEGER"
+            }
+          }
+        },
+        "STATE": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "CUSTOMERID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "COUNTRY": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "LASTNAME": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "CITY": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "FIRSTNAME": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "COMPANY": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "PLAYLISTTRACK": {
+      "description": null,
+      "fields": {
+        "TRACKID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "PLAYLISTID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        }
+      }
+    },
+    "GENRE": {
+      "description": null,
+      "fields": {
+        "NAME": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "GENREID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        }
+      }
+    },
+    "INVOICE": {
+      "description": null,
+      "fields": {
+        "BILLINGADDRESS": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "BILLINGPOSTALCODE": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "BILLINGSTATE": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "BILLINGCITY": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "BILLINGCOUNTRY": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "CUSTOMERID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "INVOICEDATE": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "DATE"
+          }
+        },
+        "TOTAL": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "INVOICEID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        }
+      }
+    },
+    "INVOICESBYCOUNTRY": {
+      "description": null,
+      "fields": {
+        "INVOICE_TOTAL_BYCOUNTRY": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "INT64"
+            }
+          }
+        },
+        "BILLINGCOUNTRY": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "ARTIST": {
+      "description": null,
+      "fields": {
+        "ARTISTID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "BIGINTEGER"
+            }
+          }
+        },
+        "NAME": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "PLAYLIST": {
+      "description": null,
+      "fields": {
+        "PLAYLISTID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "NAME": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "Employee": {
+      "description": null,
+      "fields": {
+        "Address": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "LastName": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "ReportsTo": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "BIGINTEGER"
+            }
+          }
+        },
+        "BirthDate": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "DATE"
+            }
+          }
+        },
+        "Title": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "EmployeeId": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "State": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "FirstName": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "Phone": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "Country": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "Email": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "City": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "PostalCode": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "HireDate": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "DATE"
+            }
+          }
+        },
+        "Fax": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "PlaylistTrack": {
+      "description": null,
+      "fields": {
+        "PlaylistId": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "TrackId": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        }
+      }
+    },
+    "AUTHORS": {
+      "description": null,
+      "fields": {
+        "NAME": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "ID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        }
+      }
+    },
+    "TRANSACTION_VARIABLE": {
+      "description": null,
+      "fields": {
+        "VAL": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "NAME": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "INVOICELINE": {
+      "description": null,
+      "fields": {
+        "INVOICEID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "BIGINTEGER"
+            }
+          }
+        },
+        "QUANTITY": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "BIGINTEGER"
+            }
+          }
+        },
+        "UNITPRICE": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "FLOAT64"
+            }
+          }
+        },
+        "TRACKID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "BIGINTEGER"
+            }
+          }
+        },
+        "INVOICELINEID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "BIGINTEGER"
+            }
+          }
+        }
+      }
+    },
+    "MediaType": {
+      "description": null,
+      "fields": {
+        "MediaTypeId": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "Name": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "RESULT": {
+      "description": null,
+      "fields": {
+        "VALUE": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        }
+      }
+    },
+    "TRACK": {
+      "description": null,
+      "fields": {
+        "MILLISECONDS": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "GENREID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "BIGINTEGER"
+            }
+          }
+        },
+        "TRACKID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "UNITPRICE": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "BYTES": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "BIGINTEGER"
+            }
+          }
+        },
+        "NAME": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "MEDIATYPEID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "ALBUMID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "BIGINTEGER"
+            }
+          }
+        },
+        "COMPOSER": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "Track": {
+      "description": null,
+      "fields": {
+        "MediaTypeId": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "Bytes": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "BIGINTEGER"
+            }
+          }
+        },
+        "AlbumId": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "BIGINTEGER"
+            }
+          }
+        },
+        "GenreId": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "BIGINTEGER"
+            }
+          }
+        },
+        "TrackId": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "Composer": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "UnitPrice": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "Milliseconds": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "Name": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        }
+      }
+    },
+    "MEDIATYPE": {
+      "description": null,
+      "fields": {
+        "MEDIATYPEID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "NAME": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "Result": {
+      "description": null,
+      "fields": {
+        "Value": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        }
+      }
+    },
+    "DATETIME_TEST": {
+      "description": null,
+      "fields": {
+        "ID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "BIGINTEGER"
+            }
+          }
+        },
+        "CREATED_AT": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "TIMESTAMP"
+            }
+          }
+        }
+      }
+    },
+    "Album": {
+      "description": null,
+      "fields": {
+        "AlbumId": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "Title": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "ArtistId": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        }
+      }
+    },
+    "Articles": {
+      "description": null,
+      "fields": {
+        "id": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "title": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "author_id": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        }
+      }
+    },
+    "Playlist": {
+      "description": null,
+      "fields": {
+        "PlaylistId": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "Name": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "GET_COUNTRY_NAME_RESPONSE": {
+      "description": null,
+      "fields": {
+        "COUNTRY_NAME": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "SAMPLE_VARIANT_TABLE": {
+      "description": null,
+      "fields": {
+        "DATA": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "JSON"
+            }
+          }
+        }
+      }
+    },
+    "InvoiceLine": {
+      "description": null,
+      "fields": {
+        "Quantity": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "TrackId": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "InvoiceId": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "InvoiceLineId": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "UnitPrice": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        }
+      }
+    },
+    "Genre": {
+      "description": null,
+      "fields": {
+        "Name": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "GenreId": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        }
+      }
+    },
+    "ARTICLES": {
+      "description": null,
+      "fields": {
+        "TITLE": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "ID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "AUTHOR_ID": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        }
+      }
+    },
+    "Invoice": {
+      "description": null,
+      "fields": {
+        "BillingCity": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "InvoiceDate": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "DATE"
+          }
+        },
+        "InvoiceId": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "BillingCountry": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "BillingAddress": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "CustomerId": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "Total": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "FLOAT64"
+          }
+        },
+        "BillingPostalCode": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "BillingState": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "Artist": {
+      "description": null,
+      "fields": {
+        "ArtistId": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        },
+        "Name": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "COUNTRIES": {
+      "description": null,
+      "fields": {
+        "COUNTRY_CODE": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "COUNTRY_NAME": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        }
+      }
+    },
+    "OAG_AIRPORT_BUSY": {
+      "description": null,
+      "fields": {
+        "ARRAPT": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "COUNT": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "INT64"
+            }
+          }
+        }
+      }
+    },
+    "Customer": {
+      "description": null,
+      "fields": {
+        "FirstName": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "LastName": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "Fax": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "Phone": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "PostalCode": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "Company": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "City": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "Address": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "Country": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "State": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        },
+        "SupportRepId": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "BIGINTEGER"
+            }
+          }
+        },
+        "Email": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "CustomerId": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        }
+      }
+    },
+    "Authors": {
+      "description": null,
+      "fields": {
+        "name": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "STRING"
+          }
+        },
+        "id": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "named",
+            "name": "BIGINTEGER"
+          }
+        }
+      }
+    },
+    "WEEKLY_NYC_TEMPRATURES": {
+      "description": null,
+      "fields": {
+        "TEMPRATURE": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "BIGDECIMAL"
+            }
+          }
+        },
+        "weekly": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "INT8"
+            }
+          }
+        }
+      }
+    },
+    "TOTAL_BILLING_BY_CITY": {
+      "description": null,
+      "fields": {
+        "TOTAL_BILING_BY_CITY": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "BIGDECIMAL"
+            }
+          }
+        },
+        "BILLINGCITY": {
+          "description": null,
+          "arguments": {},
+          "type": {
+            "type": "nullable",
+            "underlying_type": {
+              "type": "named",
+              "name": "STRING"
+            }
+          }
+        }
+      }
+    }
+  },
+  "collections": [
+    {
+      "name": "NUMBERS_TABLE",
+      "description": null,
+      "arguments": {},
+      "type": "NUMBERS_TABLE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "NUMBERS_TABLE_PK": {
+          "unique_columns": []
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "ALBUM",
+      "description": null,
+      "arguments": {},
+      "type": "ALBUM",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "ALBUM_PK": {
+          "unique_columns": [
+            "ALBUMID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_ALBUMARTISTID": {
+          "column_mapping": {
+            "ARTISTID": "ARTISTID"
+          },
+          "foreign_collection": "ARTIST"
+        }
+      }
+    },
+    {
+      "name": "EMPLOYEE",
+      "description": null,
+      "arguments": {},
+      "type": "EMPLOYEE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "EMPLOYEE_PK": {
+          "unique_columns": [
+            "EMPLOYEEID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "SYS_CONSTRAINT_11277a86-c625-4079-b4be-f9bd0e90fac6": {
+          "column_mapping": {
+            "REPORTSTO": "EMPLOYEEID"
+          },
+          "foreign_collection": "EMPLOYEE"
+        }
+      }
+    },
+    {
+      "name": "CUSTOMER",
+      "description": null,
+      "arguments": {},
+      "type": "CUSTOMER",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "CUSTOMER_PK": {
+          "unique_columns": [
+            "CUSTOMERID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "SYS_CONSTRAINT_0d1efa1e-569c-41ba-9c6a-871af1b095d4": {
+          "column_mapping": {
+            "SUPPORTREPID": "EMPLOYEEID"
+          },
+          "foreign_collection": "EMPLOYEE"
+        }
+      }
+    },
+    {
+      "name": "PLAYLISTTRACK",
+      "description": null,
+      "arguments": {},
+      "type": "PLAYLISTTRACK",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "PLAYLISTTRACK_PK": {
+          "unique_columns": [
+            "PLAYLISTID",
+            "TRACKID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_PLAYLISTTRACKPLAYLISTID": {
+          "column_mapping": {
+            "PLAYLISTID": "PLAYLISTID"
+          },
+          "foreign_collection": "PLAYLIST"
+        }
+      }
+    },
+    {
+      "name": "GENRE",
+      "description": null,
+      "arguments": {},
+      "type": "GENRE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "GENRE_PK": {
+          "unique_columns": [
+            "GENREID"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "INVOICE",
+      "description": null,
+      "arguments": {},
+      "type": "INVOICE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "INVOICE_PK": {
+          "unique_columns": [
+            "INVOICEID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_INVOICECUSTOMERID": {
+          "column_mapping": {
+            "CUSTOMERID": "CUSTOMERID"
+          },
+          "foreign_collection": "CUSTOMER"
+        }
+      }
+    },
+    {
+      "name": "INVOICESBYCOUNTRY",
+      "description": null,
+      "arguments": {},
+      "type": "INVOICESBYCOUNTRY",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "INVOICESBYCOUNTRY_PK": {
+          "unique_columns": []
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "PLAYLISTTRACK",
+      "description": null,
+      "arguments": {},
+      "type": "PLAYLISTTRACK",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "PLAYLISTTRACK_PK": {
+          "unique_columns": [
+            "TRACKID",
+            "PLAYLISTID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_PLAYLISTTRACKPLAYLISTID": {
+          "column_mapping": {
+            "PLAYLISTID": "PLAYLISTID"
+          },
+          "foreign_collection": "PLAYLIST"
+        },
+        "FK_PLAYLISTTRACKTRACKID": {
+          "column_mapping": {
+            "TRACKID": "TRACKID"
+          },
+          "foreign_collection": "TRACK"
+        }
+      }
+    },
+    {
+      "name": "ARTIST",
+      "description": null,
+      "arguments": {},
+      "type": "ARTIST",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "ARTIST_PK": {
+          "unique_columns": [
+            "ARTISTID"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "PLAYLIST",
+      "description": null,
+      "arguments": {},
+      "type": "PLAYLIST",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "PLAYLIST_PK": {
+          "unique_columns": [
+            "PLAYLISTID"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "CUSTOMER",
+      "description": null,
+      "arguments": {},
+      "type": "CUSTOMER",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "CUSTOMER_PK": {
+          "unique_columns": [
+            "CUSTOMERID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_CUSTOMERSUPPORTREPID": {
+          "column_mapping": {
+            "SUPPORTREPID": "EMPLOYEEID"
+          },
+          "foreign_collection": "EMPLOYEE"
+        }
+      }
+    },
+    {
+      "name": "ALBUM",
+      "description": null,
+      "arguments": {},
+      "type": "ALBUM",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "ALBUM_PK": {
+          "unique_columns": [
+            "ALBUMID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_ALBUMARTISTID": {
+          "column_mapping": {
+            "ARTISTID": "ARTISTID"
+          },
+          "foreign_collection": "ARTIST"
+        }
+      }
+    },
+    {
+      "name": "CUSTOMER",
+      "description": null,
+      "arguments": {},
+      "type": "CUSTOMER",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "CUSTOMER_PK": {
+          "unique_columns": [
+            "CUSTOMERID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_CUSTOMERSUPPORTREPID": {
+          "column_mapping": {
+            "SUPPORTREPID": "EMPLOYEEID"
+          },
+          "foreign_collection": "EMPLOYEE"
+        }
+      }
+    },
+    {
+      "name": "Employee",
+      "description": null,
+      "arguments": {},
+      "type": "Employee",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "Employee_PK": {
+          "unique_columns": [
+            "EmployeeId"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_EmployeeReportsTo": {
+          "column_mapping": {
+            "ReportsTo": "EmployeeId"
+          },
+          "foreign_collection": "Employee"
+        }
+      }
+    },
+    {
+      "name": "PlaylistTrack",
+      "description": null,
+      "arguments": {},
+      "type": "PlaylistTrack",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "PlaylistTrack_PK": {
+          "unique_columns": [
+            "PlaylistId",
+            "TrackId"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_PlaylistTrackPlaylistId": {
+          "column_mapping": {
+            "PlaylistId": "PlaylistId"
+          },
+          "foreign_collection": "Playlist"
+        },
+        "FK_PlaylistTrackTrackId": {
+          "column_mapping": {
+            "TrackId": "TrackId"
+          },
+          "foreign_collection": "Track"
+        }
+      }
+    },
+    {
+      "name": "AUTHORS",
+      "description": null,
+      "arguments": {},
+      "type": "AUTHORS",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "AUTHORS_PK": {
+          "unique_columns": [
+            "ID"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "TRANSACTION_VARIABLE",
+      "description": null,
+      "arguments": {},
+      "type": "TRANSACTION_VARIABLE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "TRANSACTION_VARIABLE_PK": {
+          "unique_columns": []
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "INVOICELINE",
+      "description": null,
+      "arguments": {},
+      "type": "INVOICELINE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "INVOICELINE_PK": {
+          "unique_columns": [
+            "INVOICELINEID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_INVOICELINEINVOICEID": {
+          "column_mapping": {
+            "INVOICEID": "INVOICEID"
+          },
+          "foreign_collection": "INVOICE"
+        },
+        "FK_INVOICELINETRACKID": {
+          "column_mapping": {
+            "TRACKID": "TRACKID"
+          },
+          "foreign_collection": "TRACK"
+        }
+      }
+    },
+    {
+      "name": "MediaType",
+      "description": null,
+      "arguments": {},
+      "type": "MediaType",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "MediaType_PK": {
+          "unique_columns": [
+            "MediaTypeId"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "RESULT",
+      "description": null,
+      "arguments": {},
+      "type": "RESULT",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "RESULT_PK": {
+          "unique_columns": [
+            "VALUE"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "INVOICELINE",
+      "description": null,
+      "arguments": {},
+      "type": "INVOICELINE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "INVOICELINE_PK": {
+          "unique_columns": [
+            "INVOICELINEID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_INVOICELINEINVOICEID": {
+          "column_mapping": {
+            "INVOICEID": "INVOICEID"
+          },
+          "foreign_collection": "INVOICE"
+        }
+      }
+    },
+    {
+      "name": "ARTIST",
+      "description": null,
+      "arguments": {},
+      "type": "ARTIST",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "ARTIST_PK": {
+          "unique_columns": [
+            "ARTISTID"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "TRACK",
+      "description": null,
+      "arguments": {},
+      "type": "TRACK",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "TRACK_PK": {
+          "unique_columns": [
+            "TRACKID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_TRACKALBUMID": {
+          "column_mapping": {
+            "ALBUMID": "ALBUMID"
+          },
+          "foreign_collection": "ALBUM"
+        },
+        "FK_TRACKGENREID": {
+          "column_mapping": {
+            "GENREID": "GENREID"
+          },
+          "foreign_collection": "GENRE"
+        },
+        "FK_TRACKMEDIATYPEID": {
+          "column_mapping": {
+            "MEDIATYPEID": "MEDIATYPEID"
+          },
+          "foreign_collection": "MEDIATYPE"
+        }
+      }
+    },
+    {
+      "name": "TRACK",
+      "description": null,
+      "arguments": {},
+      "type": "TRACK",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "TRACK_PK": {
+          "unique_columns": [
+            "TRACKID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "SYS_CONSTRAINT_0e5178bb-5f0d-4a11-9b8b-ace387b07f26": {
+          "column_mapping": {
+            "MEDIATYPEID": "MEDIATYPEID"
+          },
+          "foreign_collection": "MEDIATYPE"
+        },
+        "SYS_CONSTRAINT_261f783f-c8fb-40ca-9ec1-7394efb48097": {
+          "column_mapping": {
+            "GENREID": "GENREID"
+          },
+          "foreign_collection": "GENRE"
+        },
+        "SYS_CONSTRAINT_a6caf31f-2021-471e-82a8-260dfb12e29d": {
+          "column_mapping": {
+            "ALBUMID": "ALBUMID"
+          },
+          "foreign_collection": "ALBUM"
+        }
+      }
+    },
+    {
+      "name": "Track",
+      "description": null,
+      "arguments": {},
+      "type": "Track",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "Track_PK": {
+          "unique_columns": [
+            "TrackId"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_TrackAlbumId": {
+          "column_mapping": {
+            "AlbumId": "AlbumId"
+          },
+          "foreign_collection": "Album"
+        },
+        "FK_TrackGenreId": {
+          "column_mapping": {
+            "GenreId": "GenreId"
+          },
+          "foreign_collection": "Genre"
+        },
+        "FK_TrackMediaTypeId": {
+          "column_mapping": {
+            "MediaTypeId": "MediaTypeId"
+          },
+          "foreign_collection": "MediaType"
+        }
+      }
+    },
+    {
+      "name": "GENRE",
+      "description": null,
+      "arguments": {},
+      "type": "GENRE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "GENRE_PK": {
+          "unique_columns": [
+            "GENREID"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "INVOICELINE",
+      "description": null,
+      "arguments": {},
+      "type": "INVOICELINE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "INVOICELINE_PK": {
+          "unique_columns": [
+            "INVOICELINEID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_INVOICELINEINVOICEID": {
+          "column_mapping": {
+            "INVOICEID": "INVOICEID"
+          },
+          "foreign_collection": "INVOICE"
+        }
+      }
+    },
+    {
+      "name": "MEDIATYPE",
+      "description": null,
+      "arguments": {},
+      "type": "MEDIATYPE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "MEDIATYPE_PK": {
+          "unique_columns": [
+            "MEDIATYPEID"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "Result",
+      "description": null,
+      "arguments": {},
+      "type": "Result",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "Result_PK": {
+          "unique_columns": [
+            "Value"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "DATETIME_TEST",
+      "description": null,
+      "arguments": {},
+      "type": "DATETIME_TEST",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "DATETIME_TEST_PK": {
+          "unique_columns": []
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "ARTIST",
+      "description": null,
+      "arguments": {},
+      "type": "ARTIST",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "ARTIST_PK": {
+          "unique_columns": [
+            "ARTISTID"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "ALBUM",
+      "description": null,
+      "arguments": {},
+      "type": "ALBUM",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "ALBUM_PK": {
+          "unique_columns": [
+            "ALBUMID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_ALBUMARTISTID": {
+          "column_mapping": {
+            "ARTISTID": "ARTISTID"
+          },
+          "foreign_collection": "ARTIST"
+        }
+      }
+    },
+    {
+      "name": "Album",
+      "description": null,
+      "arguments": {},
+      "type": "Album",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "Album_PK": {
+          "unique_columns": [
+            "AlbumId"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_AlbumArtistId": {
+          "column_mapping": {
+            "ArtistId": "ArtistId"
+          },
+          "foreign_collection": "Artist"
+        }
+      }
+    },
+    {
+      "name": "Articles",
+      "description": null,
+      "arguments": {},
+      "type": "Articles",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "Articles_PK": {
+          "unique_columns": [
+            "id"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_ArticlesAuthorId": {
+          "column_mapping": {
+            "author_id": "id"
+          },
+          "foreign_collection": "Authors"
+        }
+      }
+    },
+    {
+      "name": "Playlist",
+      "description": null,
+      "arguments": {},
+      "type": "Playlist",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "Playlist_PK": {
+          "unique_columns": [
+            "PlaylistId"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "GET_COUNTRY_NAME_RESPONSE",
+      "description": null,
+      "arguments": {},
+      "type": "GET_COUNTRY_NAME_RESPONSE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "GET_COUNTRY_NAME_RESPONSE_PK": {
+          "unique_columns": []
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "INVOICE",
+      "description": null,
+      "arguments": {},
+      "type": "INVOICE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "INVOICE_PK": {
+          "unique_columns": [
+            "INVOICEID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_INVOICECUSTOMERID": {
+          "column_mapping": {
+            "CUSTOMERID": "CUSTOMERID"
+          },
+          "foreign_collection": "CUSTOMER"
+        }
+      }
+    },
+    {
+      "name": "PLAYLIST",
+      "description": null,
+      "arguments": {},
+      "type": "PLAYLIST",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "PLAYLIST_PK": {
+          "unique_columns": [
+            "PLAYLISTID"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "SAMPLE_VARIANT_TABLE",
+      "description": null,
+      "arguments": {},
+      "type": "SAMPLE_VARIANT_TABLE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "SAMPLE_VARIANT_TABLE_PK": {
+          "unique_columns": []
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "InvoiceLine",
+      "description": null,
+      "arguments": {},
+      "type": "InvoiceLine",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "InvoiceLine_PK": {
+          "unique_columns": [
+            "InvoiceLineId"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_InvoiceLineInvoiceId": {
+          "column_mapping": {
+            "InvoiceId": "InvoiceId"
+          },
+          "foreign_collection": "Invoice"
+        },
+        "FK_InvoiceLineTrackId": {
+          "column_mapping": {
+            "TrackId": "TrackId"
+          },
+          "foreign_collection": "Track"
+        }
+      }
+    },
+    {
+      "name": "Genre",
+      "description": null,
+      "arguments": {},
+      "type": "Genre",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "Genre_PK": {
+          "unique_columns": [
+            "GenreId"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "ARTICLES",
+      "description": null,
+      "arguments": {},
+      "type": "ARTICLES",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "ARTICLES_PK": {
+          "unique_columns": [
+            "ID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "SYS_CONSTRAINT_6d4d45f8-1c61-4c20-905c-41c910b60db5": {
+          "column_mapping": {
+            "AUTHOR_ID": "ID"
+          },
+          "foreign_collection": "AUTHORS"
+        }
+      }
+    },
+    {
+      "name": "Invoice",
+      "description": null,
+      "arguments": {},
+      "type": "Invoice",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "Invoice_PK": {
+          "unique_columns": [
+            "InvoiceId"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_InvoiceCustomerId": {
+          "column_mapping": {
+            "CustomerId": "CustomerId"
+          },
+          "foreign_collection": "Customer"
+        }
+      }
+    },
+    {
+      "name": "ALBUM",
+      "description": null,
+      "arguments": {},
+      "type": "ALBUM",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "ALBUM_PK": {
+          "unique_columns": [
+            "ALBUMID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "SYS_CONSTRAINT_e69ef546-f735-4ff2-a9bf-bcf97508823a": {
+          "column_mapping": {
+            "ARTISTID": "ARTISTID"
+          },
+          "foreign_collection": "ARTIST"
+        }
+      }
+    },
+    {
+      "name": "Artist",
+      "description": null,
+      "arguments": {},
+      "type": "Artist",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "Artist_PK": {
+          "unique_columns": [
+            "ArtistId"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "GENRE",
+      "description": null,
+      "arguments": {},
+      "type": "GENRE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "GENRE_PK": {
+          "unique_columns": [
+            "GENREID"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "EMPLOYEE",
+      "description": null,
+      "arguments": {},
+      "type": "EMPLOYEE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "EMPLOYEE_PK": {
+          "unique_columns": [
+            "EMPLOYEEID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_EMPLOYEEREPORTSTO": {
+          "column_mapping": {
+            "REPORTSTO": "EMPLOYEEID"
+          },
+          "foreign_collection": "EMPLOYEE"
+        }
+      }
+    },
+    {
+      "name": "PLAYLISTTRACK",
+      "description": null,
+      "arguments": {},
+      "type": "PLAYLISTTRACK",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "PLAYLISTTRACK_PK": {
+          "unique_columns": [
+            "PLAYLISTID"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "TRACK",
+      "description": null,
+      "arguments": {},
+      "type": "TRACK",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "TRACK_PK": {
+          "unique_columns": [
+            "TRACKID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_TRACKALBUMID": {
+          "column_mapping": {
+            "ALBUMID": "ALBUMID"
+          },
+          "foreign_collection": "ALBUM"
+        },
+        "FK_TRACKGENREID": {
+          "column_mapping": {
+            "GENREID": "GENREID"
+          },
+          "foreign_collection": "GENRE"
+        },
+        "FK_TRACKMEDIATYPEID": {
+          "column_mapping": {
+            "MEDIATYPEID": "MEDIATYPEID"
+          },
+          "foreign_collection": "MEDIATYPE"
+        }
+      }
+    },
+    {
+      "name": "GENRE",
+      "description": null,
+      "arguments": {},
+      "type": "GENRE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "GENRE_PK": {
+          "unique_columns": [
+            "GENREID"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "COUNTRIES",
+      "description": null,
+      "arguments": {},
+      "type": "COUNTRIES",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "COUNTRIES_PK": {
+          "unique_columns": []
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "OAG_AIRPORT_BUSY",
+      "description": null,
+      "arguments": {},
+      "type": "OAG_AIRPORT_BUSY",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "OAG_AIRPORT_BUSY_PK": {
+          "unique_columns": []
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "EMPLOYEE",
+      "description": null,
+      "arguments": {},
+      "type": "EMPLOYEE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "EMPLOYEE_PK": {
+          "unique_columns": [
+            "EMPLOYEEID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_EMPLOYEEREPORTSTO": {
+          "column_mapping": {
+            "REPORTSTO": "EMPLOYEEID"
+          },
+          "foreign_collection": "EMPLOYEE"
+        }
+      }
+    },
+    {
+      "name": "ARTIST",
+      "description": null,
+      "arguments": {},
+      "type": "ARTIST",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "ARTIST_PK": {
+          "unique_columns": [
+            "ARTISTID"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "INVOICE",
+      "description": null,
+      "arguments": {},
+      "type": "INVOICE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "INVOICE_PK": {
+          "unique_columns": [
+            "INVOICEID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "SYS_CONSTRAINT_b6ccaa53-c6d3-4213-b18e-0cfc50d57de6": {
+          "column_mapping": {
+            "CUSTOMERID": "CUSTOMERID"
+          },
+          "foreign_collection": "CUSTOMER"
+        }
+      }
+    },
+    {
+      "name": "MEDIATYPE",
+      "description": null,
+      "arguments": {},
+      "type": "MEDIATYPE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "MEDIATYPE_PK": {
+          "unique_columns": [
+            "MEDIATYPEID"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "PLAYLIST",
+      "description": null,
+      "arguments": {},
+      "type": "PLAYLIST",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "PLAYLIST_PK": {
+          "unique_columns": [
+            "PLAYLISTID"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "GENRE",
+      "description": null,
+      "arguments": {},
+      "type": "GENRE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "GENRE_PK": {
+          "unique_columns": [
+            "GENREID"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "CUSTOMER",
+      "description": null,
+      "arguments": {},
+      "type": "CUSTOMER",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "CUSTOMER_PK": {
+          "unique_columns": [
+            "CUSTOMERID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_CUSTOMERSUPPORTREPID": {
+          "column_mapping": {
+            "SUPPORTREPID": "EMPLOYEEID"
+          },
+          "foreign_collection": "EMPLOYEE"
+        }
+      }
+    },
+    {
+      "name": "TRACK",
+      "description": null,
+      "arguments": {},
+      "type": "TRACK",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "TRACK_PK": {
+          "unique_columns": [
+            "TRACKID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_TRACKALBUMID": {
+          "column_mapping": {
+            "ALBUMID": "ALBUMID"
+          },
+          "foreign_collection": "ALBUM"
+        },
+        "FK_TRACKGENREID": {
+          "column_mapping": {
+            "GENREID": "GENREID"
+          },
+          "foreign_collection": "GENRE"
+        },
+        "FK_TRACKMEDIATYPEID": {
+          "column_mapping": {
+            "MEDIATYPEID": "MEDIATYPEID"
+          },
+          "foreign_collection": "MEDIATYPE"
+        }
+      }
+    },
+    {
+      "name": "Customer",
+      "description": null,
+      "arguments": {},
+      "type": "Customer",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "Customer_PK": {
+          "unique_columns": [
+            "CustomerId"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_CustomerSupportRepId": {
+          "column_mapping": {
+            "SupportRepId": "EmployeeId"
+          },
+          "foreign_collection": "Employee"
+        }
+      }
+    },
+    {
+      "name": "MEDIATYPE",
+      "description": null,
+      "arguments": {},
+      "type": "MEDIATYPE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "MEDIATYPE_PK": {
+          "unique_columns": [
+            "MEDIATYPEID"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "EMPLOYEE",
+      "description": null,
+      "arguments": {},
+      "type": "EMPLOYEE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "EMPLOYEE_PK": {
+          "unique_columns": [
+            "EMPLOYEEID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_EMPLOYEEREPORTSTO": {
+          "column_mapping": {
+            "REPORTSTO": "EMPLOYEEID"
+          },
+          "foreign_collection": "EMPLOYEE"
+        }
+      }
+    },
+    {
+      "name": "PLAYLISTTRACK",
+      "description": null,
+      "arguments": {},
+      "type": "PLAYLISTTRACK",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "PLAYLISTTRACK_PK": {
+          "unique_columns": [
+            "TRACKID",
+            "PLAYLISTID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_PLAYLISTTRACKPLAYLISTID": {
+          "column_mapping": {
+            "PLAYLISTID": "PLAYLISTID"
+          },
+          "foreign_collection": "PLAYLIST"
+        }
+      }
+    },
+    {
+      "name": "INVOICE",
+      "description": null,
+      "arguments": {},
+      "type": "INVOICE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "INVOICE_PK": {
+          "unique_columns": [
+            "INVOICEID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "FK_INVOICECUSTOMERID": {
+          "column_mapping": {
+            "CUSTOMERID": "CUSTOMERID"
+          },
+          "foreign_collection": "CUSTOMER"
+        }
+      }
+    },
+    {
+      "name": "PLAYLIST",
+      "description": null,
+      "arguments": {},
+      "type": "PLAYLIST",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "PLAYLIST_PK": {
+          "unique_columns": [
+            "PLAYLISTID"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "MEDIATYPE",
+      "description": null,
+      "arguments": {},
+      "type": "MEDIATYPE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "MEDIATYPE_PK": {
+          "unique_columns": [
+            "MEDIATYPEID"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "Authors",
+      "description": null,
+      "arguments": {},
+      "type": "Authors",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "Authors_PK": {
+          "unique_columns": [
+            "id"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "GENRE",
+      "description": null,
+      "arguments": {},
+      "type": "GENRE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "GENRE_PK": {
+          "unique_columns": [
+            "GENREID"
+          ]
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "WEEKLY_NYC_TEMPRATURES",
+      "description": null,
+      "arguments": {},
+      "type": "WEEKLY_NYC_TEMPRATURES",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "WEEKLY_NYC_TEMPRATURES_PK": {
+          "unique_columns": []
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "TOTAL_BILLING_BY_CITY",
+      "description": null,
+      "arguments": {},
+      "type": "TOTAL_BILLING_BY_CITY",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "TOTAL_BILLING_BY_CITY_PK": {
+          "unique_columns": []
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "OAG_AIRPORT_BUSY",
+      "description": null,
+      "arguments": {},
+      "type": "OAG_AIRPORT_BUSY",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "OAG_AIRPORT_BUSY_PK": {
+          "unique_columns": []
+        }
+      },
+      "foreign_keys": {}
+    },
+    {
+      "name": "INVOICELINE",
+      "description": null,
+      "arguments": {},
+      "type": "INVOICELINE",
+      "insertable_columns": [],
+      "updatable_columns": [],
+      "deletable": true,
+      "uniqueness_constraints": {
+        "INVOICELINE_PK": {
+          "unique_columns": [
+            "INVOICELINEID"
+          ]
+        }
+      },
+      "foreign_keys": {
+        "SYS_CONSTRAINT_5c7f8c43-7aa2-4382-b371-34760177d1ff": {
+          "column_mapping": {
+            "INVOICEID": "INVOICEID"
+          },
+          "foreign_collection": "INVOICE"
+        },
+        "SYS_CONSTRAINT_69762021-3bdd-4b9a-b12a-1f2bd8e44fb4": {
+          "column_mapping": {
+            "TRACKID": "TRACKID"
+          },
+          "foreign_collection": "TRACK"
+        }
+      }
+    }
+  ],
+  "functions": [],
+  "procedures": []
+}

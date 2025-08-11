@@ -1,0 +1,73 @@
+{
+  "collection": "TRACK",
+  "query": {
+    "fields": {
+      "track": {
+        "type": "column",
+        "column": "NAME",
+        "arguments": {}
+      },
+      "Album": {
+        "type": "relationship",
+        "relationship": "TrackToAlbum",
+        "arguments": {},
+        "query": {
+          "fields": {
+            "album": {
+              "type": "column",
+              "column": "TITLE",
+              "arguments": {}
+            },
+            "Artist": {
+              "type": "relationship",
+              "relationship": "AlbumToArtist",
+              "arguments": {},
+              "query": {
+                "fields": {
+                  "artist": {
+                    "type": "column",
+                    "column": "NAME",
+                    "arguments": {}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "order_by": {
+      "elements": [
+        {
+          "order_direction": "asc",
+          "target": {
+            "type": "column",
+            "name": "TRACKID",
+            "path": []
+          }
+        }
+      ]
+    },
+    "limit": 5,
+    "offset": 500
+  },
+  "arguments": {},
+  "collection_relationships": {
+    "TrackToAlbum": {
+      "column_mapping": {
+        "ALBUMID": "ALBUMID"
+      },
+      "relationship_type": "object",
+      "target_collection": "ALBUM",
+      "arguments": {}
+    },
+    "AlbumToArtist": {
+      "column_mapping": {
+        "ARTISTID": "ARTISTID"
+      },
+      "relationship_type": "object",
+      "target_collection": "ARTIST",
+      "arguments": {}
+    }
+  }
+}

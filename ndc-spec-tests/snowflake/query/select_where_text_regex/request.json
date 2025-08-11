@@ -1,0 +1,45 @@
+{
+  "collection": "ALBUM",
+  "query": {
+    "limit": 5,
+    "fields": {
+      "AlbumId": {
+        "type": "column",
+        "column": "ALBUMID",
+        "arguments": {}
+      },
+      "Title": {
+        "type": "column",
+        "column": "TITLE",
+        "arguments": {}
+      }
+    },
+    "predicate": {
+      "type": "binary_comparison_operator",
+      "column": {
+        "type": "column",
+        "name": "TITLE",
+        "path": []
+      },
+      "operator": "_iregex",
+      "value": {
+        "type": "scalar",
+        "value": "[j]agged little pill"
+      }
+    },
+    "order_by": {
+      "elements": [
+        {
+          "order_direction": "asc",
+          "target": {
+            "type": "column",
+            "name": "ALBUMID",
+            "path": []
+          }
+        }
+      ]
+    }
+  },
+  "arguments": {},
+  "collection_relationships": {}
+}

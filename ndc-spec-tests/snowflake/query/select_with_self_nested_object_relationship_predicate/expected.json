@@ -1,0 +1,101 @@
+[
+  {
+    "rows": [
+      {
+        "Album": {
+          "rows": [
+            {
+              "Artist": {
+                "rows": [
+                  {
+                    "ArtistId": "2",
+                    "artist": "Accept"
+                  }
+                ]
+              },
+              "album": "Restless and Wild"
+            }
+          ]
+        },
+        "AlbumId": "3",
+        "track": "Fast As a Shark"
+      },
+      {
+        "Album": {
+          "rows": [
+            {
+              "Artist": {
+                "rows": [
+                  {
+                    "ArtistId": "2",
+                    "artist": "Accept"
+                  }
+                ]
+              },
+              "album": "Restless and Wild"
+            }
+          ]
+        },
+        "AlbumId": "3",
+        "track": "Restless and Wild"
+      },
+      {
+        "Album": {
+          "rows": [
+            {
+              "Artist": {
+                "rows": [
+                  {
+                    "ArtistId": "2",
+                    "artist": "Accept"
+                  }
+                ]
+              },
+              "album": "Restless and Wild"
+            }
+          ]
+        },
+        "AlbumId": "3",
+        "track": "Princess of the Dawn"
+      },
+      {
+        "Album": {
+          "rows": [
+            {
+              "Artist": {
+                "rows": [
+                  {
+                    "ArtistId": "1",
+                    "artist": "AC/DC"
+                  }
+                ]
+              },
+              "album": "Let There Be Rock"
+            }
+          ]
+        },
+        "AlbumId": "4",
+        "track": "Go Down"
+      },
+      {
+        "Album": {
+          "rows": [
+            {
+              "Artist": {
+                "rows": [
+                  {
+                    "ArtistId": "1",
+                    "artist": "AC/DC"
+                  }
+                ]
+              },
+              "album": "Let There Be Rock"
+            }
+          ]
+        },
+        "AlbumId": "4",
+        "track": "Dog Eat Dog"
+      }
+    ]
+  }
+]

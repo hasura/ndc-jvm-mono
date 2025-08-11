@@ -15,6 +15,9 @@ import org.jooq.Field
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 
+/**
+ * Supported database backends used to drive dialect-specific SQL and type handling.
+ */
 enum class DatabaseType {
     ORACLE,
     MYSQL,
@@ -22,20 +25,36 @@ enum class DatabaseType {
     TRINO
 }
 
+/**
+ * Base utilities for translating NDC IR requests into jOOQ SQL.
+ * Provides helpers for CTEs, joins, predicates, ordering, pagination, aggregates, and type mapping.
+ */
 abstract class BaseQueryGenerator : BaseGenerator {
 
+    /**
+     * Entry-point: routes variables/foreach requests to forEachQueryRequestToSQL, otherwise to queryRequestToSQL.
+     */
     fun handleRequest(request: QueryRequest): Select<*> {
         return if(request.isVariablesRequest())
             this.forEachQueryRequestToSQL(request)
         else this.queryRequestToSQL(request)
     }
 
+    /**
+     * Convert a single NDC QueryRequest to a jOOQ Select representing the result.
+     */
     abstract fun queryRequestToSQL(request: QueryRequest): Select<*>
 
+    /**
+     * Default mutation generator; connectors that support mutations should override.
+     */
     open fun mutationQueryRequestToSQL(request: QueryRequest): Select<*> {
         throw NotImplementedError("Mutation not supported for this data source")
     }
 
+    /**
+     * Scans the request (collections, relationships, predicates) to collect all collections backed by Native Queries.
+     */
     protected fun findAllNativeQueries(request: QueryRequest): Set<String> {
         val nativeQueries = mutableSetOf<String>()
         val config = ConnectorConfiguration.Loader.config
@@ -93,6 +112,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         return nativeQueries
     }
 
+    /**
+     * Builds a WITH clause materializing configured Native Queries as CTEs, parameterizing with literal arguments.
+     */
     fun mkNativeQueryCTEs(
         request: QueryRequest
     ): org.jooq.WithStep {
@@ -142,12 +164,18 @@ abstract class BaseQueryGenerator : BaseGenerator {
         return withStep
     }
 
+    /**
+     * Returns only ColumnField entries from the provided field map.
+     */
     fun getQueryColumnFields(fields: Map<String, IRField>): Map<String, IRField.ColumnField> {
         return fields
             .filterValues { it is IRField.ColumnField }
             .mapValues { it.value as IRField.ColumnField }
     }
 
+    /**
+     * Returns only RelationshipField entries from the provided field map.
+     */
     protected fun getQueryRelationFields(fields: Map<String, IRField>?): Map<String, IRField.RelationshipField> {
         return fields
             ?.filterValues { it is IRField.RelationshipField }
@@ -155,10 +183,16 @@ abstract class BaseQueryGenerator : BaseGenerator {
             ?: emptyMap()
     }
 
+    /**
+     * Extracts requested aggregate selections from the query.
+     */
     protected fun getAggregateFields(request: QueryRequest): Map<String, Aggregate> {
         return (request.query.aggregates ?: emptyMap())
     }
 
+    /**
+     * Builds join key fields for a relationship using the current collection name string.
+     */
     protected fun mkJoinKeyFields(
         rel: Relationship?,
         currentCollection: String,
@@ -171,6 +205,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         else emptyList()
     }
 
+    /**
+     * Builds join key fields for a relationship using a jOOQ Name for the current collection.
+     */
     protected fun mkJoinKeyFields(
         rel: Relationship?,
         currentCollection: org.jooq.Name,
@@ -186,6 +223,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         else emptyList()
     }
 
+    /**
+     * Creates a grouped subquery selecting the aggregate target and join keys for ORDER BY over aggregates.
+     */
     fun mkAggregateSubquery(
         elem: OrderByElement,
         relationship: Relationship,
@@ -223,6 +263,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         )
     }
 
+    /**
+     * Convenience overload that resolves order_by from the request and current collection.
+     */
     protected fun translateIROrderByField(
         request: QueryRequest,
         currentCollection: String = request.collection
@@ -234,6 +277,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
     // This method requires that order-by target fields which reference other tables
     // have been JOIN'ed to the main query table, aliased as their Relationship table name
     // TODO: Does this break if custom table names are used?
+    /**
+     * Translates IR order_by into jOOQ SortFields; supports column and aggregate targets across relationships.
+     */
     protected fun translateIROrderByField(
         orderBy: OrderBy?,
         currentCollection: String,
@@ -274,26 +320,45 @@ abstract class BaseQueryGenerator : BaseGenerator {
         } ?: emptyList()
     }
 
+    /**
+     * Ensures all JOINs needed by the predicate are present by walking column paths in comparisons/exists.
+     */
     protected fun addJoinsRequiredForPredicate(
         request: QueryRequest,
         select: SelectJoinStep<*>,
         expression: Expression? = request.query.predicate,
-        seenRelations: MutableSet<String> = mutableSetOf()
+        seenRelationChains: MutableSet<List<String>> = mutableSetOf(),
+        sourceCollection: String = request.collection
     ) {
-        fun addForColumn(column: ComparisonTarget) {
+        fun addForColumn(column: ComparisonTarget, fromTable: String) {
             if (column is ComparisonTarget.Column) {
-                column.path.forEach {
-                    if (!seenRelations.contains(it.relationship)) {
-                        val r = request.collection_relationships[it.relationship]!!
-                        val rel = r.copy(arguments = it.arguments + r.arguments)
+                var currentTableName = fromTable
+                column.path.forEach { pathElem ->
+                    val baseRel = request.collection_relationships[pathElem.relationship]
+                        ?: throw Exception("Relationship ${'$'}{pathElem.relationship} not found")
+                    val rel = baseRel.copy(arguments = pathElem.arguments + baseRel.arguments)
+
+                    val relChain = listOf(currentTableName, pathElem.relationship)
+                    if (!seenRelationChains.contains(relChain)) {
                         select.leftJoin(
                             DSL.table(DSL.name(rel.target_collection))
                         ).on(
-                            mkSQLJoin(rel, request.collection )
+                            mkSQLJoin(rel, currentTableName)
                         )
-                        seenRelations.add(it.relationship)
+                        seenRelationChains.add(relChain)
                     }
-                    addJoinsRequiredForPredicate(request, select, it.predicate, seenRelations)
+
+                    if (pathElem.predicate != Expression.And(emptyList())) {
+                        addJoinsRequiredForPredicate(
+                            request = request,
+                            select = select,
+                            expression = pathElem.predicate,
+                            seenRelationChains = seenRelationChains,
+                            sourceCollection = rel.target_collection
+                        )
+                    }
+
+                    currentTableName = rel.target_collection
                 }
             }
         }
@@ -301,92 +366,198 @@ abstract class BaseQueryGenerator : BaseGenerator {
         expression?.let { where ->
             when (where) {
                 is Expression.And ->
-                    where.expressions.forEach { addJoinsRequiredForPredicate(request, select, it, seenRelations) }
+                    where.expressions.forEach { addJoinsRequiredForPredicate(request, select, it, seenRelationChains, sourceCollection) }
 
                 is Expression.Or ->
-                    where.expressions.forEach { addJoinsRequiredForPredicate(request, select, it, seenRelations) }
+                    where.expressions.forEach { addJoinsRequiredForPredicate(request, select, it, seenRelationChains, sourceCollection) }
 
-                is Expression.Not -> addJoinsRequiredForPredicate(request, select, where.expression, seenRelations)
+                is Expression.Not -> addJoinsRequiredForPredicate(request, select, where.expression, seenRelationChains, sourceCollection)
                 is Expression.ApplyBinaryComparison -> {
-                    addForColumn(where.column)
+                    addForColumn(where.column, sourceCollection)
                     if (where.value is ComparisonValue.ColumnComp) {
-                        addForColumn((where.value as ComparisonValue.ColumnComp).column)
+                        addForColumn((where.value as ComparisonValue.ColumnComp).column, sourceCollection)
                     }
                 }
 
-                is Expression.ApplyUnaryComparison -> {} // no-op
-                is Expression.Exists -> addJoinsRequiredForPredicate(request, select, where.predicate, seenRelations)
+                is Expression.ApplyUnaryComparison -> { /* no-op */ }
+                is Expression.Exists -> {
+                    addJoinsRequiredForPredicate(request, select, where.predicate, seenRelationChains, sourceCollection)
+                }
             }
         }
 
     }
 
+    /**
+     * Builds an aggregate subquery for ORDER BY when the aggregate target is reached via a path of relationships.
+     */
+    private fun mkAggregateSubqueryAcrossPath(
+        elem: OrderByElement,
+        request: QueryRequest
+    ): SelectHavingStep<Record> {
+        val path = elem.target.path
+        require(path.isNotEmpty()) { "Aggregate ORDER BY path must be non-empty" }
+
+        val relationships = request.collection_relationships
+        val firstRel = relationships[path.first().relationship]
+            ?: error("Relationship ${path.first().relationship} not found")
+        val lastRel = relationships[path.last().relationship]
+            ?: error("Relationship ${path.last().relationship} not found")
+
+        val orderElem: List<SelectField<*>> = when (val target = elem.target) {
+            is OrderByTarget.OrderByStarCountAggregate -> listOf(DSL.count().`as`(DSL.name("aggregate_field")))
+            is OrderByTarget.OrderBySingleColumnAggregate -> {
+                val aggregate = Aggregate.SingleColumn(target.column, target.function)
+                listOf(translateIRAggregateField(aggregate).`as`(DSL.name("aggregate_field")))
+            }
+            else -> emptyList()
+        }
+        val groupCols = mkJoinKeyFields(firstRel, firstRel.target_collection)
+
+        var selectStep: SelectJoinStep<Record> = DSL
+            .select(orderElem + groupCols)
+            .from(DSL.table(DSL.name(lastRel.target_collection)))
+
+        val whereConditions = mutableListOf<Condition>()
+
+        for (i in path.size - 1 downTo 1) {
+            val currRelName = path[i].relationship
+            val prevRelName = path[i - 1].relationship
+            val currRel = relationships[currRelName] ?: error("Relationship $currRelName not found")
+            val prevRel = relationships[prevRelName] ?: error("Relationship $prevRelName not found")
+
+            selectStep = selectStep
+                .join(DSL.table(DSL.name(prevRel.target_collection)))
+                .on(
+                    mkSQLJoin(
+                        currRel,
+                        prevRel.target_collection
+                    )
+                )
+
+            val pred = path[i].predicate
+            if (pred !is Expression.And || pred.expressions.isNotEmpty()) {
+                whereConditions.add(
+                    expressionToCondition(
+                        e = pred,
+                        request = request,
+                        overrideCollection = currRel.target_collection
+                    )
+                )
+            }
+        }
+
+        val firstPred = path.first().predicate
+        if (firstPred !is Expression.And || firstPred.expressions.isNotEmpty()) {
+            whereConditions.add(
+                expressionToCondition(
+                    e = firstPred,
+                    request = request,
+                    overrideCollection = firstRel.target_collection
+                )
+            )
+        }
+
+        return if (whereConditions.isNotEmpty())
+            selectStep.where(DSL.and(whereConditions)).groupBy(groupCols)
+        else
+            (selectStep as SelectWhereStep<Record>).groupBy(groupCols)
+    }
+
+    /**
+     * Adds JOINs (including aggregate CTE joins) required by ORDER BY elements that reference related collections.
+     */
     protected fun addJoinsRequiredForOrderByFields(
         select: SelectJoinStep<*>,
         request: QueryRequest,
         sourceCollection: String = request.collection
     ) {
-        // Add the JOIN's required by any ORDER BY fields referencing other tables
-        //
-        // Make a SET to hold seen tables so we don't add the same JOIN twice
-        // When we are mapping through each of the ORDER BY elements, we will
-        // check if the "relEdges" for the target path have been seen before
-        // If so, we don't want to add the JOIN again, because it will cause
-        // a SQL error
-        val seenRelations = mutableSetOf<String>()
-        request.query.order_by?.let { orderBy ->
-            // FOR EACH ORDER BY:
-            orderBy.elements.forEach { orderByElement ->
-                if (orderByElement.target.path.isNotEmpty()) {
-                    val relationshipNames = orderByElement.target.path.map { it.relationship to it.predicate }.toMap()
+        val seenRelationChains = mutableSetOf<List<String>>()
+        val seenAggregateAliases = mutableSetOf<String>()
 
-                    // FOR EACH RELATIONSHIP EDGE:
-                    relationshipNames
-                        .minus(seenRelations) // Only add JOINs for unseen relationships
-                        .forEach { (relationshipName, predicate) ->
-                            seenRelations.add(relationshipName)
+        request.query.order_by?.elements?.forEach { orderByElement ->
+            when (orderByElement.target) {
+                is OrderByTarget.OrderByStarCountAggregate, is OrderByTarget.OrderBySingleColumnAggregate -> {
+                    if (orderByElement.target.path.isNotEmpty()) {
+                        val firstRelName = orderByElement.target.path.first().relationship
+                        val lastRelName = orderByElement.target.path.last().relationship
+                        val aggregateAlias = "${lastRelName}_aggregate"
+                        if (!seenAggregateAliases.contains(aggregateAlias)) {
+                            val relationships = request.collection_relationships
+                            val firstRel = relationships[firstRelName] ?: error("Relationship not found")
 
-                            val relationship = request.collection_relationships[relationshipName]
-                                ?: throw Exception("Relationship not found")
-
-                            val orderByWhereCondition = expressionToCondition(
-                                e = predicate,
-                                request
+                            select.leftJoin(
+                                mkAggregateSubqueryAcrossPath(orderByElement, request)
+                                    .asTable(DSL.name(aggregateAlias))
+                            ).on(
+                                mkSQLJoin(
+                                    firstRel,
+                                    sourceCollection,
+                                    targetTableNameTransform = { _ -> aggregateAlias }
+                                )
                             )
+                            seenAggregateAliases.add(aggregateAlias)
+                        }
+                    }
+                }
+                is OrderByTarget.OrderByColumn -> {
+                    if (orderByElement.target.path.isNotEmpty()) {
+                        var currentTableName = sourceCollection
+                        orderByElement.target.path.forEach { pathElem ->
+                            val relationshipName = pathElem.relationship
+                            val relChain = listOf(currentTableName, relationshipName)
 
-                            when (relationship.relationship_type) {
-                                RelationshipType.Object -> {
-                                    select.leftJoin(
-                                        DSL.table(DSL.name(relationship.target_collection))
-                                    ).on(
-                                        mkSQLJoin(relationship, sourceCollection).and(orderByWhereCondition)
-                                    )
-                                }
-                                // It's an aggregate relationship, so we need to join to the aggregation subquery
-                                RelationshipType.Array -> {
-                                    select.leftJoin(
-                                        mkAggregateSubquery(
-                                            elem = orderByElement,
-                                            relationship = relationship,
-                                            whereCondition = orderByWhereCondition,
-                                        ).asTable(
-                                            DSL.name(relationshipName + "_aggregate")
+                            if (!seenRelationChains.contains(relChain)) {
+                                seenRelationChains.add(relChain)
+
+                                val relationship = request.collection_relationships[relationshipName]
+                                    ?: throw Exception("Relationship not found")
+
+                                val orderByWhereCondition = expressionToCondition(
+                                    e = pathElem.predicate,
+                                    request,
+                                    relationship.target_collection
+                                )
+
+                                when (relationship.relationship_type) {
+                                    RelationshipType.Object -> {
+                                        select.leftJoin(
+                                            DSL.table(DSL.name(relationship.target_collection))
+                                        ).on(
+                                            mkSQLJoin(
+                                                relationship,
+                                                currentTableName
+                                            ).and(orderByWhereCondition)
                                         )
-                                    ).on(
-                                        mkSQLJoin(
-                                            relationship,
-                                            sourceCollection,
-                                            targetTableNameTransform = { _ -> "${relationshipName}_aggregate" }
+                                        currentTableName = relationship.target_collection
+                                    }
+                                    RelationshipType.Array -> {
+                                        select.leftJoin(
+                                            DSL.table(DSL.name(relationship.target_collection))
+                                        ).on(
+                                            mkSQLJoin(
+                                                relationship,
+                                                currentTableName
+                                            ).and(orderByWhereCondition)
                                         )
-                                    )
+                                        currentTableName = relationship.target_collection
+                                    }
                                 }
+                            } else {
+                                val relationship = request.collection_relationships[relationshipName]
+                                    ?: throw Exception("Relationship not found")
+                                currentTableName = relationship.target_collection
                             }
                         }
+                    }
                 }
             }
         }
     }
 
+    /**
+     * Converts an IR Aggregate into the corresponding jOOQ aggregate function.
+     */
     protected fun translateIRAggregateField(field: Aggregate): AggregateFunction<*> {
         return when (field) {
             is Aggregate.StarCount -> DSL.count()
@@ -414,36 +585,57 @@ abstract class BaseQueryGenerator : BaseGenerator {
         }
     }
 
+    /**
+     * Converts a map of aggregates into aliased jOOQ fields.
+     */
     protected fun translateIRAggregateFields(fields: Map<String, Aggregate>): List<Field<*>> {
         return fields.map { (alias, field) ->
             translateIRAggregateField(field).`as`(alias)
         }
     }
 
+    /**
+     * Returns true when only aggregates are requested (no row fields).
+     */
     protected fun isAggregateOnlyRequest(request: QueryRequest) =
         getQueryColumnFields(request.query.fields ?: emptyMap()).isEmpty() &&
                 getAggregateFields(request).isNotEmpty()
 
+    /**
+     * Builds the outer JSON object with optional "rows" and/or "aggregates" depending on the request.
+     */
     protected fun buildOuterStructure(
         request: QueryRequest,
         buildRows: (request: QueryRequest) -> Field<*>,
         buildAggregates: (request: QueryRequest) -> Field<*> = ::buildAggregates
     ): Field<*> {
-        return DSL.jsonObject(
-            if (isAggregateOnlyRequest(request)) {
-                DSL.jsonEntry(
-                    "aggregates",
-                    getAggregates(request, buildAggregates)
-                )
-            } else {
-                DSL.jsonEntry(
-                    "rows",
-                    getRows(request, buildRows)
+        val hasFields = !(request.query.fields.isNullOrEmpty())
+        val hasAggregates = getAggregateFields(request).isNotEmpty()
+
+        val entries = buildList {
+            if (hasFields) {
+                add(
+                    DSL.jsonEntry(
+                        "rows",
+                        getRows(request, buildRows)
+                    )
                 )
             }
-        )
+            if (hasAggregates) {
+                add(
+                    DSL.jsonEntry(
+                        "aggregates",
+                        getAggregates(request, buildAggregates)
+                    )
+                )
+            }
+        }
+        return DSL.jsonObject(entries)
     }
 
+    /**
+     * Helper to produce the rows payload using the provided builder.
+     */
     private fun getRows(
         request: QueryRequest,
         buildRows: (request: QueryRequest) -> Field<*>
@@ -451,6 +643,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         return buildRows(request)
     }
 
+    /**
+     * Helper to produce the aggregates payload using the provided builder.
+     */
     private fun getAggregates(
         request: QueryRequest,
         buildAggregates: (request: QueryRequest) -> Field<*>
@@ -460,6 +655,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         }
     }
 
+    /**
+     * Default JSON object for aggregates: maps alias to corresponding jOOQ aggregate function.
+     */
     protected open fun buildAggregates(request: QueryRequest): Field<*> {
         return DSL.jsonObject(
             getAggregateFields(request).map { (alias, aggregate) ->
@@ -471,6 +669,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         )
     }
 
+    /**
+     * Produces a condition that filters a windowed row_number() for limit/offset semantics.
+     */
     protected fun mkOffsetLimit(
         request: QueryRequest,
         rowNumber: Field<Any> = DSL.field(DSL.name("rn"))
@@ -497,6 +698,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         }
     }
 
+    /**
+     * Builds a VARS CTE from the request.variables for foreach/variables requests.
+     */
     protected fun buildVarsCTE(request: QueryRequest, suffix: String = ""): CommonTableExpression<*> {
         if (request.variables.isNullOrEmpty()) throw Exception("No variables found")
 
@@ -521,8 +725,14 @@ abstract class BaseQueryGenerator : BaseGenerator {
     }
 
     //
+    /**
+     * Convert a foreach/variables QueryRequest into a jOOQ Select that yields one result per variable set.
+     */
     abstract fun forEachQueryRequestToSQL(request: QueryRequest): Select<*>
 
+    /**
+     * Builds the effective WHERE by combining root arguments (only at root) and the request predicate.
+     */
     protected fun getWhereConditions(
         request: QueryRequest,
         collection: String = request.collection,
@@ -540,6 +750,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
             } ?: DSL.noCondition()))
     }
 
+    /**
+     * Produces default aggregate JSON entries used when related selections are absent to keep shape stable.
+     */
     protected fun getDefaultAggregateJsonEntries(aggregates: Map<String, Aggregate>?): Field<*> {
         val defaults = aggregates?.map { (alias, agg) ->
             DSL.jsonEntry(
@@ -563,6 +776,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         const val ROWS_AND_AGGREGATES = "rows_and_aggregates"
     }
 
+    /**
+     * Casts a field to a driver-appropriate SQL type for the given NDC scalar (dialect-specific where needed).
+     */
     fun castToSQLDataType(databaseType: DatabaseType, field: Field<*>, type: NDCScalar): Field<*> {
         return when (type) {
             NDCScalar.INT64, NDCScalar.BIGINTEGER, NDCScalar.BIGDECIMAL ->
@@ -580,6 +796,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         }
     }
 
+    /**
+     * Maps NDCScalar to the closest jOOQ DataType for SQL casting/parameters.
+     */
     fun ndcScalarTypeToSQLDataType(scalarType: NDCScalar): DataType<out Any> = when (scalarType) {
         // Boolean
         NDCScalar.BOOLEAN -> SQLDataType.BOOLEAN
@@ -621,6 +840,9 @@ abstract class BaseQueryGenerator : BaseGenerator {
         else -> SQLDataType.CLOB
     }
 
+    /**
+     * Resolves a column's NDC scalar type (from tables or native queries) and returns both jOOQ DataType and NDCScalar.
+     */
     fun columnTypeTojOOQType(mapScalarType: (String, Int?, Int?) -> NDCScalar, collection: String, field: ColumnField): Pair<org.jooq.DataType<out Any>, NDCScalar> {
         val connectorConfig = ConnectorConfiguration.Loader.config
 

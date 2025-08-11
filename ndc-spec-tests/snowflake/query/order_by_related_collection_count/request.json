@@ -1,0 +1,46 @@
+{
+  "collection": "ARTIST",
+  "query": {
+    "fields": {
+      "Name": {
+        "type": "column",
+        "column": "NAME",
+        "arguments": {}
+      }
+    },
+    "order_by": {
+      "elements": [
+        {
+          "target": {
+            "type": "single_column_aggregate",
+            "column": "ALBUMID",
+            "function": "count",
+            "path": [
+              {
+                "relationship": "ArtistAlbum",
+                "arguments": {},
+                "predicate": {
+                  "type": "and",
+                  "expressions": []
+                }
+              }
+            ]
+          },
+          "order_direction": "desc"
+        }
+      ]
+    },
+    "limit": 3
+  },
+  "arguments": {},
+  "collection_relationships": {
+    "ArtistAlbum": {
+      "column_mapping": {
+        "ARTISTID": "ARTISTID"
+      },
+      "relationship_type": "array",
+      "target_collection": "ALBUM",
+      "arguments": {}
+    }
+  }
+}
