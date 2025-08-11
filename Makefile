@@ -1,3 +1,14 @@
+run-mysql-cli-introspection:
+ifndef JDBC_URL
+	$(error JDBC_URL is not set)
+endif
+	HASURA_CONFIGURATION_DIRECTORY=./configs/mysql \
+	./gradlew :ndc-cli:run --args="\
+update $(JDBC_URL) \
+--fully-qualify-names=false \
+--outfile '../configs/mysql/configuration.json' \
+--database=MYSQL"
+
 run-mysql-connector:
 	export HASURA_CONFIGURATION_DIRECTORY=$(shell pwd)/ndc-connector-mysql && \
 	./gradlew :ndc-connector-mysql:quarkusDev --console=plain
