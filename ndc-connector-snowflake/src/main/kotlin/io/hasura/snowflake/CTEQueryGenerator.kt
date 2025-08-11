@@ -413,47 +413,55 @@ object CTEQueryGenerator : BaseQueryGenerator() {
         if (selects.size == 1) return selects.first().third
 
         selects.forEachIndexed { idx, (currentRequest, relSource, currentSelect) ->
-            val relationships = getQueryRelationFields(currentRequest.query.fields).values.map {
-                val rel = currentRequest.collection_relationships[it.relationship]!!
-                val args = if (rel.arguments.isEmpty() && rel.column_mapping.isEmpty() && it.arguments.isNotEmpty()) {
-                    it.arguments
-                } else rel.arguments
-                rel.copy(arguments = args)
+            val relationFields = getQueryRelationFields(currentRequest.query.fields).map { (alias, field) ->
+                val baseRel = currentRequest.collection_relationships[field.relationship]!!
+                val args = if (baseRel.arguments.isEmpty() && baseRel.column_mapping.isEmpty() && field.arguments.isNotEmpty()) {
+                    field.arguments
+                } else baseRel.arguments
+                Pair(field, baseRel.copy(arguments = args))
             }
 
-            val distinctRelationships = relationships.distinctBy { it.target_collection }
-            distinctRelationships.forEach { relationship ->
-                var chosenIndex: Int? = null
+            val joinedAliases = mutableSetOf<String>()
+
+            relationFields.forEach { (field, relationship) ->
+                val desiredAggOnly = isAggOnlyRelationField(field)
+
                 var chosenTriple: Triple<QueryRequest, String?, SelectJoinStep<*>>? = null
                 var j = idx + 1
                 while (j < selects.size) {
                     val cand = selects[j]
-                    if (cand.first.collection == relationship.target_collection && cand.second == currentRequest.collection) {
-                        chosenIndex = j
+                    if (
+                        cand.first.collection == relationship.target_collection &&
+                        cand.second == currentRequest.collection &&
+                        isAggregateOnlyRequest(cand.first) == desiredAggOnly
+                    ) {
                         chosenTriple = cand
                         break
                     }
                     j++
                 }
 
-                if (chosenIndex != null && chosenTriple != null) {
+                if (chosenTriple != null) {
                     val (innerRequest, _, innerSelect) = chosenTriple!!
                     val innerAlias = createAlias(
                         innerRequest.collection,
                         isAggregateOnlyRequest(innerRequest)
                     )
 
-                    currentSelect
-                        .leftJoin(
-                            innerSelect.asTable(innerAlias)
-                        )
-                        .on(
-                            mkSQLJoin(
-                                relationship,
-                                sourceCollection = genCTEName(currentRequest.collection),
-                                targetTableNameTransform = { innerAlias }
+                    if (!joinedAliases.contains(innerAlias)) {
+                        currentSelect
+                            .leftJoin(
+                                innerSelect.asTable(innerAlias)
                             )
-                        )
+                            .on(
+                                mkSQLJoin(
+                                    relationship,
+                                    sourceCollection = genCTEName(currentRequest.collection),
+                                    targetTableNameTransform = { innerAlias }
+                                )
+                            )
+                        joinedAliases.add(innerAlias)
+                    }
                 }
             }
         }

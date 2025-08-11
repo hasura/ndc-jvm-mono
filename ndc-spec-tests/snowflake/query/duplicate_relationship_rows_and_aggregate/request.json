@@ -1,0 +1,92 @@
+{
+  "collection": "ALBUM",
+  "query": {
+    "fields": {
+      "title": {
+        "type": "column",
+        "column": "TITLE",
+        "fields": null
+      },
+      "tracks": {
+        "type": "relationship",
+        "query": {
+          "fields": {
+            "name": {
+              "type": "column",
+              "column": "NAME",
+              "fields": null
+            }
+          }
+        },
+        "relationship": "app__tracks",
+        "arguments": {}
+      },
+      "tracksAggregate": {
+        "type": "relationship",
+        "query": {
+          "aggregates": {
+            "_count": {
+              "type": "star_count"
+            },
+            "albumid__count_distinct": {
+              "type": "column_count",
+              "column": "ALBUMID",
+              "field_path": null,
+              "distinct": true
+            },
+            "albumid__count": {
+              "type": "column_count",
+              "column": "ALBUMID",
+              "field_path": null,
+              "distinct": false
+            },
+            "milliseconds_max": {
+              "type": "single_column",
+              "column": "MILLISECONDS",
+              "field_path": null,
+              "function": "max"
+            },
+            "milliseconds_min": {
+              "type": "single_column",
+              "column": "MILLISECONDS",
+              "field_path": null,
+              "function": "min"
+            },
+            "milliseconds_avg": {
+              "type": "single_column",
+              "column": "MILLISECONDS",
+              "field_path": null,
+              "function": "avg"
+            }
+          }
+        },
+        "relationship": "app__tracks",
+        "arguments": {}
+      }
+    },
+    "predicate": {
+      "type": "binary_comparison_operator",
+      "column": {
+        "type": "column",
+        "name": "ALBUMID",
+        "path": []
+      },
+      "operator": "_eq",
+      "value": {
+        "type": "scalar",
+        "value": 1
+      }
+    }
+  },
+  "arguments": {},
+  "collection_relationships": {
+    "app__tracks": {
+      "column_mapping": {
+        "ALBUMID": "ALBUMID"
+      },
+      "relationship_type": "array",
+      "target_collection": "TRACK",
+      "arguments": {}
+    }
+  }
+}
