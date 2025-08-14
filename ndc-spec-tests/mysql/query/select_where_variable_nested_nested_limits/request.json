@@ -1,13 +1,10 @@
-POST http://0.0.0.0:8081/query
-Content-Type: application/json
-
 {
-  "collection": "ALBUM",
+  "collection": "Album",
   "query": {
     "fields": {
       "Title": {
         "type": "column",
-        "column": "TITLE",
+        "column": "Title",
         "arguments": {}
       },
       "Tracks": {
@@ -18,7 +15,7 @@ Content-Type: application/json
           "fields": {
             "TrackId": {
               "type": "column",
-              "column": "TRACKID",
+              "column": "TrackId",
               "arguments": {}
             },
             "Genre": {
@@ -29,7 +26,7 @@ Content-Type: application/json
                 "fields": {
                   "Name": {
                     "type": "column",
-                    "column": "NAME",
+                    "column": "Name",
                     "arguments": {}
                   }
                 }
@@ -43,7 +40,7 @@ Content-Type: application/json
                 "fields": {
                   "Name": {
                     "type": "column",
-                    "column": "NAME",
+                    "column": "Name",
                     "arguments": {}
                   }
                 }
@@ -57,7 +54,7 @@ Content-Type: application/json
                 "fields": {
                   "InvoiceLineId": {
                     "type": "column",
-                    "column": "INVOICELINEID",
+                    "column": "InvoiceLineId",
                     "arguments": {}
                   },
                   "Invoice": {
@@ -68,7 +65,7 @@ Content-Type: application/json
                       "fields": {
                         "InvoiceId": {
                           "type": "column",
-                          "column": "INVOICEID",
+                          "column": "InvoiceId",
                           "arguments": {}
                         }
                       }
@@ -81,7 +78,7 @@ Content-Type: application/json
                       "order_direction": "asc",
                       "target": {
                         "type": "column",
-                        "name": "INVOICELINEID",
+                        "name": "InvoiceLineId",
                         "path": []
                       }
                     }
@@ -97,7 +94,7 @@ Content-Type: application/json
                 "order_direction": "asc",
                 "target": {
                   "type": "column",
-                  "name": "TRACKID",
+                  "name": "TrackId",
                   "path": []
                 }
               }
@@ -111,7 +108,7 @@ Content-Type: application/json
       "type": "binary_comparison_operator",
       "column": {
         "type": "column",
-        "name": "TITLE",
+        "name": "Title",
         "path": []
       },
       "operator": "_like",
@@ -126,7 +123,7 @@ Content-Type: application/json
           "order_direction": "asc",
           "target": {
             "type": "column",
-            "name": "ALBUMID",
+            "name": "AlbumId",
             "path": []
           }
         }
@@ -137,42 +134,42 @@ Content-Type: application/json
   "collection_relationships": {
     "AlbumTracks": {
       "column_mapping": {
-        "ALBUMID": "ALBUMID"
+        "AlbumId": "AlbumId"
       },
       "relationship_type": "array",
-      "target_collection": "TRACK",
+      "target_collection": "Track",
       "arguments": {}
     },
     "TrackToGenre": {
       "column_mapping": {
-        "GENREID": "GENREID"
+        "GenreId": "GenreId"
       },
       "relationship_type": "object",
-      "target_collection": "GENRE",
+      "target_collection": "Genre",
       "arguments": {}
     },
     "TrackToMediaType": {
       "column_mapping": {
-        "MEDIATYPEID": "MEDIATYPEID"
+        "MediaTypeId": "MediaTypeId"
       },
       "relationship_type": "object",
-      "target_collection": "MEDIATYPE",
+      "target_collection": "MediaType",
       "arguments": {}
     },
     "TrackToInvoiceLines": {
       "column_mapping": {
-        "TRACKID": "TRACKID"
+        "TrackId": "TrackId"
       },
       "relationship_type": "array",
-      "target_collection": "INVOICELINE",
+      "target_collection": "InvoiceLine",
       "arguments": {}
     },
     "InvoiceLineToInvoice": {
       "column_mapping": {
-        "INVOICEID": "INVOICEID"
+        "InvoiceId": "InvoiceId"
       },
       "relationship_type": "object",
-      "target_collection": "INVOICE",
+      "target_collection": "Invoice",
       "arguments": {}
     }
   },
@@ -184,4 +181,3 @@ Content-Type: application/json
     { "search": "%Good%" }
   ]
 }
-
