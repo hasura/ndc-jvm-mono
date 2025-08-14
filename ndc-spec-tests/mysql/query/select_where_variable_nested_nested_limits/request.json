@@ -1,0 +1,183 @@
+{
+  "collection": "Album",
+  "query": {
+    "fields": {
+      "Title": {
+        "type": "column",
+        "column": "Title",
+        "arguments": {}
+      },
+      "Tracks": {
+        "type": "relationship",
+        "relationship": "AlbumTracks",
+        "arguments": {},
+        "query": {
+          "fields": {
+            "TrackId": {
+              "type": "column",
+              "column": "TrackId",
+              "arguments": {}
+            },
+            "Genre": {
+              "type": "relationship",
+              "relationship": "TrackToGenre",
+              "arguments": {},
+              "query": {
+                "fields": {
+                  "Name": {
+                    "type": "column",
+                    "column": "Name",
+                    "arguments": {}
+                  }
+                }
+              }
+            },
+            "MediaType": {
+              "type": "relationship",
+              "relationship": "TrackToMediaType",
+              "arguments": {},
+              "query": {
+                "fields": {
+                  "Name": {
+                    "type": "column",
+                    "column": "Name",
+                    "arguments": {}
+                  }
+                }
+              }
+            },
+            "InvoiceLines": {
+              "type": "relationship",
+              "relationship": "TrackToInvoiceLines",
+              "arguments": {},
+              "query": {
+                "fields": {
+                  "InvoiceLineId": {
+                    "type": "column",
+                    "column": "InvoiceLineId",
+                    "arguments": {}
+                  },
+                  "Invoice": {
+                    "type": "relationship",
+                    "relationship": "InvoiceLineToInvoice",
+                    "arguments": {},
+                    "query": {
+                      "fields": {
+                        "InvoiceId": {
+                          "type": "column",
+                          "column": "InvoiceId",
+                          "arguments": {}
+                        }
+                      }
+                    }
+                  }
+                },
+                "order_by": {
+                  "elements": [
+                    {
+                      "order_direction": "asc",
+                      "target": {
+                        "type": "column",
+                        "name": "InvoiceLineId",
+                        "path": []
+                      }
+                    }
+                  ]
+                },
+                "limit": 2
+              }
+            }
+          },
+          "order_by": {
+            "elements": [
+              {
+                "order_direction": "asc",
+                "target": {
+                  "type": "column",
+                  "name": "TrackId",
+                  "path": []
+                }
+              }
+            ]
+          },
+          "limit": 2
+        }
+      }
+    },
+    "predicate": {
+      "type": "binary_comparison_operator",
+      "column": {
+        "type": "column",
+        "name": "Title",
+        "path": []
+      },
+      "operator": "_like",
+      "value": {
+        "type": "variable",
+        "name": "search"
+      }
+    },
+    "order_by": {
+      "elements": [
+        {
+          "order_direction": "asc",
+          "target": {
+            "type": "column",
+            "name": "AlbumId",
+            "path": []
+          }
+        }
+      ]
+    }
+  },
+  "arguments": {},
+  "collection_relationships": {
+    "AlbumTracks": {
+      "column_mapping": {
+        "AlbumId": "AlbumId"
+      },
+      "relationship_type": "array",
+      "target_collection": "Track",
+      "arguments": {}
+    },
+    "TrackToGenre": {
+      "column_mapping": {
+        "GenreId": "GenreId"
+      },
+      "relationship_type": "object",
+      "target_collection": "Genre",
+      "arguments": {}
+    },
+    "TrackToMediaType": {
+      "column_mapping": {
+        "MediaTypeId": "MediaTypeId"
+      },
+      "relationship_type": "object",
+      "target_collection": "MediaType",
+      "arguments": {}
+    },
+    "TrackToInvoiceLines": {
+      "column_mapping": {
+        "TrackId": "TrackId"
+      },
+      "relationship_type": "array",
+      "target_collection": "InvoiceLine",
+      "arguments": {}
+    },
+    "InvoiceLineToInvoice": {
+      "column_mapping": {
+        "InvoiceId": "InvoiceId"
+      },
+      "relationship_type": "object",
+      "target_collection": "Invoice",
+      "arguments": {}
+    }
+  },
+  "variables": [
+    { "search": "%Quest%" },
+    { "search": "Amazing" },
+    { "search": "%Rio%" },
+    { "search": "%Garage%" },
+    { "search": "%Good%" }
+  ]
+}
