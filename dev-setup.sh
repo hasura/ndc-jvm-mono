@@ -89,7 +89,7 @@ else
 
     # Set the environment variable based on connector type
     if [ "$CONNECTOR" = "mysql" ]; then
-        export "$ENV_VAR_NAME"='jdbc:mysql://root:rootpassword@localhost:3306/Chinook?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC'
+        export "$ENV_VAR_NAME"='jdbc:mysql://root:Password123@localhost:3306/Chinook?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC'
         echo "$ENV_VAR_NAME exported: ${!ENV_VAR_NAME}"
     else
         echo "Note: For hosted $CONNECTOR database, ensure $ENV_VAR_NAME is set in your environment"
