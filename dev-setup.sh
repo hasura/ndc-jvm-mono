@@ -62,41 +62,7 @@ if [ -n "$JDBC_URL" ]; then
     echo "$ENV_VAR_NAME exported: ${!ENV_VAR_NAME}"
 else
     echo "JDBC_URL not found, proceeding with database setup..."
-
-    # Store original directory
-    ORIGINAL_DIR=$(pwd)
-
-    # Check if connector requires local Docker setup
-    if [[ "$CONNECTOR" == "mysql" ]]; then
-        # Navigate to connector setup directory
-        SETUP_DIR="dev/$CONNECTOR"
-        echo "Changing to directory: $SETUP_DIR"
-        cd "$SETUP_DIR" || { echo "Failed to change directory to $SETUP_DIR"; exit 1; }
-
-        # Run docker compose
-        echo "Starting $CONNECTOR with docker-compose..."
-        docker compose up -d || { echo "Docker compose failed for $CONNECTOR"; exit 1; }
-
-        # Wait for service to be ready
-        echo "Waiting for $CONNECTOR to be ready..."
-        sleep 5
-
-        # Return to the original directory
-        cd "$ORIGINAL_DIR" || { echo "Failed to return to root directory"; exit 1; }
-    else
-        echo "Using hosted database for $CONNECTOR connector (no Docker setup required)"
-    fi
-
-    # Set the environment variable based on connector type
-    if [ "$CONNECTOR" = "mysql" ]; then
-        export "$ENV_VAR_NAME"='jdbc:mysql://root:Password123@localhost:3306/Chinook?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC'
-        echo "$ENV_VAR_NAME exported: ${!ENV_VAR_NAME}"
-    else
-        echo "Note: For hosted $CONNECTOR database, ensure $ENV_VAR_NAME is set in your environment"
-        echo "You may need to set this manually or source a configuration file"
-    fi
-
-    export JDBC_URL=${!ENV_VAR_NAME}
+    exit 1
 fi
 
 # If --db-only flag is set, only start the database and exit
