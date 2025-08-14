@@ -56,8 +56,8 @@ object CTEQueryGenerator : BaseQueryGenerator() {
                 )
                     .orderBy(DSL.field(DSL.name(listOf(VARS, INDEX))))
             )
-            .from(buildSelections(request).asTable("data"))
-            .rightJoin(DSL.name(VARS))
+            .from(DSL.name(VARS))
+            .leftJoin(buildSelections(request).asTable("data"))
             .on(
                 DSL.field(DSL.name("data", INDEX))
                     .eq(DSL.field(DSL.name(VARS, INDEX)))
@@ -184,7 +184,7 @@ object CTEQueryGenerator : BaseQueryGenerator() {
                             ).orderBy(
                                 run {
                                     val orderByFields = translateIROrderByField(request) +
-                                            if (request.isVariablesRequest()) listOf(
+                                            if (request.isVariablesRequest() && request.root_collection == request.collection) listOf(
                                                 DSL.field(
                                                     DSL.name(
                                                         listOf(
@@ -201,8 +201,19 @@ object CTEQueryGenerator : BaseQueryGenerator() {
 
                     )
                         .apply {
-                            if (request.isVariablesRequest())
-                                this.select(DSL.table(DSL.name(VARS)).asterisk())
+                            if (request.isVariablesRequest()) {
+                                if (relationship == null) {
+                                    // Root: bring vars.* (includes idx)
+                                    this.select(DSL.table(DSL.name(VARS)).asterisk())
+                                } else {
+                                    // Nested: propagate parent's idx as idx to keep per-var partitioning
+                                    this.select(
+                                        DSL.field(
+                                            DSL.name(listOf(genCTEName(relSource ?: request.collection), INDEX))
+                                        ).`as`(DSL.name(INDEX))
+                                    )
+                                }
+                            }
                         }
                         .apply {
                             if (relationship != null
@@ -225,8 +236,8 @@ object CTEQueryGenerator : BaseQueryGenerator() {
                                 sourceCollection = request.collection
                             )
                         }
-                        .apply {// cross join "vars" if this request contains variables
-                            if (request.isVariablesRequest())
+                        .apply {// only the root level should see VARS; nested levels should be scoped by parent
+                            if (request.isVariablesRequest() && relationship == null)
                                 (this as SelectJoinStep<*>).crossJoin(DSL.name(VARS))
                         }
                         .apply {
@@ -454,11 +465,19 @@ object CTEQueryGenerator : BaseQueryGenerator() {
                                 innerSelect.asTable(innerAlias)
                             )
                             .on(
-                                mkSQLJoin(
-                                    relationship,
-                                    sourceCollection = genCTEName(currentRequest.collection),
-                                    targetTableNameTransform = { innerAlias }
-                                )
+                                run {
+                                    val baseJoin = mkSQLJoin(
+                                        relationship,
+                                        sourceCollection = genCTEName(currentRequest.collection),
+                                        targetTableNameTransform = { innerAlias }
+                                    )
+                                    if (currentRequest.isVariablesRequest()) {
+                                        baseJoin.and(
+                                            DSL.field(DSL.name(listOf(genCTEName(currentRequest.collection), INDEX)))
+                                                .eq(DSL.field(DSL.name(listOf(innerAlias, INDEX))))
+                                        )
+                                    } else baseJoin
+                                }
                             )
                         joinedAliases.add(innerAlias)
                     }
