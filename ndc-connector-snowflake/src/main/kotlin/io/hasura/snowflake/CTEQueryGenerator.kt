@@ -465,11 +465,19 @@ object CTEQueryGenerator : BaseQueryGenerator() {
                                 innerSelect.asTable(innerAlias)
                             )
                             .on(
-                                mkSQLJoin(
-                                    relationship,
-                                    sourceCollection = genCTEName(currentRequest.collection),
-                                    targetTableNameTransform = { innerAlias }
-                                )
+                                run {
+                                    val baseJoin = mkSQLJoin(
+                                        relationship,
+                                        sourceCollection = genCTEName(currentRequest.collection),
+                                        targetTableNameTransform = { innerAlias }
+                                    )
+                                    if (currentRequest.isVariablesRequest()) {
+                                        baseJoin.and(
+                                            DSL.field(DSL.name(listOf(genCTEName(currentRequest.collection), INDEX)))
+                                                .eq(DSL.field(DSL.name(listOf(innerAlias, INDEX))))
+                                        )
+                                    } else baseJoin
+                                }
                             )
                         joinedAliases.add(innerAlias)
                     }
