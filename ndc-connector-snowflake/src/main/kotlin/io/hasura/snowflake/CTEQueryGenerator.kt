@@ -248,7 +248,14 @@ object CTEQueryGenerator : BaseQueryGenerator() {
                         }
                         .where(getWhereConditions(predRewrittenRequest))
                         .asTable(request.collection.split(".").joinToString("_"))
-                ).where(mkOffsetLimit(request, DSL.field(DSL.name(getRNName(request.collection)))))
+                ).where(
+                    mkOffsetLimit(request, DSL.field(DSL.name(getRNName(request.collection))))
+                        .and(
+                            if (relationship?.relationship_type == RelationshipType.Object)
+                                DSL.field(DSL.name(getRNName(request.collection))).eq(DSL.inline(1))
+                            else DSL.noCondition()
+                        )
+                )
         )
     }
 
@@ -303,7 +310,8 @@ object CTEQueryGenerator : BaseQueryGenerator() {
      */
     private fun buildRows(request: QueryRequest): Field<*> {
         val isObjectTarget = isTargetOfObjRel(request)
-        val agg = if (isObjectTarget) DSL::jsonArrayAggDistinct else DSL::jsonArrayAgg
+        // Early RN=1 deduplication for object targets is applied in buildCTE; no need for DISTINCT here
+        val agg = DSL::jsonArrayAgg
         return DSL.coalesce(
             agg(buildRow(request))
                 .orderBy(
