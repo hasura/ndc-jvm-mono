@@ -8,6 +8,8 @@ import io.hasura.ndc.sqlgen.BaseQueryGenerator.Companion.INDEX
 import io.hasura.ndc.sqlgen.BaseQueryGenerator.Companion.ROWS_AND_AGGREGATES
 import io.hasura.ndc.sqlgen.DatabaseType.SNOWFLAKE
 import io.hasura.snowflake.SnowflakeJDBCSchemaGenerator
+import io.hasura.ndc.common.NDCScalar
+
 import org.jooq.*
 import org.jooq.impl.DSL
 
@@ -35,6 +37,34 @@ object SnowflakePlanBuilder : BaseQueryGenerator() {
         val asm: CommonTableExpression<*>,
         val children: List<PlanNode>
     )
+
+    override fun buildComparison(
+        col: Field<Any>,
+        operator: ApplyBinaryComparisonOperator,
+        listVal: List<Field<Any>>,
+        columnType: NDCScalar?
+    ): Condition {
+        return when (operator) {
+            ApplyBinaryComparisonOperator.REGEX -> {
+                val v = listVal.firstOrNull() ?: return DSL.falseCondition()
+                DSL.condition("regexp_like(?, ?)", col as Field<String>, v as Field<String>)
+            }
+            ApplyBinaryComparisonOperator.NOT_REGEX -> {
+                val v = listVal.firstOrNull() ?: return DSL.falseCondition()
+                DSL.not(DSL.condition("regexp_like(?, ?)", col as Field<String>, v as Field<String>))
+            }
+            ApplyBinaryComparisonOperator.IREGEX -> {
+                val v = listVal.firstOrNull() ?: return DSL.falseCondition()
+                DSL.condition("regexp_like(?, ?, 'i')", col as Field<String>, v as Field<String>)
+            }
+            ApplyBinaryComparisonOperator.NOT_IREGEX -> {
+                val v = listVal.firstOrNull() ?: return DSL.falseCondition()
+                DSL.not(DSL.condition("regexp_like(?, ?, 'i')", col as Field<String>, v as Field<String>))
+            }
+            else -> super.buildComparison(col, operator, listVal, columnType)
+        }
+    }
+
 
     override fun queryRequestToSQL(request: QueryRequest): Select<*> = buildFinal(request)
 
@@ -447,8 +477,12 @@ object SnowflakePlanBuilder : BaseQueryGenerator() {
             )
             val outerJson = buildOuterStructure(request, buildRows = { _: QueryRequest -> rowsField })
 
+            val idxSelectRoot: List<SelectField<*>> = if (request.isVariablesRequest())
+                listOf(DSL.field(DSL.name(cteName(request.collection, pathSuffix), INDEX)).`as`(DSL.name(INDEX))) else emptyList()
+
             var selectJoin: SelectJoinStep<*> = DSL
                 .select(outerJson.`as`(ROWS_AND_AGGREGATES))
+                .select(idxSelectRoot.map { it as Field<*> })
                 .from(baseOrPick) as SelectJoinStep<*>
 
             children.forEach { child ->
@@ -482,7 +516,11 @@ object SnowflakePlanBuilder : BaseQueryGenerator() {
                 }
             }
 
-            return DSL.name(asmAlias).`as`(selectJoin)
+            val finalSelect = if (request.isVariablesRequest())
+                (selectJoin as SelectGroupByStep<*>).groupBy(DSL.field(DSL.name(INDEX)))
+            else selectJoin
+
+            return DSL.name(asmAlias).`as`(finalSelect)
         } else {
             val rel = relationshipFromParent
             // Project join key fields from the child base CTE and alias them to simple names
