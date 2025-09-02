@@ -517,7 +517,8 @@ object SnowflakePlanBuilder : BaseQueryGenerator() {
             }
 
             val finalSelect = if (request.isVariablesRequest())
-                (selectJoin as SelectGroupByStep<*>).groupBy(DSL.field(DSL.name(INDEX)))
+                (selectJoin as SelectGroupByStep<*>)
+                    .groupBy(DSL.field(DSL.name(cteName(request.collection, pathSuffix), INDEX)))
             else selectJoin
 
             return DSL.name(asmAlias).`as`(finalSelect)
