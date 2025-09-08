@@ -125,7 +125,11 @@ object JsonQueryGenerator : BaseQueryGenerator() {
             baseQuery.offset(request.query.offset)
         }
 
-        val baseSelection = baseQuery.asTable(DSL.name(tojOOQName(request.collection)))
+        val baseSelection = baseQuery.asTable(
+            DSL.name(
+                getAliasedTableName(request.collection)
+            )
+        )
 
         return DSL.jsonObject(
             buildList {
@@ -191,8 +195,12 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                                                 DSL.jsonObject(
                                                                     DSL.jsonEntry(
                                                                         "rows",
-                                                                        DSL.jsonArray()
+                                                                        DSL.jsonArray().returning(
+                                                                            SQLDataType.CLOB
+                                                                        )
                                                                     )
+                                                                ).returning(
+                                                                    SQLDataType.CLOB
                                                                 )
                                                             )
                                                         )
@@ -335,7 +343,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
         parentRelationship: Relationship
     ) = DSL.and(
         parentRelationship.column_mapping.map { (from, to) ->
-            val childField = DSL.field(tojOOQName(sourceTable, from))
+            val childField = DSL.field(tojOOQName(getAliasedTableName(sourceTable), from))
             val parentField = DSL.field(tojOOQName(parentRelationship.target_collection, to))
             childField.eq(parentField)
         }
@@ -530,4 +538,13 @@ object JsonQueryGenerator : BaseQueryGenerator() {
             joinCols
         )
     }
+
+    private fun getTableName(collection: String): String {
+        return collection.split('.').last()
+    }
+
+    private fun getAliasedTableName(collection: String): String {
+        return getTableName(collection) + "_alias"
+    }
+
 }
