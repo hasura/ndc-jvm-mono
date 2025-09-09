@@ -1,4 +1,4 @@
-e# Hasura NDC V3 JVM Repository
+e# Hasura NDC V3 JVM Repository 
 
 This repository contains the source code for the Hasura NDC V3 Connectors deployed on the JVM.
 
