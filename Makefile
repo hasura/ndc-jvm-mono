@@ -10,7 +10,7 @@ update $(JDBC_URL) \
 --database=MYSQL"
 
 run-mysql-connector:
-	export HASURA_CONFIGURATION_DIRECTORY=$(shell pwd)/ndc-connector-mysql && \
+	export HASURA_CONFIGURATION_DIRECTORY=$(shell pwd)/configs/mysql && \
 	./gradlew :ndc-connector-mysql:quarkusDev --console=plain
 
 run-mysql-tests:
