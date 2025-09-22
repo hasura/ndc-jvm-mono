@@ -11,6 +11,7 @@ import io.hasura.ndc.app.models.ExplainResponse
 import io.hasura.ndc.app.services.AgroalDataSourceService
 import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import io.opentelemetry.api.trace.Span
 import jakarta.enterprise.inject.Produces
 import jakarta.inject.Inject
 import io.hasura.ndc.ir.*
@@ -26,6 +27,7 @@ import org.jooq.conf.Settings
 import org.jooq.conf.StatementType
 import org.jooq.impl.DSL
 import javax.sql.DataSource
+import java.util.logging.Logger
 
 @ApplicationScoped
 class JDBCDataSourceProvider : IDataSourceProvider {
@@ -33,20 +35,186 @@ class JDBCDataSourceProvider : IDataSourceProvider {
     @Inject
     private lateinit var agroalDataSourceService: AgroalDataSourceService
 
-    // Cache DataSources by resolved JDBC URL and properties so we can reuse pools per connection_string
-    private val dataSources = java.util.concurrent.ConcurrentHashMap<DataSourceKey, DataSource>()
+    private val logger = Logger.getLogger(JDBCDataSourceProvider::class.java.name)
+
+    // Cache DataSources by resolved JDBC URL and properties with time-based eviction
+    private val dataSources = java.util.concurrent.ConcurrentHashMap<DataSourceKey, CachedDataSource>()
+
+    // Cache configuration loaded from connector configuration
+    private val cacheConfig = ConnectorConfiguration.Loader.config.dataSourceCache
 
     private data class DataSourceKey(val jdbcUrl: String, val jdbcProperties: Map<String, Any>)
 
+    private data class CachedDataSource(
+        val dataSource: DataSource,
+        @Volatile var lastAccessTime: Long = System.currentTimeMillis()
+    )
+
+    init {
+        // Start background cleanup task
+        startCleanupTask()
+    }
+
+    @WithSpan("datasource.get")
     override fun getDataSource(config: ConnectorConfiguration): DataSource {
         val resolvedUrl = config.jdbcUrl.resolve()
         val props = config.jdbcProperties
         val key = DataSourceKey(resolvedUrl, props)
-        return dataSources.computeIfAbsent(key) {
-            agroalDataSourceService.createTracingDataSource(
-                ConnectorConfiguration(
-                    jdbcUrl = io.hasura.ndc.common.JdbcUrlConfig.Literal(resolvedUrl),
-                    jdbcProperties = props
+
+        // Check if this is a cache hit or miss
+        val existingEntry = dataSources[key]
+        val isCacheHit = existingEntry != null
+
+        // Add trace attributes for observability
+        val currentSpan = Span.current()
+        val redactedUrl = redactConnectionString(resolvedUrl)
+
+        currentSpan.setAllAttributes(
+            io.opentelemetry.api.common.Attributes.builder()
+                .put("datasource.connection.redacted", redactedUrl)
+                .put("datasource.cache.hit", isCacheHit)
+                .put("datasource.cache.size", dataSources.size.toLong())
+                .put("datasource.cache.max_size", cacheConfig.resolveMaxSize().toLong())
+                .build()
+        )
+
+        // Check cache size limit before creating new entries
+        if (dataSources.size >= cacheConfig.resolveMaxSize()) {
+            currentSpan.addEvent("datasource.cache.eviction_triggered")
+            evictOldestEntries()
+        }
+
+        val cachedDataSource = dataSources.computeIfAbsent(key) {
+            currentSpan.addEvent("datasource.cache.creating_new_connection")
+            CachedDataSource(
+                agroalDataSourceService.createTracingDataSource(
+                    ConnectorConfiguration(
+                        jdbcUrl = io.hasura.ndc.common.JdbcUrlConfig.Literal(resolvedUrl),
+                        jdbcProperties = props
+                    )
+                )
+            )
+        }
+
+        // Update last access time
+        cachedDataSource.lastAccessTime = System.currentTimeMillis()
+
+        return cachedDataSource.dataSource
+    }
+
+    private fun redactConnectionString(jdbcUrl: String): String {
+        return try {
+            // Common patterns to redact in JDBC URLs
+            var redacted = jdbcUrl
+
+            // Redact password parameter: password=value -> password=***
+            redacted = redacted.replace(Regex("password=([^&;]+)", RegexOption.IGNORE_CASE), "password=***")
+
+            // Redact user credentials in URL format: user:password@host -> user:***@host
+            redacted = redacted.replace(Regex("://([^:]+):([^@]+)@"), "://$1:***@")
+
+            // Redact other sensitive parameters
+            redacted = redacted.replace(Regex("pwd=([^&;]+)", RegexOption.IGNORE_CASE), "pwd=***")
+            redacted = redacted.replace(Regex("secret=([^&;]+)", RegexOption.IGNORE_CASE), "secret=***")
+            redacted = redacted.replace(Regex("token=([^&;]+)", RegexOption.IGNORE_CASE), "token=***")
+            redacted = redacted.replace(Regex("key=([^&;]+)", RegexOption.IGNORE_CASE), "key=***")
+
+            redacted
+        } catch (e: Exception) {
+            // If redaction fails, return a safe fallback
+            "jdbc://***redacted***"
+        }
+    }
+
+    private fun startCleanupTask() {
+        val executor = java.util.concurrent.Executors.newSingleThreadScheduledExecutor { r ->
+            Thread(r, "DataSourceCacheCleanup").apply {
+                isDaemon = true
+            }
+        }
+
+        executor.scheduleAtFixedRate(
+            { cleanupExpiredDataSources() },
+            cacheConfig.resolveEvictionIntervalMs(),
+            cacheConfig.resolveEvictionIntervalMs(),
+            java.util.concurrent.TimeUnit.MILLISECONDS
+        )
+    }
+
+    private fun cleanupExpiredDataSources() {
+        val currentTime = System.currentTimeMillis()
+        val expiredKeys = mutableListOf<DataSourceKey>()
+
+        dataSources.forEach { (key, cachedDataSource) ->
+            if (currentTime - cachedDataSource.lastAccessTime > cacheConfig.resolveExpirationMs()) {
+                expiredKeys.add(key)
+            }
+        }
+
+        val currentSpan = Span.current()
+        currentSpan.setAllAttributes(
+            io.opentelemetry.api.common.Attributes.builder()
+                .put("datasource.cache.expired_count", expiredKeys.size.toLong())
+                .put("datasource.cache.total_size", dataSources.size.toLong())
+                .put("datasource.cache.expiration_ms", cacheConfig.resolveExpirationMs())
+                .build()
+        )
+
+        expiredKeys.forEach { key ->
+            dataSources.remove(key)?.let { cachedDataSource ->
+                val redactedUrl = redactConnectionString(key.jdbcUrl)
+                currentSpan.addEvent("datasource.cache.expired_connection_removed",
+                    io.opentelemetry.api.common.Attributes.of(
+                        io.opentelemetry.api.common.AttributeKey.stringKey("connection.redacted"), redactedUrl
+                    )
+                )
+                closeDataSourceSafely(cachedDataSource.dataSource, key)
+            }
+        }
+    }
+
+    private fun evictOldestEntries() {
+        val maxSize = cacheConfig.resolveMaxSize()
+        val entriesToRemove = dataSources.size - maxSize + 10 // Remove extra to avoid frequent evictions
+        if (entriesToRemove <= 0) return
+
+        val sortedEntries = dataSources.entries.sortedBy { it.value.lastAccessTime }
+
+        val currentSpan = Span.current()
+        currentSpan.setAllAttributes(
+            io.opentelemetry.api.common.Attributes.builder()
+                .put("datasource.cache.entries_to_remove", entriesToRemove.toLong())
+                .put("datasource.cache.current_size", dataSources.size.toLong())
+                .put("datasource.cache.max_size", maxSize.toLong())
+                .build()
+        )
+
+        sortedEntries.take(entriesToRemove).forEach { (key, cachedDataSource) ->
+            dataSources.remove(key)
+            val redactedUrl = redactConnectionString(key.jdbcUrl)
+            currentSpan.addEvent("datasource.cache.oldest_connection_evicted",
+                io.opentelemetry.api.common.Attributes.of(
+                    io.opentelemetry.api.common.AttributeKey.stringKey("connection.redacted"), redactedUrl,
+                    io.opentelemetry.api.common.AttributeKey.longKey("last_access_time"), cachedDataSource.lastAccessTime
+                )
+            )
+            closeDataSourceSafely(cachedDataSource.dataSource, key)
+        }
+    }
+
+    private fun closeDataSourceSafely(dataSource: DataSource, key: DataSourceKey) {
+        try {
+            if (dataSource is io.agroal.api.AgroalDataSource) {
+                dataSource.close()
+            }
+        } catch (e: Exception) {
+            val redactedUrl = redactConnectionString(key.jdbcUrl)
+            // Add error to current span if available
+            Span.current().recordException(e)
+            Span.current().addEvent("datasource.close.error",
+                io.opentelemetry.api.common.Attributes.of(
+                    io.opentelemetry.api.common.AttributeKey.stringKey("connection.redacted"), redactedUrl,
+                    io.opentelemetry.api.common.AttributeKey.stringKey("error.message"), e.message ?: "Unknown error"
                 )
             )
         }
@@ -97,7 +265,6 @@ abstract class BaseDataConnectorService(
 
     @WithSpan
     open fun executeDbQuery(query: ResultQuery<*>, ctx: DSLContext): Result<out Record> {
-        val t = ctx.render(query)
         return ctx.fetch(query)
     }
 

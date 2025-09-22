@@ -1,0 +1,26 @@
+POST http://localhost:8080/query
+Content-Type: application/json
+
+{
+  "collection": "Album",
+  "query": {
+    "fields": {
+      "AlbumId": {
+        "type": "column",
+        "column": "AlbumId",
+        "arguments": {}
+      },
+      "Title": {
+        "type": "column",
+        "column": "Title",
+        "arguments": {}
+      }
+    },
+    "limit": 2
+  },
+  "arguments": {},
+  "collection_relationships": {},
+  "request_arguments": {
+    "connection_string": "jdbc:mysql://localhost:3306/Chinook?user=root&password=Password123&serverTimezone=UTC"
+  }
+}

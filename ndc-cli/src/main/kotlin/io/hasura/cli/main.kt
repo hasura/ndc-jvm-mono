@@ -90,6 +90,21 @@ class CLI {
             description = ["Whether to fully qualify table names"]
         )
         fullyQualifyNames: Boolean = false,
+        @Option(
+            names = ["--cache-eviction-interval"],
+            description = ["DataSource cache eviction interval in milliseconds (default: 300000)"]
+        )
+        cacheEvictionInterval: Long? = null,
+        @Option(
+            names = ["--cache-expiration"],
+            description = ["DataSource cache expiration time in milliseconds (default: 1800000)"]
+        )
+        cacheExpiration: Long? = null,
+        @Option(
+            names = ["--cache-max-size"],
+            description = ["Maximum number of cached DataSource instances (default: 50)"]
+        )
+        cacheMaxSize: Long? = null,
     ) {
         val file = File(outfile)
 
@@ -130,9 +145,18 @@ class CLI {
             fullyQualifyNames = fullyQualifyNames
         )
 
+        // Build cache configuration from CLI options or preserve existing
+        val cacheConfig = buildDataSourceCacheConfig(
+            cacheEvictionInterval = cacheEvictionInterval,
+            cacheExpiration = cacheExpiration,
+            cacheMaxSize = cacheMaxSize,
+            existingConfig = existingConfig?.dataSourceCache
+        )
+
         val finalConfig = introspectedConfig.copy(
             jdbcUrl = jdbcUrlConfig,
-            nativeQueries = existingConfig?.nativeQueries ?: mutableMapOf()
+            nativeQueries = existingConfig?.nativeQueries ?: mutableMapOf(),
+            dataSourceCache = cacheConfig
         )
         writeConfigurationToFile(file, finalConfig, mapper)
 
@@ -149,6 +173,30 @@ class CLI {
 
 
 
+}
+
+/**
+ * Builds DataSource cache configuration from CLI options or preserves existing configuration
+ */
+fun buildDataSourceCacheConfig(
+    cacheEvictionInterval: Long?,
+    cacheExpiration: Long?,
+    cacheMaxSize: Long?,
+    existingConfig: io.hasura.ndc.common.DataSourceCacheConfig?
+): io.hasura.ndc.common.DataSourceCacheConfig {
+    return io.hasura.ndc.common.DataSourceCacheConfig(
+        evictionIntervalMs = cacheEvictionInterval?.let {
+            io.hasura.ndc.common.CacheConfigValue.Literal(it)
+        } ?: existingConfig?.evictionIntervalMs ?: io.hasura.ndc.common.CacheConfigValue.Literal(300000L),
+
+        expirationMs = cacheExpiration?.let {
+            io.hasura.ndc.common.CacheConfigValue.Literal(it)
+        } ?: existingConfig?.expirationMs ?: io.hasura.ndc.common.CacheConfigValue.Literal(1800000L),
+
+        maxSize = cacheMaxSize?.let {
+            io.hasura.ndc.common.CacheConfigValue.Literal(it)
+        } ?: existingConfig?.maxSize ?: io.hasura.ndc.common.CacheConfigValue.Literal(50L)
+    )
 }
 
 /**
