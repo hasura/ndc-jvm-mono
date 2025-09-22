@@ -42,7 +42,7 @@ class TrinoDataConnectorService @Inject constructor(
     )
 
     override fun handleQuery(request: QueryRequest): List<RowSet> {
-        val dslCtx = mkDSLCtx()
+        val dslCtx = mkDSLCtx(request.request_arguments)
 
         val query = if (!request.variables.isNullOrEmpty()) {
             CTEQueryGenerator.forEachQueryRequestToSQL(request)

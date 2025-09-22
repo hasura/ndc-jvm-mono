@@ -33,13 +33,23 @@ class JDBCDataSourceProvider : IDataSourceProvider {
     @Inject
     private lateinit var agroalDataSourceService: AgroalDataSourceService
 
-    private var dataSource: DataSource? = null
+    // Cache DataSources by resolved JDBC URL and properties so we can reuse pools per connection_string
+    private val dataSources = java.util.concurrent.ConcurrentHashMap<DataSourceKey, DataSource>()
+
+    private data class DataSourceKey(val jdbcUrl: String, val jdbcProperties: Map<String, Any>)
 
     override fun getDataSource(config: ConnectorConfiguration): DataSource {
-        if (dataSource == null) {
-            dataSource = agroalDataSourceService.createTracingDataSource(config)
+        val resolvedUrl = config.jdbcUrl.resolve()
+        val props = config.jdbcProperties
+        val key = DataSourceKey(resolvedUrl, props)
+        return dataSources.computeIfAbsent(key) {
+            agroalDataSourceService.createTracingDataSource(
+                ConnectorConfiguration(
+                    jdbcUrl = io.hasura.ndc.common.JdbcUrlConfig.Literal(resolvedUrl),
+                    jdbcProperties = props
+                )
+            )
         }
-        return dataSource!!
     }
 }
 
@@ -104,11 +114,20 @@ abstract class BaseDataConnectorService(
     }
 
     @WithSpan
-    open fun mkDSLCtx(): DSLContext {
-        val config = ConnectorConfiguration.Loader.config
-        val ds = dataSourceProvider.getDataSource(config)
+    open fun mkDSLCtx(requestArguments: Map<String, Any>?): DSLContext {
+        val base = ConnectorConfiguration.Loader.config
+        val override = (requestArguments?.get("connection_string") as? String)
+        val effectiveConfig = if (override.isNullOrBlank()) {
+            base
+        } else {
+            base.copy(jdbcUrl = io.hasura.ndc.common.JdbcUrlConfig.Literal(override))
+        }
+        val ds = dataSourceProvider.getDataSource(effectiveConfig)
         return DSL.using(ds, jooqDialect, jooqSettings)
     }
+
+    @WithSpan
+    open fun mkDSLCtx(): DSLContext = mkDSLCtx(null)
 
     @WithSpan
     override fun getSchema(): SchemaResponse {
@@ -118,7 +137,7 @@ abstract class BaseDataConnectorService(
 
     @WithSpan
     override fun explainQuery(request: QueryRequest): ExplainResponse {
-        val dslCtx = mkDSLCtx()
+        val dslCtx = mkDSLCtx(request.request_arguments)
         val query = buildQuery(request)
         val explain = dslCtx.explain(query)
         return ExplainResponse(query = query.sql, lines = listOf(explain.plan()))
@@ -126,14 +145,14 @@ abstract class BaseDataConnectorService(
 
     @WithSpan
     override fun handleQuery(request: QueryRequest): List<RowSet> {
-        val dslCtx = mkDSLCtx()
+        val dslCtx = mkDSLCtx(request.request_arguments)
         val query = buildQuery(request)
         return executeQuery(query, dslCtx)
     }
 
     @WithSpan
     override fun handleMutation(request: MutationRequest): MutationResponse {
-        val dslCtx = mkDSLCtx()
+        val dslCtx = mkDSLCtx(request.request_arguments)
         return executeAndSerializeMutation(request, dslCtx)
     }
 
