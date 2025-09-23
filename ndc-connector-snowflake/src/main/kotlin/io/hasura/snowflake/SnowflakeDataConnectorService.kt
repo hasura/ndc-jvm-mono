@@ -44,7 +44,7 @@ class SnowflakeDataConnectorService @Inject constructor(
     )
 
     override fun handleQuery(request: QueryRequest): List<RowSet> {
-        val dslCtx = mkDSLCtx()
+        val dslCtx = mkDSLCtx(request.request_arguments)
 
         if (request.variables?.isEmpty() == true) {
             return emptyList()

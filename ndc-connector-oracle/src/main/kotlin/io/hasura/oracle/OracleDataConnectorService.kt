@@ -26,7 +26,7 @@ class OracleDataConnectorService @Inject constructor(
 ) {
 
     override val capabilitiesResponse = CapabilitiesResponse(
-        version = "0.1.6",
+        version = "0.1.7",
         capabilities = Capabilities(
             query = QueryCapabilities(
                 aggregates = mapOf(),
@@ -42,7 +42,7 @@ class OracleDataConnectorService @Inject constructor(
     )
 
     override fun handleQuery(request: QueryRequest): List<RowSet> {
-        val dslCtx = mkDSLCtx()
+        val dslCtx = mkDSLCtx(request.request_arguments)
 
         // Check whether the QueryRequest has predicates referencing variables, and if so, that variables are provided
         // This case is checked in the test "select_where_with_no_variable_values"

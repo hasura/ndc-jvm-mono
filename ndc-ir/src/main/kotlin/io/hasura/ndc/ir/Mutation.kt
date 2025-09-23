@@ -26,6 +26,7 @@ data class MutationRequest(
     val insert_schema: List<CollectionInsertSchema>,
     val operations: List<MutationOperation>,
     val collection_relationships: Map<String, Relationship> = emptyMap(),
+    val request_arguments: Map<String, Any>? = null,
 )
 
 data class MutationResponse(

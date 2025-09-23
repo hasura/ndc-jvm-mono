@@ -15,7 +15,8 @@ data class QueryRequest(
     val arguments: Map<String, Argument> = emptyMap(),
     val collection_relationships: Map<String, Relationship> = emptyMap(),
     val variables: List<Map<String, Any>>? = null,
-    val root_collection: String = collection
+    val root_collection: String = collection,
+    val request_arguments: Map<String, Any>? = null,
 )
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
