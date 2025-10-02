@@ -49,6 +49,17 @@ run-oracle-connector:
 	export HASURA_CONFIGURATION_DIRECTORY=$(shell pwd)/ndc-connector-oracle && \
 	./gradlew :ndc-connector-oracle:quarkusDev --console=plain
 
+run-oracle-cli-introspection:
+ifndef JDBC_URL
+	$(error JDBC_URL is not set)
+endif
+	HASURA_CONFIGURATION_DIRECTORY=./ndc-connector-oracle \
+	./gradlew :ndc-cli:run --args="\
+update $(JDBC_URL) \
+--fully-qualify-names=false \
+--outfile '../ndc-connector-oracle/configuration.json' \
+--database=ORACLE"
+
 build-and-push-cli:
 	ifndef NDC_JVM_CLI_VERSION
 		$(error NDC_JVM_CLI_VERSION is not set)

@@ -150,11 +150,7 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                                             request.collection,
                                                             field
                                                         )
-                                                        val castedField = castToSQLDataType(
-                                                            DatabaseType.ORACLE,
-                                                            columnField,
-                                                            ndcScalar
-                                                        )
+                                                        val castedField = columnField.cast(columnType)
                                                         DSL.jsonEntry(
                                                             alias,
                                                             // Oracle JSON functions convert DATE to ISO8601 format, which includes a timestamp
