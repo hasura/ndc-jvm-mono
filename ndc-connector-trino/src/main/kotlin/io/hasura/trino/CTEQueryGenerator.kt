@@ -198,7 +198,8 @@ object CTEQueryGenerator : BaseQueryGenerator() {
                                     DSL.name(
                                         createAlias(
                                             relation.target_collection,
-                                            isAggOnlyRelationField(field)
+                                            isAggOnlyRelationField(field),
+                                            alias
                                         ),
                                         ROWS_AND_AGGREGATES
                                     )
@@ -251,22 +252,22 @@ object CTEQueryGenerator : BaseQueryGenerator() {
 
 
         selects.forEachIndexed() { idx, (request, select) ->
-            val relationships = getQueryRelationFields(request.query.fields).values.map {
-                val rel = request.collection_relationships[it.relationship]!!
-                val args = if (rel.arguments.isEmpty() && rel.column_mapping.isEmpty() && it.arguments.isNotEmpty()) {
-                    it.arguments
+            val relationships = getQueryRelationFields(request.query.fields).map { (alias, field) ->
+                val rel = request.collection_relationships[field.relationship]!!
+                val args = if (rel.arguments.isEmpty() && rel.column_mapping.isEmpty() && field.arguments.isNotEmpty()) {
+                    field.arguments
                 } else rel.arguments
-                rel.copy(arguments = args)
+                Pair(alias, rel.copy(arguments = args))
             }
 
-            relationships.forEach { relationship ->
+            relationships.forEach { (fieldAlias, relationship) ->
 
                 val innerSelects =
                     selects.minus(selects[idx]).filter { it.first.collection == relationship.target_collection }
 
                 innerSelects.forEach { (innerRequest, innerSelect) ->
                     val innerAlias = createAlias(
-                        innerRequest.collection, isAggregateOnlyRequest(innerRequest)
+                        innerRequest.collection, isAggregateOnlyRequest(innerRequest), fieldAlias
                     )
 
                     run {
@@ -338,8 +339,13 @@ object CTEQueryGenerator : BaseQueryGenerator() {
         )
     }
 
-    private fun createAlias(collection: String, isAggregateOnly: Boolean): String {
-        return "$collection${if (isAggregateOnly) "_AGG" else ""}".replace(".", "_")
+    private fun createAlias(collection: String, isAggregateOnly: Boolean, fieldAlias: String? = null): String {
+        val baseAlias = if (fieldAlias != null) {
+            "${fieldAlias}_${collection}"
+        } else {
+            collection
+        }
+        return "$baseAlias${if (isAggregateOnly) "_AGG" else ""}".replace(".", "_")
     }
 
 }

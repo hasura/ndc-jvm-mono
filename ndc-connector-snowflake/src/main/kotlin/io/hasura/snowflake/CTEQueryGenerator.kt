@@ -352,7 +352,8 @@ object CTEQueryGenerator : BaseQueryGenerator() {
                                     DSL.name(
                                         createAlias(
                                             relation.target_collection,
-                                            isAggOnlyRelationField(field)
+                                            isAggOnlyRelationField(field),
+                                            alias
                                         ),
                                         ROWS_AND_AGGREGATES
                                     )
@@ -429,12 +430,12 @@ object CTEQueryGenerator : BaseQueryGenerator() {
                 val args = if (baseRel.arguments.isEmpty() && baseRel.column_mapping.isEmpty() && field.arguments.isNotEmpty()) {
                     field.arguments
                 } else baseRel.arguments
-                Pair(field, baseRel.copy(arguments = args))
+                Triple(alias, field, baseRel.copy(arguments = args))
             }
 
             val joinedAliases = mutableSetOf<String>()
 
-            relationFields.forEach { (field, relationship) ->
+            relationFields.forEach { (fieldAlias, field, relationship) ->
                 val desiredAggOnly = isAggOnlyRelationField(field)
 
                 var chosenTriple: Triple<QueryRequest, String?, SelectJoinStep<*>>? = null
@@ -456,7 +457,8 @@ object CTEQueryGenerator : BaseQueryGenerator() {
                     val (innerRequest, _, innerSelect) = chosenTriple!!
                     val innerAlias = createAlias(
                         innerRequest.collection,
-                        isAggregateOnlyRequest(innerRequest)
+                        isAggregateOnlyRequest(innerRequest),
+                        fieldAlias
                     )
 
                     if (!joinedAliases.contains(innerAlias)) {
@@ -537,9 +539,14 @@ object CTEQueryGenerator : BaseQueryGenerator() {
     }
 
     /**
-     * Helper to alias inner SELECTs based on collection and whether they are aggregate-only.
+     * Helper to alias inner SELECTs based on collection, field alias, and whether they are aggregate-only.
      */
-    private fun createAlias(collection: String, isAggregateOnly: Boolean): String {
-        return "$collection${if (isAggregateOnly) "_AGG" else ""}".replace(".", "_")
+    private fun createAlias(collection: String, isAggregateOnly: Boolean, fieldAlias: String? = null): String {
+        val baseAlias = if (fieldAlias != null) {
+            "${fieldAlias}_${collection}"
+        } else {
+            collection
+        }
+        return "$baseAlias${if (isAggregateOnly) "_AGG" else ""}".replace(".", "_")
     }
 }
