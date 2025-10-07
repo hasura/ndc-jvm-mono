@@ -203,13 +203,17 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                                     }
                                                 }
                                             }
+                                        ).returning(
+                                            SQLDataType.CLOB
                                         )
                                     ).orderBy(
                                         getConcatOrderFields(request)
                                     ).returning(
                                         SQLDataType.CLOB
                                     ),
-                                    DSL.jsonArray().returning(SQLDataType.CLOB)
+                                    DSL.jsonArray().returning(
+                                        SQLDataType.CLOB
+                                    )
                                 )
                             ).from(
                                 baseSelection
@@ -233,7 +237,9 @@ object JsonQueryGenerator : BaseQueryGenerator() {
                                     ).returning(
                                         SQLDataType.CLOB
                                     ),
-                                    DSL.jsonObject().returning(SQLDataType.CLOB)
+                                    DSL.jsonObject().returning(
+                                        SQLDataType.CLOB
+                                    )
                                 )
                             ).from(
                                 baseSelection
