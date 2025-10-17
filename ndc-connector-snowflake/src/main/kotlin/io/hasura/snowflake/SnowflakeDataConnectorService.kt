@@ -6,6 +6,7 @@ import io.hasura.ndc.app.interfaces.IDataSourceProvider
 import io.hasura.ndc.app.services.dataConnectors.BaseDataConnectorService
 import io.hasura.ndc.ir.*
 import io.hasura.ndc.sqlgen.MutationTranslator
+import io.hasura.snowflake.SnowflakePlanBuilder
 import io.opentelemetry.api.trace.Tracer
 import jakarta.annotation.Priority
 import jakarta.enterprise.inject.Alternative
@@ -50,10 +51,11 @@ class SnowflakeDataConnectorService @Inject constructor(
             return emptyList()
         }
 
+        // Use SnowflakePlanBuilder for all queries
         val query = if (request.variables?.isNotEmpty() == true) {
-            CTEQueryGenerator.forEachQueryRequestToSQL(request)
+            SnowflakePlanBuilder.forEachQueryRequestToSQL(request)
         } else {
-            CTEQueryGenerator.queryRequestToSQL(request)
+            SnowflakePlanBuilder.queryRequestToSQL(request)
         }
 
         val rows = executeDbQuery(query, dslCtx)
