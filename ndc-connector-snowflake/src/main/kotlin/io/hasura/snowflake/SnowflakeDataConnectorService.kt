@@ -1,7 +1,6 @@
 package io.hasura.snowflake
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.hasura.CTEQueryGenerator
 import io.hasura.ndc.app.interfaces.IDataSourceProvider
 import io.hasura.ndc.app.services.dataConnectors.BaseDataConnectorService
 import io.hasura.ndc.ir.*
@@ -50,10 +49,11 @@ class SnowflakeDataConnectorService @Inject constructor(
             return emptyList()
         }
 
+        // Use SnowflakePlanBuilder for all queries
         val query = if (request.variables?.isNotEmpty() == true) {
-            CTEQueryGenerator.forEachQueryRequestToSQL(request)
+            SnowflakePlanBuilder.forEachQueryRequestToSQL(request)
         } else {
-            CTEQueryGenerator.queryRequestToSQL(request)
+            SnowflakePlanBuilder.queryRequestToSQL(request)
         }
 
         val rows = executeDbQuery(query, dslCtx)
@@ -66,6 +66,6 @@ class SnowflakeDataConnectorService @Inject constructor(
     override val jooqDialect = SQLDialect.SNOWFLAKE
     override val jooqSettings =
             commonDSLContextSettings.withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_QUOTED)
-    override val sqlGenerator = CTEQueryGenerator
+    override val sqlGenerator = SnowflakePlanBuilder
     override val mutationTranslator = MutationTranslator
 }

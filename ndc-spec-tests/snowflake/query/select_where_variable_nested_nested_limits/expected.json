@@ -10,9 +10,34 @@
                 "rows": [
                   {
                     "Name": "Latin"
-                  },
+                  }
+                ]
+              },
+              "TrackId": "1520",
+              "MediaType": {
+                "rows": [
+                  {
+                    "Name": "MPEG audio file"
+                  }
+                ]
+              },
+              "InvoiceLines": {
+                "rows": []
+              }
+            },
+            {
+              "Genre": {
+                "rows": [
                   {
                     "Name": "Latin"
+                  }
+                ]
+              },
+              "TrackId": "1521",
+              "MediaType": {
+                "rows": [
+                  {
+                    "Name": "MPEG audio file"
                   }
                 ]
               },
@@ -29,44 +54,7 @@
                     "InvoiceLineId": "1971"
                   }
                 ]
-              },
-              "MediaType": {
-                "rows": [
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  }
-                ]
-              },
-              "TrackId": "1521"
-            },
-            {
-              "Genre": {
-                "rows": [
-                  {
-                    "Name": "Latin"
-                  },
-                  {
-                    "Name": "Latin"
-                  }
-                ]
-              },
-              "InvoiceLines": {
-                "rows": []
-              },
-              "MediaType": {
-                "rows": [
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  }
-                ]
-              },
-              "TrackId": "1520"
+              }
             }
           ]
         }
@@ -79,112 +67,6 @@
   {
     "rows": [
       {
-        "Title": "Riot Act",
-        "Tracks": {
-          "rows": [
-            {
-              "Genre": {
-                "rows": [
-                  {
-                    "Name": "Rock"
-                  },
-                  {
-                    "Name": "Rock"
-                  },
-                  {
-                    "Name": "Rock"
-                  },
-                  {
-                    "Name": "Rock"
-                  }
-                ]
-              },
-              "InvoiceLines": {
-                "rows": [
-                  {
-                    "Invoice": {
-                      "rows": [
-                        {
-                          "InvoiceId": "67"
-                        }
-                      ]
-                    },
-                    "InvoiceLineId": "363"
-                  }
-                ]
-              },
-              "MediaType": {
-                "rows": [
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  }
-                ]
-              },
-              "TrackId": "2178"
-            },
-            {
-              "Genre": {
-                "rows": [
-                  {
-                    "Name": "Rock"
-                  },
-                  {
-                    "Name": "Rock"
-                  },
-                  {
-                    "Name": "Rock"
-                  },
-                  {
-                    "Name": "Rock"
-                  }
-                ]
-              },
-              "InvoiceLines": {
-                "rows": []
-              },
-              "MediaType": {
-                "rows": [
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  }
-                ]
-              },
-              "TrackId": "2179"
-            }
-          ]
-        }
-      },
-      {
         "Title": "Rock In Rio [CD1]",
         "Tracks": {
           "rows": [
@@ -193,15 +75,14 @@
                 "rows": [
                   {
                     "Name": "Metal"
-                  },
+                  }
+                ]
+              },
+              "TrackId": "1352",
+              "MediaType": {
+                "rows": [
                   {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
+                    "Name": "MPEG audio file"
                   }
                 ]
               },
@@ -218,45 +99,21 @@
                     "InvoiceLineId": "1371"
                   }
                 ]
-              },
-              "MediaType": {
-                "rows": [
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  }
-                ]
-              },
-              "TrackId": "1352"
+              }
             },
             {
               "Genre": {
                 "rows": [
                   {
                     "Name": "Metal"
-                  },
+                  }
+                ]
+              },
+              "TrackId": "1353",
+              "MediaType": {
+                "rows": [
                   {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
+                    "Name": "MPEG audio file"
                   }
                 ]
               },
@@ -273,30 +130,7 @@
                     "InvoiceLineId": "795"
                   }
                 ]
-              },
-              "MediaType": {
-                "rows": [
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  }
-                ]
-              },
-              "TrackId": "1353"
+              }
             }
           ]
         }
@@ -310,15 +144,14 @@
                 "rows": [
                   {
                     "Name": "Rock"
-                  },
+                  }
+                ]
+              },
+              "TrackId": "1362",
+              "MediaType": {
+                "rows": [
                   {
-                    "Name": "Rock"
-                  },
-                  {
-                    "Name": "Rock"
-                  },
-                  {
-                    "Name": "Rock"
+                    "Name": "MPEG audio file"
                   }
                 ]
               },
@@ -335,74 +168,85 @@
                     "InvoiceLineId": "1375"
                   }
                 ]
-              },
-              "MediaType": {
-                "rows": [
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  }
-                ]
-              },
-              "TrackId": "1362"
+              }
             },
             {
               "Genre": {
                 "rows": [
                   {
                     "Name": "Rock"
-                  },
+                  }
+                ]
+              },
+              "TrackId": "1363",
+              "MediaType": {
+                "rows": [
                   {
-                    "Name": "Rock"
-                  },
-                  {
-                    "Name": "Rock"
-                  },
-                  {
-                    "Name": "Rock"
+                    "Name": "MPEG audio file"
                   }
                 ]
               },
               "InvoiceLines": {
                 "rows": []
-              },
-              "MediaType": {
+              }
+            }
+          ]
+        }
+      },
+      {
+        "Title": "Riot Act",
+        "Tracks": {
+          "rows": [
+            {
+              "Genre": {
                 "rows": [
                   {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
+                    "Name": "Rock"
+                  }
+                ]
+              },
+              "TrackId": "2178",
+              "MediaType": {
+                "rows": [
                   {
                     "Name": "MPEG audio file"
                   }
                 ]
               },
-              "TrackId": "1363"
+              "InvoiceLines": {
+                "rows": [
+                  {
+                    "Invoice": {
+                      "rows": [
+                        {
+                          "InvoiceId": "67"
+                        }
+                      ]
+                    },
+                    "InvoiceLineId": "363"
+                  }
+                ]
+              }
+            },
+            {
+              "Genre": {
+                "rows": [
+                  {
+                    "Name": "Rock"
+                  }
+                ]
+              },
+              "TrackId": "2179",
+              "MediaType": {
+                "rows": [
+                  {
+                    "Name": "MPEG audio file"
+                  }
+                ]
+              },
+              "InvoiceLines": {
+                "rows": []
+              }
             }
           ]
         }
@@ -412,6 +256,53 @@
   {
     "rows": [
       {
+        "Title": "Garage Inc. (Disc 1)",
+        "Tracks": {
+          "rows": [
+            {
+              "Genre": {
+                "rows": [
+                  {
+                    "Name": "Metal"
+                  }
+                ]
+              },
+              "TrackId": "408",
+              "MediaType": {
+                "rows": [
+                  {
+                    "Name": "MPEG audio file"
+                  }
+                ]
+              },
+              "InvoiceLines": {
+                "rows": []
+              }
+            },
+            {
+              "Genre": {
+                "rows": [
+                  {
+                    "Name": "Metal"
+                  }
+                ]
+              },
+              "TrackId": "409",
+              "MediaType": {
+                "rows": [
+                  {
+                    "Name": "MPEG audio file"
+                  }
+                ]
+              },
+              "InvoiceLines": {
+                "rows": []
+              }
+            }
+          ]
+        }
+      },
+      {
         "Title": "Garage Inc. (Disc 2)",
         "Tracks": {
           "rows": [
@@ -420,27 +311,14 @@
                 "rows": [
                   {
                     "Name": "Metal"
-                  },
+                  }
+                ]
+              },
+              "TrackId": "1813",
+              "MediaType": {
+                "rows": [
                   {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
+                    "Name": "MPEG audio file"
                   }
                 ]
               },
@@ -457,51 +335,21 @@
                     "InvoiceLineId": "298"
                   }
                 ]
-              },
-              "MediaType": {
-                "rows": [
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  }
-                ]
-              },
-              "TrackId": "1813"
+              }
             },
             {
               "Genre": {
                 "rows": [
                   {
                     "Name": "Metal"
-                  },
+                  }
+                ]
+              },
+              "TrackId": "1814",
+              "MediaType": {
+                "rows": [
                   {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
+                    "Name": "MPEG audio file"
                   }
                 ]
               },
@@ -518,131 +366,7 @@
                     "InvoiceLineId": "1446"
                   }
                 ]
-              },
-              "MediaType": {
-                "rows": [
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  }
-                ]
-              },
-              "TrackId": "1814"
-            }
-          ]
-        }
-      },
-      {
-        "Title": "Garage Inc. (Disc 1)",
-        "Tracks": {
-          "rows": [
-            {
-              "Genre": {
-                "rows": [
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  }
-                ]
-              },
-              "InvoiceLines": {
-                "rows": []
-              },
-              "MediaType": {
-                "rows": [
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  }
-                ]
-              },
-              "TrackId": "409"
-            },
-            {
-              "Genre": {
-                "rows": [
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  },
-                  {
-                    "Name": "Metal"
-                  }
-                ]
-              },
-              "InvoiceLines": {
-                "rows": []
-              },
-              "MediaType": {
-                "rows": [
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  }
-                ]
-              },
-              "TrackId": "408"
+              }
             }
           ]
         }
@@ -660,35 +384,14 @@
                 "rows": [
                   {
                     "Name": "Rock"
-                  },
-                  {
-                    "Name": "Rock"
                   }
                 ]
               },
-              "InvoiceLines": {
-                "rows": []
-              },
+              "TrackId": "2609",
               "MediaType": {
                 "rows": [
                   {
                     "Name": "MPEG audio file"
-                  },
-                  {
-                    "Name": "MPEG audio file"
-                  }
-                ]
-              },
-              "TrackId": "2610"
-            },
-            {
-              "Genre": {
-                "rows": [
-                  {
-                    "Name": "Rock"
-                  },
-                  {
-                    "Name": "Rock"
                   }
                 ]
               },
@@ -705,18 +408,27 @@
                     "InvoiceLineId": "2153"
                   }
                 ]
-              },
-              "MediaType": {
+              }
+            },
+            {
+              "Genre": {
                 "rows": [
                   {
-                    "Name": "MPEG audio file"
-                  },
+                    "Name": "Rock"
+                  }
+                ]
+              },
+              "TrackId": "2610",
+              "MediaType": {
+                "rows": [
                   {
                     "Name": "MPEG audio file"
                   }
                 ]
               },
-              "TrackId": "2609"
+              "InvoiceLines": {
+                "rows": []
+              }
             }
           ]
         }
