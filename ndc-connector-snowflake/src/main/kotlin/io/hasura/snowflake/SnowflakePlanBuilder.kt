@@ -226,10 +226,20 @@ object SnowflakePlanBuilder : BaseQueryGenerator() {
             .select(
                 DSL.rowNumber().over(
                     DSL.partitionBy(
-                        mkJoinKeyFields(
-                            relationship,
-                            tojOOQName(request.collection)
-                        )
+                        // For object relationships, partition by parent join keys to ensure one child per parent
+                        // For array relationships, partition by child join keys
+                        if (relationship?.relationship_type == RelationshipType.Object && relationship.column_mapping.isNotEmpty()) {
+                            relationship.column_mapping.keys.map {
+                                DSL.field(DSL.name(cteName(relSource ?: request.collection, parentPathSuffix ?: ""), it)) as Field<*>
+                            } + if (request.isVariablesRequest()) {
+                                listOf(DSL.field(DSL.name(cteName(relSource ?: request.collection, parentPathSuffix ?: ""), INDEX)) as Field<*>)
+                            } else emptyList()
+                        } else {
+                            mkJoinKeyFields(
+                                relationship,
+                                tojOOQName(request.collection)
+                            )
+                        }
                     ).orderBy(
                         run {
                             val orderByFields = translateIROrderByField(request) +
@@ -314,26 +324,49 @@ object SnowflakePlanBuilder : BaseQueryGenerator() {
         val aggAlias = cteName(parent.collection, child.pathSuffix) + "_" + cteName(child.request.collection, child.pathSuffix) + "_AGG"
 
         val rel = child.relationshipFromParent!!
-        // Group by the child ASM’s projected FK columns that map back to the parent’s keys
+        val isObjectRel = rel.relationship_type == RelationshipType.Object
+
+        // Group by the child ASM's projected FK columns that map back to the parent's keys
         val parentJoinCols: List<Field<*>> = when {
             rel.column_mapping.isNotEmpty() -> rel.column_mapping.values.map { DSL.field(DSL.name(it)) as Field<*> }
             rel.arguments.isNotEmpty() -> rel.arguments.keys.map { DSL.field(DSL.name(it)) as Field<*> }
             else -> emptyList()
         }
         val idxField = if (parent.isVariablesRequest()) listOf(DSL.field(DSL.name(INDEX)) as Field<*>) else emptyList()
-        val groupCols: List<Field<*>> = parentJoinCols + idxField
+        val partitionCols: List<Field<*>> = parentJoinCols + idxField
 
-        val select = DSL
-            .select(*(groupCols.toTypedArray()))
-            .select(
-                DSL.coalesce(
-                    DSL.jsonArrayAgg(DSL.field(DSL.name(childAsmAlias, ROWS_AND_AGGREGATES)))
-                        .orderBy(DSL.field(DSL.name(childAsmAlias, rnName(child.request.collection, child.pathSuffix)), Any::class.java).asc()) ,
-                    DSL.jsonArray()
-                ).`as`(DSL.name(ROWS_AND_AGGREGATES))
-            )
-            .from(DSL.name(childAsmAlias))
-            .groupBy(*(groupCols.toTypedArray()))
+        // Use the RN field name that is actually projected in the child's ASM CTE
+        val rnFieldName = rnName(child.request.collection, child.pathSuffix)
+
+        val select = if (isObjectRel) {
+            // For object relationships, just use jsonArrayAgg with limit in the base CTE (RN=1 filter)
+            // No ordering needed since there should only be one row
+            DSL
+                .selectDistinct(*(partitionCols.toTypedArray()))
+                .select(
+                    DSL.coalesce(
+                        DSL.jsonArrayAgg(DSL.field(DSL.name(childAsmAlias, ROWS_AND_AGGREGATES)))
+                            .over()
+                            .partitionBy(*(partitionCols.toTypedArray())) as Field<*>,
+                        DSL.jsonArray() as Field<*>
+                    ).`as`(DSL.name(ROWS_AND_AGGREGATES))
+                )
+                .from(DSL.name(childAsmAlias))
+        } else {
+            // For array relationships, use window function with ORDER BY before .over()
+            DSL
+                .selectDistinct(*(partitionCols.toTypedArray()))
+                .select(
+                    DSL.coalesce(
+                        DSL.jsonArrayAgg(DSL.field(DSL.name(childAsmAlias, ROWS_AND_AGGREGATES)))
+                            .orderBy(DSL.field(DSL.name(childAsmAlias, rnFieldName), Any::class.java).asc())
+                            .over()
+                            .partitionBy(*(partitionCols.toTypedArray())),
+                        DSL.jsonArray()
+                    ).`as`(DSL.name(ROWS_AND_AGGREGATES))
+                )
+                .from(DSL.name(childAsmAlias))
+        }
 
         return DSL.name(aggAlias).`as`(select)
     }
@@ -547,7 +580,7 @@ object SnowflakePlanBuilder : BaseQueryGenerator() {
                 .select(rowJson.`as`(ROWS_AND_AGGREGATES))
                 .select(joinKeyFields.map { it as Field<*> })
                 .select(idxSelect.map { it as Field<*> })
-                .select(DSL.field(DSL.name(rnName(request.collection, pathSuffix))) as Field<*>)
+                .select(DSL.field(DSL.name(listOf(cteName(request.collection, pathSuffix), rnName(request.collection, pathSuffix)))).`as`(DSL.name(rnName(request.collection, pathSuffix))))
                 .from(inner) as SelectJoinStep<*>
 
             children.forEach { child ->
