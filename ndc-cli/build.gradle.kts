@@ -42,4 +42,7 @@ java {
 
 application {
     mainClass = "io.hasura.cli.CLI"
+    applicationDefaultJvmArgs = listOf(
+        "--add-opens=java.base/java.nio=ALL-UNNAMED"
+    )
 }
