@@ -1,12 +1,10 @@
 package io.hasura.snowflake
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import io.hasura.CTEQueryGenerator
 import io.hasura.ndc.app.interfaces.IDataSourceProvider
 import io.hasura.ndc.app.services.dataConnectors.BaseDataConnectorService
 import io.hasura.ndc.ir.*
 import io.hasura.ndc.sqlgen.MutationTranslator
-import io.hasura.snowflake.SnowflakePlanBuilder
 import io.opentelemetry.api.trace.Tracer
 import jakarta.annotation.Priority
 import jakarta.enterprise.inject.Alternative
@@ -68,6 +66,6 @@ class SnowflakeDataConnectorService @Inject constructor(
     override val jooqDialect = SQLDialect.SNOWFLAKE
     override val jooqSettings =
             commonDSLContextSettings.withRenderQuotedNames(RenderQuotedNames.EXPLICIT_DEFAULT_QUOTED)
-    override val sqlGenerator = CTEQueryGenerator
+    override val sqlGenerator = SnowflakePlanBuilder
     override val mutationTranslator = MutationTranslator
 }
