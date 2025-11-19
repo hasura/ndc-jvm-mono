@@ -67,11 +67,9 @@ class JDBCDataSourceProvider : IDataSourceProvider {
 
         // Add trace attributes for observability
         val currentSpan = Span.current()
-        val redactedUrl = redactConnectionString(resolvedUrl)
 
         currentSpan.setAllAttributes(
             io.opentelemetry.api.common.Attributes.builder()
-                .put("datasource.connection.redacted", redactedUrl)
                 .put("datasource.cache.hit", isCacheHit)
                 .put("datasource.cache.size", dataSources.size.toLong())
                 .put("datasource.cache.max_size", cacheConfig.resolveMaxSize().toLong())
@@ -100,30 +98,6 @@ class JDBCDataSourceProvider : IDataSourceProvider {
         cachedDataSource.lastAccessTime = System.currentTimeMillis()
 
         return cachedDataSource.dataSource
-    }
-
-    private fun redactConnectionString(jdbcUrl: String): String {
-        return try {
-            // Common patterns to redact in JDBC URLs
-            var redacted = jdbcUrl
-
-            // Redact password parameter: password=value -> password=***
-            redacted = redacted.replace(Regex("password=([^&;]+)", RegexOption.IGNORE_CASE), "password=***")
-
-            // Redact user credentials in URL format: user:password@host -> user:***@host
-            redacted = redacted.replace(Regex("://([^:]+):([^@]+)@"), "://$1:***@")
-
-            // Redact other sensitive parameters
-            redacted = redacted.replace(Regex("pwd=([^&;]+)", RegexOption.IGNORE_CASE), "pwd=***")
-            redacted = redacted.replace(Regex("secret=([^&;]+)", RegexOption.IGNORE_CASE), "secret=***")
-            redacted = redacted.replace(Regex("token=([^&;]+)", RegexOption.IGNORE_CASE), "token=***")
-            redacted = redacted.replace(Regex("key=([^&;]+)", RegexOption.IGNORE_CASE), "key=***")
-
-            redacted
-        } catch (e: Exception) {
-            // If redaction fails, return a safe fallback
-            "jdbc://***redacted***"
-        }
     }
 
     private fun startCleanupTask() {
@@ -162,12 +136,6 @@ class JDBCDataSourceProvider : IDataSourceProvider {
 
         expiredKeys.forEach { key ->
             dataSources.remove(key)?.let { cachedDataSource ->
-                val redactedUrl = redactConnectionString(key.jdbcUrl)
-                currentSpan.addEvent("datasource.cache.expired_connection_removed",
-                    io.opentelemetry.api.common.Attributes.of(
-                        io.opentelemetry.api.common.AttributeKey.stringKey("connection.redacted"), redactedUrl
-                    )
-                )
                 closeDataSourceSafely(cachedDataSource.dataSource, key)
             }
         }
@@ -191,10 +159,8 @@ class JDBCDataSourceProvider : IDataSourceProvider {
 
         sortedEntries.take(entriesToRemove).forEach { (key, cachedDataSource) ->
             dataSources.remove(key)
-            val redactedUrl = redactConnectionString(key.jdbcUrl)
             currentSpan.addEvent("datasource.cache.oldest_connection_evicted",
                 io.opentelemetry.api.common.Attributes.of(
-                    io.opentelemetry.api.common.AttributeKey.stringKey("connection.redacted"), redactedUrl,
                     io.opentelemetry.api.common.AttributeKey.longKey("last_access_time"), cachedDataSource.lastAccessTime
                 )
             )
@@ -208,12 +174,10 @@ class JDBCDataSourceProvider : IDataSourceProvider {
                 dataSource.close()
             }
         } catch (e: Exception) {
-            val redactedUrl = redactConnectionString(key.jdbcUrl)
             // Add error to current span if available
             Span.current().recordException(e)
             Span.current().addEvent("datasource.close.error",
                 io.opentelemetry.api.common.Attributes.of(
-                    io.opentelemetry.api.common.AttributeKey.stringKey("connection.redacted"), redactedUrl,
                     io.opentelemetry.api.common.AttributeKey.stringKey("error.message"), e.message ?: "Unknown error"
                 )
             )
