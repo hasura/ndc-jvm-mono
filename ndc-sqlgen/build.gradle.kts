@@ -25,7 +25,18 @@ dependencies {
 
     api(kotlin("script-runtime"))
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.0")
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+    // Point ConnectorConfiguration.Loader at the test fixture before it lazily initialises.
+    environment(
+        "HASURA_CONFIGURATION_DIRECTORY",
+        file("src/test/resources/connector-config").absolutePath
+    )
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {

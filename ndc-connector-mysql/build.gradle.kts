@@ -41,10 +41,31 @@ dependencies {
             replacedBy("org.jooq.pro:jooq", "Oracle requires jOOQ pro")
         }
     }
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.0")
+    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.0")
+}
+
+// Share queryRequest JSON fixtures from :ndc-ir test resources so connector tests can read
+// them off the classpath without duplicating files.
+sourceSets {
+    test {
+        resources {
+            srcDir(rootProject.file("ndc-ir/src/test/resources"))
+        }
+    }
 }
 
 tasks.withType<Test> {
+    useJUnitPlatform()
     systemProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager")
+    // Point ConnectorConfiguration.Loader at the test fixture before it lazily initialises.
+    environment(
+        "HASURA_CONFIGURATION_DIRECTORY",
+        rootProject.file("ndc-sqlgen/src/test/resources/connector-config").absolutePath
+    )
 }
 allOpen {
     annotation("jakarta.ws.rs.Path")
