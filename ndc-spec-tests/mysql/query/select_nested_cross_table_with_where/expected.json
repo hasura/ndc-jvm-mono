@@ -1,0 +1,39 @@
+[
+  {
+    "rows": [
+      {
+        "Invoices": {
+          "rows": [
+            {
+              "Customer": {
+                "rows": [
+                  {
+                    "Invoices": {
+                      "rows": [
+                        {
+                          "Total": "5.94",
+                          "InvoiceId": 143
+                        },
+                        {
+                          "Total": "13.86",
+                          "InvoiceId": 327
+                        },
+                        {
+                          "Total": "8.91",
+                          "InvoiceId": 382
+                        }
+                      ]
+                    },
+                    "CustomerId": 1
+                  }
+                ]
+              },
+              "InvoiceId": 98
+            }
+          ]
+        },
+        "CustomerId": 1
+      }
+    ]
+  }
+]

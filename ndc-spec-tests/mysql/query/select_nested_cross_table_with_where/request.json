@@ -1,0 +1,129 @@
+{
+  "collection": "Customer",
+  "query": {
+    "fields": {
+      "CustomerId": {
+        "type": "column",
+        "column": "CustomerId",
+        "arguments": {}
+      },
+      "Invoices": {
+        "type": "relationship",
+        "relationship": "Customer_Invoices",
+        "arguments": {},
+        "query": {
+          "fields": {
+            "InvoiceId": {
+              "type": "column",
+              "column": "InvoiceId",
+              "arguments": {}
+            },
+            "Customer": {
+              "type": "relationship",
+              "relationship": "Invoice_Customer",
+              "arguments": {},
+              "query": {
+                "fields": {
+                  "CustomerId": {
+                    "type": "column",
+                    "column": "CustomerId",
+                    "arguments": {}
+                  },
+                  "Invoices": {
+                    "type": "relationship",
+                    "relationship": "Customer_Invoices",
+                    "arguments": {},
+                    "query": {
+                      "fields": {
+                        "InvoiceId": {
+                          "type": "column",
+                          "column": "InvoiceId",
+                          "arguments": {}
+                        },
+                        "Total": {
+                          "type": "column",
+                          "column": "Total",
+                          "arguments": {}
+                        }
+                      },
+                      "predicate": {
+                        "type": "binary_comparison_operator",
+                        "column": {
+                          "type": "column",
+                          "name": "Total",
+                          "path": []
+                        },
+                        "operator": "_gt",
+                        "value": {
+                          "type": "scalar",
+                          "value": 5
+                        }
+                      },
+                      "order_by": {
+                        "elements": [
+                          {
+                            "order_direction": "asc",
+                            "target": {
+                              "type": "column",
+                              "name": "InvoiceId",
+                              "path": []
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "order_by": {
+            "elements": [
+              {
+                "order_direction": "asc",
+                "target": {
+                  "type": "column",
+                  "name": "InvoiceId",
+                  "path": []
+                }
+              }
+            ]
+          },
+          "limit": 1
+        }
+      }
+    },
+    "order_by": {
+      "elements": [
+        {
+          "order_direction": "asc",
+          "target": {
+            "type": "column",
+            "name": "CustomerId",
+            "path": []
+          }
+        }
+      ]
+    },
+    "limit": 1
+  },
+  "arguments": {},
+  "collection_relationships": {
+    "Customer_Invoices": {
+      "column_mapping": {
+        "CustomerId": "CustomerId"
+      },
+      "relationship_type": "array",
+      "target_collection": "Invoice",
+      "arguments": {}
+    },
+    "Invoice_Customer": {
+      "column_mapping": {
+        "CustomerId": "CustomerId"
+      },
+      "relationship_type": "object",
+      "target_collection": "Customer",
+      "arguments": {}
+    }
+  }
+}
