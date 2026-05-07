@@ -1,0 +1,90 @@
+{
+  "collection": "roots",
+  "arguments": {},
+  "query": {
+    "fields": {
+      "id": {
+        "type": "column",
+        "column": "id"
+      },
+      "profileInfos": {
+        "type": "relationship",
+        "arguments": {},
+        "relationship": "roots_profileInfos",
+        "query": {
+          "fields": {
+            "id": {
+              "type": "column",
+              "column": "id"
+            },
+            "root": {
+              "type": "relationship",
+              "arguments": {},
+              "relationship": "profileInfos_root",
+              "query": {
+                "fields": {
+                  "id": {
+                    "type": "column",
+                    "column": "id"
+                  },
+                  "products": {
+                    "type": "relationship",
+                    "arguments": {},
+                    "relationship": "roots_products",
+                    "query": {
+                      "fields": {
+                        "id": {
+                          "type": "column",
+                          "column": "id"
+                        }
+                      },
+                      "where": {
+                        "type": "binary_comparison_operator",
+                        "operator": "_eq",
+                        "column": {
+                          "type": "column",
+                          "name": "isMainProduct",
+                          "path": []
+                        },
+                        "value": {
+                          "type": "scalar",
+                          "value": "1"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "collection_relationships": {
+    "roots_profileInfos": {
+      "arguments": {},
+      "column_mapping": {
+        "id": "rootId"
+      },
+      "relationship_type": "array",
+      "target_collection": "profileInfos"
+    },
+    "profileInfos_root": {
+      "arguments": {},
+      "column_mapping": {
+        "rootId": "id"
+      },
+      "relationship_type": "object",
+      "target_collection": "roots"
+    },
+    "roots_products": {
+      "arguments": {},
+      "column_mapping": {
+        "id": "rootId"
+      },
+      "relationship_type": "array",
+      "target_collection": "products"
+    }
+  }
+}

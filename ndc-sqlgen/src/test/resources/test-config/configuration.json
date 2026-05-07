@@ -1,0 +1,63 @@
+{
+  "jdbcUrl": "jdbc:test://localhost",
+  "schemas": [],
+  "tables": [
+    {
+      "tableName": "regions",
+      "tableType": "TABLE",
+      "description": null,
+      "columns": [
+        { "name": "id", "description": null, "type": "INT", "numeric_precision": null, "numeric_scale": null, "nullable": false, "auto_increment": true, "is_primarykey": true },
+        { "name": "name", "description": null, "type": "VARCHAR", "numeric_precision": null, "numeric_scale": null, "nullable": true, "auto_increment": false, "is_primarykey": false },
+        { "name": "parentRegionId", "description": null, "type": "INT", "numeric_precision": null, "numeric_scale": null, "nullable": true, "auto_increment": false, "is_primarykey": false }
+      ],
+      "pks": ["id"],
+      "fks": {}
+    },
+    {
+      "tableName": "products",
+      "tableType": "TABLE",
+      "description": null,
+      "columns": [
+        { "name": "id", "description": null, "type": "INT", "numeric_precision": null, "numeric_scale": null, "nullable": false, "auto_increment": true, "is_primarykey": true },
+        { "name": "active", "description": null, "type": "BOOLEAN", "numeric_precision": null, "numeric_scale": null, "nullable": true, "auto_increment": false, "is_primarykey": false },
+        { "name": "isMainProduct", "description": null, "type": "VARCHAR", "numeric_precision": null, "numeric_scale": null, "nullable": true, "auto_increment": false, "is_primarykey": false },
+        { "name": "orderId", "description": null, "type": "INT", "numeric_precision": null, "numeric_scale": null, "nullable": true, "auto_increment": false, "is_primarykey": false },
+        { "name": "rootId", "description": null, "type": "INT", "numeric_precision": null, "numeric_scale": null, "nullable": true, "auto_increment": false, "is_primarykey": false }
+      ],
+      "pks": ["id"],
+      "fks": {}
+    },
+    {
+      "tableName": "orders",
+      "tableType": "TABLE",
+      "description": null,
+      "columns": [
+        { "name": "id", "description": null, "type": "INT", "numeric_precision": null, "numeric_scale": null, "nullable": false, "auto_increment": true, "is_primarykey": true }
+      ],
+      "pks": ["id"],
+      "fks": {}
+    },
+    {
+      "tableName": "roots",
+      "tableType": "TABLE",
+      "description": null,
+      "columns": [
+        { "name": "id", "description": null, "type": "INT", "numeric_precision": null, "numeric_scale": null, "nullable": false, "auto_increment": true, "is_primarykey": true }
+      ],
+      "pks": ["id"],
+      "fks": {}
+    },
+    {
+      "tableName": "profileInfos",
+      "tableType": "TABLE",
+      "description": null,
+      "columns": [
+        { "name": "id", "description": null, "type": "INT", "numeric_precision": null, "numeric_scale": null, "nullable": false, "auto_increment": true, "is_primarykey": true },
+        { "name": "rootId", "description": null, "type": "INT", "numeric_precision": null, "numeric_scale": null, "nullable": true, "auto_increment": false, "is_primarykey": false }
+      ],
+      "pks": ["id"],
+      "fks": {}
+    }
+  ]
+}

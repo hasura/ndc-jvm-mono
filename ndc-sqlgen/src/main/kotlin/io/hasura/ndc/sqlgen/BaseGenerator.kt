@@ -158,45 +158,63 @@ sealed interface BaseGenerator {
         return expressionToCondition(e, request)
     }
 
-    // override request collection for expressionToCondition evaluation
+    // override request collection for expressionToCondition evaluation.
+    // Use this when the entire context (config lookup + SQL qualification) should switch to a
+    // real collection name (e.g. EXISTS into another collection). Do NOT use it to thread a
+    // SQL-only alias — see expressionToConditionWithSqlAlias for that.
     fun expressionToCondition(e: Expression, request: QueryRequest, overrideCollection: String) =
-        expressionToCondition(e, request.copy(collection = overrideCollection))
-
+        expressionToConditionImpl(e, request.copy(collection = overrideCollection), sqlTableAlias = null)
 
     // Convert a WHERE-like expression IR into a JOOQ Condition
-    // Used for both "where" expressions and things like "post-insert check" expressions
-    // Requires 3 things:
-    // 1. The current table alias
-    // 2. The relation graph for the request
-    // 3. The actual Expression IR object to convert
     fun expressionToCondition(
         e: Expression,
         request: QueryRequest
+    ): Condition = expressionToConditionImpl(e, request, sqlTableAlias = null)
+
+    // Convert a WHERE-like expression IR into a JOOQ Condition, with an explicit SQL table alias
+    // used for qualifying empty-path column references. The `request.collection` value is still
+    // used for connector-config lookups (e.g. column types in getColumnType). This separation
+    // allows callers (notably the MySQL JSONGenerator) to alias a self-referential subquery's
+    // FROM table without breaking config lookup, which expects the real collection name.
+    fun expressionToConditionWithSqlAlias(
+        e: Expression,
+        request: QueryRequest,
+        sqlTableAlias: String
+    ): Condition = expressionToConditionImpl(e, request, sqlTableAlias)
+
+    // Internal implementation. `sqlTableAlias` (when non-null) overrides only the SQL table
+    // qualifier used for empty-path column references; it does not affect config lookup, which
+    // continues to read from `request.collection` / relationship target_collections (real names).
+    fun expressionToConditionImpl(
+        e: Expression,
+        request: QueryRequest,
+        sqlTableAlias: String?
     ): Condition {
 
         return when (e) {
-            is Expression.Not -> DSL.not(expressionToCondition(e.expression, request))
+            is Expression.Not -> DSL.not(expressionToConditionImpl(e.expression, request, sqlTableAlias))
 
             is Expression.And -> when (e.expressions.size) {
                 0 -> DSL.trueCondition()
-                else -> DSL.and(e.expressions.map { expressionToCondition(it, request) })
+                else -> DSL.and(e.expressions.map { expressionToConditionImpl(it, request, sqlTableAlias) })
             }
 
             is Expression.Or -> when (e.expressions.size) {
                 0 -> DSL.falseCondition()
-                else -> DSL.or(e.expressions.map { expressionToCondition(it, request) })
+                else -> DSL.or(e.expressions.map { expressionToConditionImpl(it, request, sqlTableAlias) })
             }
 
             is Expression.ApplyBinaryComparison -> {
+                // getColumnType uses request.collection (real name) for connector-config lookup.
                 val columnType = getColumnType(e.column, request)
                 val column = DSL.field(
                     DSL.name(
-                        splitCollectionName(getCollectionForCompCol(e.column, request)) + e.column.name
+                        splitCollectionName(getSqlCollectionForCompCol(e.column, request, sqlTableAlias)) + e.column.name
                     )
                 )
                 val comparisonValue = when (val v = e.value) {
                     is ComparisonValue.ColumnComp -> {
-                        val col = splitCollectionName(getCollectionForCompCol(v.column, request))
+                        val col = splitCollectionName(getSqlCollectionForCompCol(v.column, request, sqlTableAlias))
                         listOf(DSL.field(DSL.name(col + v.column.name)))
                     }
 
@@ -215,13 +233,13 @@ sealed interface BaseGenerator {
                 val field = when (e.column) {
                     is ComparisonTarget.Column -> DSL.field(
                         DSL.name(
-                            splitCollectionName(getCollectionForCompCol(e.column, request)) + e.column.name
+                            splitCollectionName(getSqlCollectionForCompCol(e.column, request, sqlTableAlias)) + e.column.name
                         )
                     )
 
                     is ComparisonTarget.RootCollectionColumn -> DSL.field(
                         DSL.name(
-                            splitCollectionName(request.collection) + e.column.name
+                            splitCollectionName(sqlTableAlias ?: request.collection) + e.column.name
                         )
                     )
                 }
@@ -231,14 +249,16 @@ sealed interface BaseGenerator {
             }
 
             is Expression.Exists -> {
+                // The outer-table column qualifier in the EXISTS join uses `sqlTableAlias` (when
+                // set) so that correlated references match the alias used in the surrounding
+                // SQL scope. Inside the EXISTS predicate we reset to a fresh scope (alias=null).
+                val outerQualifier = sqlTableAlias ?: request.collection
                 when (val inTable = e.in_collection) {
                     is ExistsInCollection.Related -> {
                         val relOrig = request.collection_relationships[inTable.relationship]
                             ?: throw Exception("Exists relationship not found")
                         val rel = relOrig.copy(arguments = relOrig.arguments + inTable.arguments)
 
-                        // Create a new request with the target collection as the main collection
-                        // This ensures that table references in the predicate are properly handled
                         val subRequest = request.copy(
                             collection = rel.target_collection,
                             collection_relationships = request.collection_relationships
@@ -253,13 +273,14 @@ sealed interface BaseGenerator {
                                 .where(
                                     DSL.and(
                                         listOf(
-                                            expressionToCondition(
+                                            expressionToConditionImpl(
                                                 e.predicate,
-                                                subRequest
+                                                subRequest,
+                                                sqlTableAlias = null
                                             )
                                         ) +
                                                 rel.column_mapping.map { (sourceCol, targetCol) ->
-                                                    DSL.field(DSL.name(splitCollectionName(request.collection) + sourceCol))
+                                                    DSL.field(DSL.name(splitCollectionName(outerQualifier) + sourceCol))
                                                         .eq(DSL.field(DSL.name(splitCollectionName(rel.target_collection) + targetCol)))
                                                 } + rel.arguments.map {
                                             argumentToCondition(
@@ -281,7 +302,7 @@ sealed interface BaseGenerator {
                                 column_mapping = emptyMap(),
                                 relationship_type = RelationshipType.Array
                             ),
-                            request.collection
+                            outerQualifier
                         )
                         DSL.exists(
                             DSL
@@ -300,6 +321,30 @@ sealed interface BaseGenerator {
                                 )
                         )
                     }
+                }
+            }
+        }
+    }
+
+    // Returns the collection name to use as the SQL table qualifier for a comparison column.
+    // For empty-path columns inside a SQL-aliased scope, this returns the alias rather than
+    // request.collection so that field references match the FROM clause alias.
+    fun getSqlCollectionForCompCol(
+        col: ComparisonTarget,
+        request: QueryRequest,
+        sqlTableAlias: String?
+    ): String {
+        return when (col) {
+            is ComparisonTarget.RootCollectionColumn -> request.root_collection
+            is ComparisonTarget.Column -> {
+                if (col.path.isNotEmpty()) {
+                    col.path.fold("") { _, pathElement ->
+                        val rel = request.collection_relationships[pathElement.relationship]
+                            ?: throw Exception("Relationship not found")
+                        rel.target_collection
+                    }
+                } else {
+                    sqlTableAlias ?: request.collection
                 }
             }
         }

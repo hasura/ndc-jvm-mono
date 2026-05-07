@@ -1,0 +1,124 @@
+{
+  "collection": "regions",
+  "arguments": {},
+  "query": {
+    "fields": {
+      "id": {
+        "type": "column",
+        "column": "id"
+      },
+      "name": {
+        "type": "column",
+        "column": "name"
+      },
+      "parentRegion": {
+        "type": "relationship",
+        "arguments": {},
+        "relationship": "regions_parentRegion",
+        "query": {
+          "fields": {
+            "id": {
+              "type": "column",
+              "column": "id"
+            },
+            "name": {
+              "type": "column",
+              "column": "name"
+            },
+            "parentRegion": {
+              "type": "relationship",
+              "arguments": {},
+              "relationship": "regions_parentRegion",
+              "query": {
+                "fields": {
+                  "id": {
+                    "type": "column",
+                    "column": "id"
+                  },
+                  "name": {
+                    "type": "column",
+                    "column": "name"
+                  },
+                  "stores": {
+                    "type": "relationship",
+                    "arguments": {},
+                    "relationship": "regions_stores",
+                    "query": {
+                      "fields": {
+                        "id": {
+                          "type": "column",
+                          "column": "id"
+                        },
+                        "name": {
+                          "type": "column",
+                          "column": "name"
+                        }
+                      },
+                      "where": {
+                        "type": "binary_comparison_operator",
+                        "operator": "_eq",
+                        "column": {
+                          "type": "column",
+                          "name": "active",
+                          "path": []
+                        },
+                        "value": {
+                          "type": "scalar",
+                          "value": true
+                        }
+                      }
+                    }
+                  }
+                },
+                "where": {
+                  "type": "binary_comparison_operator",
+                  "operator": "_eq",
+                  "column": {
+                    "type": "column",
+                    "name": "name",
+                    "path": []
+                  },
+                  "value": {
+                    "type": "scalar",
+                    "value": "North America"
+                  }
+                }
+              }
+            }
+          },
+          "where": {
+            "type": "binary_comparison_operator",
+            "operator": "_eq",
+            "column": {
+              "type": "column",
+              "name": "name",
+              "path": []
+            },
+            "value": {
+              "type": "scalar",
+              "value": "USA"
+            }
+          }
+        }
+      }
+    }
+  },
+  "collection_relationships": {
+    "regions_parentRegion": {
+      "arguments": {},
+      "column_mapping": {
+        "parentRegionId": "id"
+      },
+      "relationship_type": "object",
+      "target_collection": "regions"
+    },
+    "regions_stores": {
+      "arguments": {},
+      "column_mapping": {
+        "id": "regionId"
+      },
+      "relationship_type": "array",
+      "target_collection": "stores"
+    }
+  }
+}
