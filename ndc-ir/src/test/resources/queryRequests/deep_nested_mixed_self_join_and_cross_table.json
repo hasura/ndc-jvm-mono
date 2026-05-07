@@ -1,0 +1,120 @@
+{
+  "collection": "regions",
+  "arguments": {},
+  "query": {
+    "fields": {
+      "id": {
+        "type": "column",
+        "column": "id"
+      },
+      "name": {
+        "type": "column",
+        "column": "name"
+      },
+      "parentRegion": {
+        "type": "relationship",
+        "arguments": {},
+        "relationship": "regions_ibfk_1",
+        "query": {
+          "fields": {
+            "id": {
+              "type": "column",
+              "column": "id"
+            },
+            "name": {
+              "type": "column",
+              "column": "name"
+            },
+            "products": {
+              "type": "relationship",
+              "arguments": {},
+              "relationship": "regions_products",
+              "query": {
+                "fields": {
+                  "id": {
+                    "type": "column",
+                    "column": "id"
+                  }
+                },
+                "predicate": {
+                  "type": "binary_comparison_operator",
+                  "operator": "_eq",
+                  "column": {
+                    "type": "column",
+                    "name": "active",
+                    "path": []
+                  },
+                  "value": {
+                    "type": "scalar",
+                    "value": true
+                  }
+                }
+              }
+            },
+            "parentRegion": {
+              "type": "relationship",
+              "arguments": {},
+              "relationship": "regions_ibfk_1",
+              "query": {
+                "fields": {
+                  "id": {
+                    "type": "column",
+                    "column": "id"
+                  },
+                  "name": {
+                    "type": "column",
+                    "column": "name"
+                  }
+                },
+                "predicate": {
+                  "type": "binary_comparison_operator",
+                  "operator": "_neq",
+                  "column": {
+                    "type": "column",
+                    "name": "name",
+                    "path": []
+                  },
+                  "value": {
+                    "type": "scalar",
+                    "value": "Antarctica"
+                  }
+                }
+              }
+            }
+          },
+          "predicate": {
+            "type": "binary_comparison_operator",
+            "operator": "_eq",
+            "column": {
+              "type": "column",
+              "name": "name",
+              "path": []
+            },
+            "value": {
+              "type": "scalar",
+              "value": "USA"
+            }
+          }
+        }
+      }
+    }
+  },
+  "collection_relationships": {
+    "regions_ibfk_1": {
+      "arguments": {},
+      "column_mapping": {
+        "parentRegionId": "id"
+      },
+      "relationship_type": "object",
+      "target_collection": "regions"
+    },
+    "regions_products": {
+      "arguments": {},
+      "column_mapping": {
+        "id": "region_id"
+      },
+      "relationship_type": "array",
+      "target_collection": "products"
+    }
+  }
+}

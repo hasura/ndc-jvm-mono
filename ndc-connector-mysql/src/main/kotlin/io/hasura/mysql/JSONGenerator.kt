@@ -84,8 +84,11 @@ object JsonQueryGenerator : BaseQueryGenerator() {
         }
 
         if (request.query.predicate != null) {
+            // Use [effectiveAlias] only for SQL field qualification; connector-config lookups
+            // (e.g. column types) still resolve against request.collection (the real collection
+            // name). This matters for self-joins where the FROM clause is aliased.
             baseQuery.where(
-                expressionToCondition(request.query.predicate!!, request, effectiveAlias)
+                expressionToConditionWithSqlAlias(request.query.predicate!!, request, effectiveAlias)
             )
 
             val requiredJoinTables = collectRequiredJoinTablesForWhereClause(
