@@ -1,0 +1,72 @@
+[
+  {
+    "rows": [
+      {
+        "LastName": "Adams",
+        "EmployeeId": 1,
+        "ReportsToManager": {
+          "rows": []
+        }
+      },
+      {
+        "LastName": "Edwards",
+        "EmployeeId": 2,
+        "ReportsToManager": {
+          "rows": []
+        }
+      },
+      {
+        "LastName": "Peacock",
+        "EmployeeId": 3,
+        "ReportsToManager": {
+          "rows": []
+        }
+      },
+      {
+        "LastName": "Park",
+        "EmployeeId": 4,
+        "ReportsToManager": {
+          "rows": []
+        }
+      },
+      {
+        "LastName": "Johnson",
+        "EmployeeId": 5,
+        "ReportsToManager": {
+          "rows": []
+        }
+      },
+      {
+        "LastName": "Mitchell",
+        "EmployeeId": 6,
+        "ReportsToManager": {
+          "rows": []
+        }
+      },
+      {
+        "LastName": "King",
+        "EmployeeId": 7,
+        "ReportsToManager": {
+          "rows": [
+            {
+              "LastName": "Mitchell",
+              "FirstName": "Michael"
+            }
+          ]
+        }
+      },
+      {
+        "LastName": "Callahan",
+        "EmployeeId": 8,
+        "ReportsToManager": {
+          "rows": [
+            {
+              "LastName": "Mitchell",
+              "FirstName": "Michael"
+            }
+          ]
+        }
+      }
+    ]
+  }
+]
