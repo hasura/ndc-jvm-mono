@@ -1,4 +1,4 @@
-FROM rust:1.78-buster
+FROM us-docker.pkg.dev/hasura-container-images/external-images/docker.io/library/rust:1.78-buster-stable
 
 ARG NDC_SPEC_VERSION=v0.1.2
 
