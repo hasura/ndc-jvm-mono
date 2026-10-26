@@ -18,6 +18,12 @@ RUN ./gradlew :ndc-connector-snowflake:build --no-daemon --console=plain -x test
 # Final stage
 FROM registry.access.redhat.com/ubi9/openjdk-21:1.23
 
+# Enforce JVM distrust of disclosed eMudhra intermediates independently of the OS CA bundle.
+USER root
+COPY security/ /tmp/tls-security/
+RUN sh /tmp/tls-security/block-emudhra.sh "$JAVA_HOME" && rm -rf /tmp/tls-security
+USER 185
+
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en'
 ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager --add-opens java.base/java.nio=ALL-UNNAMED"
 ENV JAVA_APP_JAR="/app/quarkus-run.jar"

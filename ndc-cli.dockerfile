@@ -19,6 +19,12 @@ RUN ./gradlew :ndc-cli:installDist --no-daemon --console=plain -x test
 # Final stage
 FROM registry.access.redhat.com/ubi9/openjdk-21:1.23
 
+# Enforce JVM distrust of disclosed eMudhra intermediates independently of the OS CA bundle.
+USER root
+COPY security/ /tmp/tls-security/
+RUN sh /tmp/tls-security/block-emudhra.sh "$JAVA_HOME" && rm -rf /tmp/tls-security
+USER 185
+
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en'
 WORKDIR /app
 
