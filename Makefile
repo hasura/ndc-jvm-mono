@@ -38,6 +38,7 @@ endif
 	./gradlew :ndc-cli:run --args="\
 update $(JDBC_URL) \
 --fully-qualify-names=false \
+--schemas=CI_DATA \
 --outfile '../configs/snowflake/configuration.json' \
 --database=SNOWFLAKE"
 
