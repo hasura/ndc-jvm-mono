@@ -190,10 +190,12 @@ echo "Setting up $CONNECTOR connector..."
 
 # Check if JDBC_URL is already set
 if [ -n "$JDBC_URL" ]; then
-    echo "JDBC_URL environment variable found: $JDBC_URL"
+    # Never print the URL: it can contain credentials (passwords, private keys),
+    # and this output is saved to log files that CI uploads as artifacts.
+    echo "JDBC_URL environment variable found (value hidden)"
     echo "Using existing JDBC_URL, skipping database setup..."
     export "$ENV_VAR_NAME"="$JDBC_URL"
-    echo "$ENV_VAR_NAME exported: ${!ENV_VAR_NAME}"
+    echo "$ENV_VAR_NAME exported"
 else
     echo "JDBC_URL not found, proceeding with database setup..."
 
@@ -211,8 +213,10 @@ fi
 if [ "$DB_ONLY" = true ]; then
     echo "Database setup complete! (--db-only flag used)"
     echo "Database is running and ready for connections"
-    if [[ "$CONNECTOR" == "mysql" ]] || [ -n "$JDBC_URL" ]; then
+    if [[ "$CONNECTOR" == "mysql" ]]; then
         echo "Connection URL: ${!ENV_VAR_NAME}"
+    elif [ -n "$JDBC_URL" ]; then
+        echo "Connection URL: taken from JDBC_URL (value hidden)"
     fi
     exit 0
 fi
