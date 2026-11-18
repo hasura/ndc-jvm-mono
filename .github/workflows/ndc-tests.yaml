@@ -60,8 +60,15 @@ jobs:
       - name: Install MySQL client
         if: matrix.connector == 'mysql'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y mysql-client
+          # The ubuntu-latest runner image already ships the MySQL client. Re-installing it pulls in an
+          # upgrade of the preinstalled mysql-server package whose postinst fails (dpkg exit 100), so
+          # only install when the client is genuinely missing.
+          if command -v mysql >/dev/null 2>&1; then
+            mysql --version
+          else
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends mysql-client
+          fi
 
       - name: Initialize MySQL with Chinook database
         if: matrix.connector == 'mysql'
