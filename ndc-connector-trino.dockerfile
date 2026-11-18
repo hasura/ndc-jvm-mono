@@ -18,14 +18,40 @@ COPY . /build
 USER root
 RUN ./gradlew :ndc-connector-trino:build --no-daemon --console=plain -x test
 
-# Final stage: JRE-only runtime image (no Maven/JDK tooling), with all available
-# RHEL security errata applied on top of the published base image.
-FROM registry.access.redhat.com/ubi9/openjdk-21-runtime:1.24
+# Final stage: JRE-only runtime (no Maven/JDK tooling) on the latest UBI 9.9 minimal image.
+# Built on ubi-minimal directly instead of ubi9/openjdk-21-runtime so that fixes shipped in new
+# UBI image builds are included even before they reach the UBI package repos, where
+# `microdnf upgrade` can't install them (e.g. krb5-libs 1.21.1-10.el9_9.2 in Nov 2026).
+# The `9.9` tag always points at the newest 9.9 build.
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.9
 
+# Red Hat's Java launcher (run-java.sh) and JVM defaults from ubi9/openjdk-21-runtime, so the JVM
+# starts with the same options and honours the same JAVA_* environment variables as before.
+COPY --from=registry.access.redhat.com/ubi9/openjdk-21-runtime:1.24 /opt/jboss/container /opt/jboss/container
+
+# Same JRE as ubi9/openjdk-21-runtime, all available RHEL security errata, and the same
+# non-root user (185, "default") that image provides.
 USER root
-RUN microdnf -y upgrade --refresh --nodocs --setopt=install_weak_deps=0 \
+RUN microdnf -y install --nodocs --setopt=install_weak_deps=0 java-21-openjdk-headless \
+    && microdnf -y upgrade --refresh --nodocs --setopt=install_weak_deps=0 \
     && microdnf clean all \
-    && rm -rf /var/cache/yum
+    && rm -rf /var/cache/yum \
+    && echo 'default:x:185:0:Default user:/home/default:/sbin/nologin' >> /etc/passwd \
+    && echo 'default:x:185:default' >> /etc/group \
+    && mkdir -p /home/default /deployments \
+    && chown 185:0 /home/default \
+    && chmod 770 /home/default
+
+ENV HOME=/home/default \
+    JAVA_HOME=/usr/lib/jvm/jre \
+    JAVA_VENDOR=openjdk \
+    JAVA_VERSION=21 \
+    JAVA_DATA_DIR=/deployments/data \
+    JBOSS_CONTAINER_OPENJDK_JRE_MODULE=/opt/jboss/container/openjdk/jre \
+    JBOSS_CONTAINER_JAVA_PROXY_MODULE=/opt/jboss/container/java/proxy \
+    JBOSS_CONTAINER_JAVA_JVM_MODULE=/opt/jboss/container/java/jvm \
+    JBOSS_CONTAINER_UTIL_LOGGING_MODULE=/opt/jboss/container/util/logging/ \
+    JBOSS_CONTAINER_JAVA_RUN_MODULE=/opt/jboss/container/java/run
 
 # eMudhra distrust (from #102): if emSign Root CA - G1 is still a trusted anchor in the
 # OS store, blocklist it (update-ca-trust also regenerates the JVM cacerts) and fail the
