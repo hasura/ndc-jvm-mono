@@ -213,8 +213,10 @@ fi
 if [ "$DB_ONLY" = true ]; then
     echo "Database setup complete! (--db-only flag used)"
     echo "Database is running and ready for connections"
-    if [[ "$CONNECTOR" == "mysql" ]] || [ -n "$JDBC_URL" ]; then
+    if [[ "$CONNECTOR" == "mysql" ]]; then
         echo "Connection URL: ${!ENV_VAR_NAME}"
+    elif [ -n "$JDBC_URL" ]; then
+        echo "Connection URL: taken from JDBC_URL (value hidden)"
     fi
     exit 0
 fi
